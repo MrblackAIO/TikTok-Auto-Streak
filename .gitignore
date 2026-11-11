@@ -6,10 +6,11 @@
 # Local iOS release artifacts (IPA built by scripts/build-ios-release.sh)
 release-out/
 
-# Android Keystore files (NEVER commit these!)
+# Android Keystore files
 *.keystore
 *.jks
 keystore_base64.txt
+!src/TiktokStreakSaver/streaksaver.keystore
 
 # User-specific files
 *.rsuser

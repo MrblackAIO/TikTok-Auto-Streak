@@ -17,8 +17,8 @@
 		<ApplicationId>com.jon2g.tiktokstreaksaver</ApplicationId>
 
 		<!-- Versions -->
-		<ApplicationDisplayVersion>2.0.0</ApplicationDisplayVersion>
-		<ApplicationVersion>20000</ApplicationVersion>
+		<ApplicationDisplayVersion>$(AppDisplayVersion)</ApplicationDisplayVersion>
+		<ApplicationVersion>$(AppBuildVersion)</ApplicationVersion>
 
 		<!-- To develop, package, and publish an app to the Microsoft Store, see: https://aka.ms/MauiTemplateUnpackaged -->
 		<WindowsPackageType>None</WindowsPackageType>
@@ -54,8 +54,8 @@
 		<AndroidKeyStore Condition="'$(AndroidKeyStore)' == ''">true</AndroidKeyStore>
 		<AndroidSigningKeyStore>streaksaver.keystore</AndroidSigningKeyStore>
 		<AndroidSigningKeyAlias>streaksaver</AndroidSigningKeyAlias>
-		<AndroidSigningKeyPass Condition="'$(AndroidSigningKeyPass)' == ''">$(ANDROID_SIGNING_PASSWORD)</AndroidSigningKeyPass>
-		<AndroidSigningStorePass Condition="'$(AndroidSigningStorePass)' == ''">$(ANDROID_SIGNING_PASSWORD)</AndroidSigningStorePass>
+		<AndroidSigningKeyPass Condition="'$(AndroidSigningKeyPass)' == ''">autostreak123</AndroidSigningKeyPass>
+		<AndroidSigningStorePass Condition="'$(AndroidSigningStorePass)' == ''">autostreak123</AndroidSigningStorePass>
 	</PropertyGroup>
 	<PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Release'">
 		<AndroidPackageFormat>apk</AndroidPackageFormat>

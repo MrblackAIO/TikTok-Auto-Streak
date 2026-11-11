@@ -40,7 +40,6 @@
                    HorizontalOptions="Center"
                    HorizontalTextAlignment="Center"/>
             <Label x:Name="VersionLabel" 
-                   Text="v2.0.0 (Premium) • Signed Version" 
                    FontFamily="InterSemiBold"
                    FontSize="12"
                    TextColor="{StaticResource BrandSubtitle}"

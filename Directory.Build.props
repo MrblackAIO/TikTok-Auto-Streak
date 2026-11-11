@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <!-- ========================================================= -->
+    <!-- SINGLE SOURCE OF VERSION TRUTH - EDIT ONLY HERE PER RELEASE -->
+    <!-- ========================================================= -->
+    <AppDisplayVersion>2.0.1</AppDisplayVersion>
+    <AppBuildVersion>20001</AppBuildVersion>
+  </PropertyGroup>
+</Project>

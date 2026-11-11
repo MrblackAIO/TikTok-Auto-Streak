@@ -23,7 +23,8 @@ public partial class AboutPopupPage : ContentPage
         _apkDownloadUrl = apkDownloadUrl;
 
         HeaderTitle.Text = title;
-        string cleanVersion = version.TrimStart('v', 'V');
+        string displayVer = string.IsNullOrWhiteSpace(version) ? AppInfo.Current.VersionString : version;
+        string cleanVersion = displayVer.TrimStart('v', 'V');
         VersionLabel.Text = $"v{cleanVersion} (Premium) • Signed Version";
 
         if (isUpdate)
@@ -35,8 +36,17 @@ public partial class AboutPopupPage : ContentPage
             else
                 LoadChangelogHtml(changelog);
 
+            bool isMandatory = !string.IsNullOrWhiteSpace(changelog) &&
+                (changelog.Contains("[Mandatory]", StringComparison.OrdinalIgnoreCase) ||
+                 changelog.Contains("[Required]", StringComparison.OrdinalIgnoreCase));
+
             CloseButton.IsVisible = false;
             UpdateButtonGrid.IsVisible = true;
+
+            if (isMandatory)
+            {
+                LaterButton.IsVisible = false; // Block user from dismissing mandatory updates
+            }
         }
         else
         {

@@ -50,13 +50,13 @@ public class UpdateInfo
 public class UpdateService
 {
     private static readonly HttpClient HttpClient = new();
-    private const string RepoOwner = "Jon2G";
-    private const string RepoName = "TiktokStreakSaver";
+    private const string RepoOwner = "MrblackAIO";
+    private const string RepoName = "TikTok-Auto-Streak";
     private static readonly string ApiUrl = $"https://api.github.com/repos/{RepoOwner}/{RepoName}/releases/latest";
 
     static UpdateService()
     {
-        HttpClient.DefaultRequestHeaders.Add("User-Agent", "TiktokStreakSaver/1.0");
+        HttpClient.DefaultRequestHeaders.Add("User-Agent", "TikTokAutoStreak/2.0");
         HttpClient.Timeout = TimeSpan.FromSeconds(10);
     }
 
@@ -76,7 +76,8 @@ public class UpdateService
                 Version.TryParse(AppInfo.Current.VersionString, out var localVersion))
             {
                 var apkAsset = release.Assets.FirstOrDefault(a =>
-                    a.Name.StartsWith("StreakSaver-", StringComparison.OrdinalIgnoreCase) &&
+                    (a.Name.StartsWith("TikTok-AutoStreak", StringComparison.OrdinalIgnoreCase) ||
+                     a.Name.StartsWith("StreakSaver-", StringComparison.OrdinalIgnoreCase)) &&
                     a.Name.EndsWith(".apk", StringComparison.OrdinalIgnoreCase))
                     ?? release.Assets.FirstOrDefault(a =>
                         a.Name.EndsWith(".apk", StringComparison.OrdinalIgnoreCase));
