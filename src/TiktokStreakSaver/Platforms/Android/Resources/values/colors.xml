@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+  <!-- Theme-aware splash: 'not so dark' dark mode -->
+  <color name="maui_splash_color">#12151D</color>
+  <!-- Android 12+ themed splash background -->
+  <color name="splash_bg">#12151D</color>
+</resources>

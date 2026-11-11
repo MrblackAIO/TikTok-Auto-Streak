@@ -1,0 +1,170 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net9.0-android;net9.0-ios</TargetFrameworks>
+
+		<OutputType>Exe</OutputType>
+		<RootNamespace>TiktokStreakSaver</RootNamespace>
+		<UseMaui>true</UseMaui>
+		<SingleProject>true</SingleProject>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+
+		<!-- Display name -->
+		<ApplicationTitle>TikTok AutoStreak</ApplicationTitle>
+
+		<!-- App Identifier -->
+		<ApplicationId>com.jon2g.tiktokstreaksaver</ApplicationId>
+
+		<!-- Versions -->
+		<ApplicationDisplayVersion>2.0.0</ApplicationDisplayVersion>
+		<ApplicationVersion>20000</ApplicationVersion>
+
+		<!-- To develop, package, and publish an app to the Microsoft Store, see: https://aka.ms/MauiTemplateUnpackaged -->
+		<WindowsPackageType>None</WindowsPackageType>
+
+		<!-- Suppress CA1416: all affected API calls are runtime-guarded with Build.VERSION.SdkInt checks -->
+		<!-- Suppress CS8602/CS8603: AndroidX NotificationCompat.Builder bindings over-annotate fluent Set*() returns as nullable -->
+		<NoWarn>$(NoWarn);CA1416;CS8602;CS8603</NoWarn>
+	</PropertyGroup>
+
+	<!--
+		SupportedOSPlatformVersion must be conditioned per-TFM. MAUI's SingleProject
+		evaluation can reach into platforms that are NOT in TargetFrameworks (e.g.
+		from the IDE), and "24.0" applied unconditionally is interpreted as a
+		Windows OS version which is higher than the Windows TargetPlatformVersion
+		(10.0.19041.0), causing MSB:
+		  "SupportedOSPlatformVersion X cannot be higher than TargetPlatformVersion Y".
+	-->
+	<PropertyGroup Condition="$(TargetFramework.Contains('-android'))">
+		<!-- Android Minimum API Version (API 24 = Android 7.0) -->
+		<SupportedOSPlatformVersion>24.0</SupportedOSPlatformVersion>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="$(TargetFramework.Contains('-ios'))">
+		<SupportedOSPlatformVersion>17.0</SupportedOSPlatformVersion>
+		<CodesignEntitlements>Platforms\iOS\Entitlements.plist</CodesignEntitlements>
+		<IosRootDir>$(MSBuildThisFileDirectory)..\ios</IosRootDir>
+		<IosArtifactsDir>$(IosRootDir)\artifacts</IosArtifactsDir>
+		<RepoRootDir>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..'))</RepoRootDir>
+	</PropertyGroup>
+
+	<!-- Android Release Signing Configuration -->
+	<PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Release'">
+		<AndroidKeyStore>true</AndroidKeyStore>
+		<AndroidSigningKeyStore>streaksaver.keystore</AndroidSigningKeyStore>
+		<AndroidSigningKeyAlias>streaksaver</AndroidSigningKeyAlias>
+		<AndroidSigningKeyPass>$(ANDROID_SIGNING_PASSWORD)</AndroidSigningKeyPass>
+		<AndroidSigningStorePass>$(ANDROID_SIGNING_PASSWORD)</AndroidSigningStorePass>
+		<AndroidPackageFormat>apk</AndroidPackageFormat>
+		<AndroidLinkTool>r8</AndroidLinkTool>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- App icon: Android adaptive (background layer + foreground). ForegroundScale keeps the flame inside the safe zone. -->
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#12151D" ForegroundScale="0.65" />
+
+		<!-- Splash image: 'not so dark' dark mode (#12151D) with safe scaling to be 100% visible on all mobile screens -->
+		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#12151D" BaseSize="160,160" />
+
+		<!-- Images -->
+		<MauiImage Include="Resources\Images\*" />
+		<MauiImage Update="Resources\Images\dotnet_bot.png" Resize="True" BaseSize="300,185" />
+
+		<!-- Custom Fonts -->
+		<MauiFont Include="Resources\Fonts\*" />
+
+		<!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
+		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+	</ItemGroup>
+
+	<!-- Rebuild StreakEngine.xcframework when Swift/project inputs change (macOS only). -->
+	<Target Name="EnsureIosNativeBuilt"
+	        BeforeTargets="PrepareForBuild"
+	        Condition="'$(TargetFramework)' == 'net9.0-ios' AND $([MSBuild]::IsOSPlatform('OSX')) AND '$(SkipIosNativeBuild)' != 'true'">
+		<Exec WorkingDirectory="$(RepoRootDir)"
+		      Command="bash &quot;$(RepoRootDir)/scripts/ensure-ios-native-built.sh&quot;"
+		      ConsoleToMSBuild="true" />
+	</Target>
+
+	<ItemGroup Condition="$(TargetFramework.Contains('-ios')) AND Exists('$(IosArtifactsDir)/StreakEngine.xcframework')">
+		<NativeReference Include="$(IosArtifactsDir)/StreakEngine.xcframework">
+			<Kind>Framework</Kind>
+			<ForceLoad>true</ForceLoad>
+			<SmartLink>false</SmartLink>
+		</NativeReference>
+	</ItemGroup>
+
+	<ItemGroup Condition="$(TargetFramework.Contains('-ios')) AND Exists('$(IosArtifactsDir)/StreakAppIntents.xcframework/ios-arm64/StreakAppIntents.framework/StreakAppIntents')">
+		<!-- Static Swift archive: must use Kind=Static + ForceLoad so AppShortcutsProvider lands in the main executable. -->
+		<NativeReference Include="$(IosArtifactsDir)/StreakAppIntents.xcframework/ios-arm64/StreakAppIntents.framework/StreakAppIntents"
+		                  Condition="'$(RuntimeIdentifier)' == 'ios-arm64'">
+			<Kind>Static</Kind>
+			<ForceLoad>true</ForceLoad>
+			<SmartLink>false</SmartLink>
+			<LinkWithSwiftSystemLibraries>true</LinkWithSwiftSystemLibraries>
+			<Frameworks>AppIntents Foundation WebKit</Frameworks>
+		</NativeReference>
+		<NativeReference Include="$(IosArtifactsDir)/StreakAppIntents.xcframework/ios-arm64_x86_64-simulator/StreakAppIntents.framework/StreakAppIntents"
+		                  Condition="$(RuntimeIdentifier.Contains('iossimulator'))">
+			<Kind>Static</Kind>
+			<ForceLoad>true</ForceLoad>
+			<SmartLink>false</SmartLink>
+			<LinkWithSwiftSystemLibraries>true</LinkWithSwiftSystemLibraries>
+			<Frameworks>AppIntents Foundation WebKit</Frameworks>
+		</NativeReference>
+	</ItemGroup>
+
+	<Target Name="WarnStreakEngineMissing" BeforeTargets="Build"
+	        Condition="'$(TargetFramework)' == 'net9.0-ios' AND !Exists('$(IosArtifactsDir)/StreakEngine.xcframework')">
+		<Warning Text="StreakEngine.xcframework not found. On macOS this should build automatically; otherwise run ./src/ios/build.sh (see src/ios/README.md)." />
+	</Target>
+
+	<!-- iOS discovers AppShortcutsProvider via Metadata.appintents in the main app bundle (not the widget extension). -->
+	<Target Name="CopyStreakAppIntentsMetadata" AfterTargets="_CopyAppConfigFile"
+	        Condition="$(TargetFramework.Contains('-ios'))">
+		<PropertyGroup>
+			<_StreakAppIntentsMetadataDir Condition="$(RuntimeIdentifier.Contains('simulator'))">$(IosArtifactsDir)/StreakAppIntentsMetadata-Sim.appintents</_StreakAppIntentsMetadataDir>
+			<_StreakAppIntentsMetadataDir Condition="!$(RuntimeIdentifier.Contains('simulator'))">$(IosArtifactsDir)/StreakAppIntentsMetadata.appintents</_StreakAppIntentsMetadataDir>
+			<_StreakAppIntentsMetadataDir Condition="!Exists('$(_StreakAppIntentsMetadataDir)') AND $(RuntimeIdentifier.Contains('simulator'))">$(IosArtifactsDir)/StreakAppIntents-Sim.xcarchive/Products/Library/Frameworks/StreakAppIntents.appintents/Metadata.appintents</_StreakAppIntentsMetadataDir>
+			<_StreakAppIntentsMetadataDir Condition="!Exists('$(_StreakAppIntentsMetadataDir)') AND !$(RuntimeIdentifier.Contains('simulator'))">$(IosArtifactsDir)/StreakAppIntents-iOS.xcarchive/Products/Library/Frameworks/StreakAppIntents.appintents/Metadata.appintents</_StreakAppIntentsMetadataDir>
+		</PropertyGroup>
+		<ItemGroup Condition="Exists('$(_StreakAppIntentsMetadataDir)')">
+			<_StreakAppIntentsMetadata Include="$(_StreakAppIntentsMetadataDir)/**" />
+		</ItemGroup>
+		<Copy Condition="'@(_StreakAppIntentsMetadata)' != ''"
+		      SourceFiles="@(_StreakAppIntentsMetadata)"
+		      DestinationFiles="@(_StreakAppIntentsMetadata->'$(AppBundleDir)/Metadata.appintents/%(RecursiveDir)%(Filename)%(Extension)')"
+		      SkipUnchangedFiles="true" />
+		<Message Condition="'@(_StreakAppIntentsMetadata)' != ''"
+		         Text="Copied Streak App Intents metadata to $(AppBundleDir)/Metadata.appintents"
+		         Importance="high" />
+		<Warning Condition="!Exists('$(_StreakAppIntentsMetadataDir)')"
+		         Text="Streak App Intents metadata missing ($(_StreakAppIntentsMetadataDir)). Shortcuts will fail with Couldn't find AppShortcutsProvider. Run ./src/ios/build.sh" />
+	</Target>
+
+	<Target Name="CopyStreakWidgetExtension" AfterTargets="_CopyAppConfigFile"
+	        Condition="$(TargetFramework.Contains('-ios'))">
+		<PropertyGroup>
+			<_StreakExtensionAppexPath Condition="$(RuntimeIdentifier.Contains('simulator'))">$(IosArtifactsDir)/StreakSaverExtension-Sim.appex</_StreakExtensionAppexPath>
+			<_StreakExtensionAppexPath Condition="!$(RuntimeIdentifier.Contains('simulator'))">$(IosArtifactsDir)/StreakSaverExtension.appex</_StreakExtensionAppexPath>
+		</PropertyGroup>
+		<ItemGroup Condition="Exists('$(_StreakExtensionAppexPath)')">
+			<_StreakExtension Include="$(_StreakExtensionAppexPath)/**" />
+		</ItemGroup>
+		<Copy Condition="'@(_StreakExtension)' != ''"
+		      SourceFiles="@(_StreakExtension)"
+		      DestinationFiles="@(_StreakExtension->'$(AppBundleDir)/PlugIns/StreakSaverExtension.appex/%(RecursiveDir)%(Filename)%(Extension)')"
+		      SkipUnchangedFiles="true" />
+		<Warning Condition="!Exists('$(_StreakExtensionAppexPath)')"
+		         Text="StreakSaverExtension not embedded ($(_StreakExtensionAppexPath) missing). Run ./src/ios/build.sh — widget and Shortcuts actions will not appear." />
+	</Target>
+
+	<ItemGroup>
+		<PackageReference Include="asyncawaitbestpractices" Version="10.0.0" />
+		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.8" />
+		<PackageReference Include="RandomUserAgent" Version="1.1.2" />
+	</ItemGroup>
+
+</Project>

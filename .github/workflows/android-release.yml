@@ -1,0 +1,149 @@
+name: Android Release Build
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g., 2.0.0)'
+        required: true
+        default: '2.0.0'
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  PROJECT_PATH: 'src/TiktokStreakSaver/TiktokStreakSaver.csproj'
+
+jobs:
+  build-android:
+    name: Build TikTok AutoStreak APK
+    permissions: write-all
+    runs-on: windows-latest
+
+    steps:
+
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Keystore
+      run: |
+        $keystorePath = "src/TiktokStreakSaver/streaksaver.keystore"
+        $secretB64 = "${{ secrets.ANDROID_KEYSTORE_BASE64 }}".Trim()
+        if (-not [string]::IsNullOrEmpty($secretB64)) {
+          try {
+            $keystoreBytes = [Convert]::FromBase64String($secretB64)
+            [IO.File]::WriteAllBytes($keystorePath, $keystoreBytes)
+            Write-Host "Keystore decoded from secret successfully."
+          } catch {
+            Write-Host "Warning: Could not decode keystore secret, fallback will be used: $_"
+          }
+        }
+        $validKeystore = (Test-Path $keystorePath) -and ((Get-Item $keystorePath).Length -ge 100)
+        if (-not $validKeystore) {
+          Write-Host "Generating self-signed release keystore so cloud build succeeds automatically without manual secrets..."
+          $pass = if ($env:ANDROID_SIGNING_PASSWORD) { $env:ANDROID_SIGNING_PASSWORD } else { "autostreak123" }
+          & keytool -genkeypair -v -keystore $keystorePath -alias streaksaver -keyalg RSA -keysize 2048 -validity 10000 -storepass $pass -keypass $pass -dname "CN=TikTokAutoStreak, OU=Mobile, O=Mrblack, C=US"
+          Write-Host "Self-signed keystore created successfully."
+        }
+      shell: pwsh
+      env:
+        ANDROID_SIGNING_PASSWORD: ${{ secrets.ANDROID_SIGNING_PASSWORD }}
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Setup Java JDK
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'microsoft'
+        java-version: '17'
+
+    - name: Install MAUI workload
+      run: dotnet workload install maui-android
+
+    - name: Restore dependencies
+      run: dotnet restore ${{ env.PROJECT_PATH }}
+
+    - name: Get version from tag or input
+      id: get_version
+      run: |
+        if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+          echo "VERSION=${{ github.event.inputs.version }}" >> $env:GITHUB_OUTPUT
+        } elseif ("${{ github.ref }}".StartsWith("refs/tags/v")) {
+          $version = "${{ github.ref_name }}".TrimStart('v')
+          echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+        } else {
+          echo "VERSION=2.0.0" >> $env:GITHUB_OUTPUT
+        }
+      shell: pwsh
+
+    - name: Build Android Release
+      run: |
+        $ver = "${{ steps.get_version.outputs.VERSION }}"
+        $parts = $ver -split '\.'
+        $p0 = if ($parts.Length -gt 0) { [int]$parts[0] } else { 2 }
+        $p1 = if ($parts.Length -gt 1) { [int]$parts[1] } else { 0 }
+        $p2 = if ($parts.Length -gt 2) { [int]$parts[2] } else { 0 }
+        $vc = $p0 * 10000 + $p1 * 100 + $p2
+        $pass = if ($env:ANDROID_SIGNING_PASSWORD) { $env:ANDROID_SIGNING_PASSWORD } else { "autostreak123" }
+        Write-Host "Building TikTok AutoStreak with VersionCode=$vc VersionName=$ver"
+        dotnet publish ${{ env.PROJECT_PATH }} -f net9.0-android -c Release -o ./artifacts -p:ApplicationVersion=$vc -p:ApplicationDisplayVersion=$ver -p:AndroidSigningStorePass=$pass -p:AndroidSigningKeyPass=$pass
+      shell: pwsh
+      env:
+        ANDROID_SIGNING_PASSWORD: ${{ secrets.ANDROID_SIGNING_PASSWORD }}
+
+    - name: Rename APK
+      run: |
+        $newName = "TikTok-AutoStreak-v${{ steps.get_version.outputs.VERSION }}.apk"
+        $stableName = "TikTok-AutoStreak.apk"
+        $apk = Get-ChildItem -Path ./artifacts -Filter "*-Signed.apk" | Select-Object -First 1
+        if (-not $apk) {
+          $apk = Get-ChildItem -Path ./artifacts -Filter "*.apk" | Select-Object -First 1
+        }
+        if ($apk) {
+          Rename-Item -Path $apk.FullName -NewName $newName
+          Copy-Item -Path "./artifacts/$newName" -Destination "./artifacts/$stableName" -Force
+          echo "APK_NAME=$newName" >> $env:GITHUB_OUTPUT
+          echo "APK_PATH=./artifacts/$newName" >> $env:GITHUB_OUTPUT
+          echo "APK_STABLE_NAME=$stableName" >> $env:GITHUB_OUTPUT
+          Get-ChildItem -Path ./artifacts -Filter "*.apk" |
+            Where-Object { $_.Name -ne $newName -and $_.Name -ne $stableName } |
+            Remove-Item -Force
+          Write-Host "Published APK: $newName (+ stable copy: $stableName)"
+        }
+      shell: pwsh
+      id: rename_apk
+
+    - name: Upload APK Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: TikTok-AutoStreak-APK
+        path: ./artifacts/*.apk
+        retention-days: 30
+
+    - name: Prepare release notes
+      shell: pwsh
+      run: |
+        $text = "TikTok AutoStreak v${{ steps.get_version.outputs.VERSION }} by Mrblack`n`nObsidian Dark Mode with micro-neon accents and background streak automation."
+        Set-Content -Path release-notes.md -Value $text -Encoding utf8
+
+    - name: Create GitHub Release
+      if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+      uses: softprops/action-gh-release@v1
+      continue-on-error: true
+      with:
+        tag_name: ${{ github.event_name == 'workflow_dispatch' && format('v{0}', github.event.inputs.version) || github.ref_name }}
+        name: TikTok AutoStreak v${{ steps.get_version.outputs.VERSION }}
+        body_path: release-notes.md
+        generate_release_notes: false
+        files: ./artifacts/*.apk
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

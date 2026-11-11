@@ -1,0 +1,272 @@
+<h1 align="center">🔥 TikTok AutoStreak</h1>
+
+<p align="center"><strong>Sleek Obsidian Streak Automation for Android — Created for Mrblack</strong></p>
+
+TikTok AutoStreak automatically sends TikTok messages to keep your streaks alive natively in the background, featuring an OLED-friendly Obsidian Dark Mode, radial neon arc progress gauges, partner management, and activity telemetry.
+
+---
+
+## ⚡ Cloud Build (GitHub Actions — 100% Free & Zero Setup)
+
+You don't need to install Android Studio, .NET SDK, or any build packages on your computer. You can let GitHub compile the code on their cloud servers and spit out a ready-to-download `.apk` file:
+
+1. **Push or Fork** this repository to your GitHub account.
+2. In your GitHub repository, click the **Actions** tab at the top.
+3. In the left sidebar, click **Android Release Build** (or **Build MAUI**).
+4. Click the **Run workflow** dropdown button on the right, and click **Run workflow**.
+5. Wait ~3–4 minutes for the build to finish.
+6. Click on the completed workflow run, scroll down to **Artifacts**, and click **TikTok-AutoStreak-APK** to download your ready-to-install `.apk`!
+
+---
+
+## ✨ Features
+
+- **🕐 Automatic Scheduling** — Hours-only run interval (1–23 h, default 23 h)
+- **👥 Multiple Friends** — Add, edit, import, and export your streak list
+- **📱 Background Service** — Runs even when the app is closed
+- **🔔 Smart Notifications** — Foreground progress notification while sending; separate completion / offline alert
+- **🌐 Offline Resilience** — If the device has no Wi-Fi or mobile data when an alarm fires, the run is skipped, the user is notified, and a retry is automatically scheduled in 1 hour (no streak slot wasted)
+- **🔄 Boot Persistence** — Automatically reschedules the next run after device restart
+- **🔐 Cookie-Based Session** — Login once via WebView; the captured user agent is reused for every background run so cookies stay valid
+- **⚡ Battery Optimized** — Requests battery-optimization exemption for reliable background execution
+- **🎲 Randomized Messages** — Optional pool of 50 short built-in streak variants ("streak", "yo streak", "hey", …) so you don't always send the same text
+- **🧭 Skip Unreachable** — Optional behavior (on by default for new installs) to continue with other friends when a chat cannot be opened
+- **🗂 Multi-Page UI** — Dashboard, Friends, History, and Profile pages with a custom floating nav bar
+- **📊 Run History & Stats** — Per-run success rate, last-run summary, and exportable run logs
+- **📦 In-App Updates** — Check for updates from the app; downloaded APKs install via the system installer (FileProvider on Android)
+- **🔄 Up-to-Date Automation** — TikTok WebView automation script maintained for current inbox behavior
+
+## 📋 Requirements
+
+- **Android:** 7.0 (API 24) or higher — **recommended for daily streak protection**
+- **iOS:** 17.0 or higher — **experimental only**; see [iOS limitations](docs/ios-limitations.md)
+- TikTok account
+- Internet connection
+
+## 📥 Installation
+
+### Option 1: Download APK (Recommended)
+
+1. Go to the [Releases](../../releases) page
+2. Download the latest `StreakSaver-vX.X.X.apk` ([changelog](CHANGELOG.md))
+3. Enable "Install from unknown sources" on your Android device
+4. Install the APK
+
+### iOS (AltStore) — experimental, not recommended
+
+> **Do not rely on iOS for streak protection today.** The iPhone build is best-effort only: automations fail on a locked phone, WebView automation cannot run silently in the background, and AltStore certificates expire every ~7 days. **[Read why → docs/ios-limitations.md](docs/ios-limitations.md)**
+
+For testing only:
+
+1. Add the AltStore source: `https://raw.githubusercontent.com/Jon2G/TiktokStreakSaver/main/dist/altstore/source.json`
+2. Install **Streak Saver** from that source (or sideload the latest `StreakSaver.ipa` from [Releases](../../releases))
+3. Complete in-app onboarding: sign in, read **Why iOS is different** on Profile, create a **daily Shortcuts automation** for **Maintain TikTok Streaks** (when phone is usually **unlocked**), and allow notifications
+4. See [docs/ios-altstore-release.md](docs/ios-altstore-release.md) to build the release IPA and publish `source.json`
+5. See [docs/ios-signing.md](docs/ios-signing.md) for signing details and CI
+
+**For reliable automatic streak messaging, use Android.**
+
+### Option 2: Build from Source
+
+```bash
+# Clone the repository
+git clone https://github.com/Jon2G/TiktokStreakSaver.git
+cd TiktokStreakSaver
+
+# Build for Android
+cd src/TiktokStreakSaver
+dotnet build -f net9.0-android -c Release
+
+# iOS (macOS + Xcode + maui-ios workload) — see src/ios/README.md
+cd src/TiktokStreakSaver
+dotnet build TiktokStreakSaver.csproj -f net9.0-ios -c Release -r ios-arm64
+```
+
+## ⚠️ iOS: experimental — not ready for production
+
+We invested significant effort in an iOS port (Shortcuts App Intents, native WKWebView engine, widget, App Group sharing, MAUI integration). **Apple's platform rules still block the core use case:**
+
+- **Locked iPhone** — Shortcuts cannot launch the app; error: *Unable to launch because the device couldn't be unlocked*
+- **No silent background** — WKWebView JavaScript is suspended when the app is backgrounded; there is no Android-style foreground service for WebView
+- **Shortcuts-only scheduling** — no in-app alarm equivalent to Android's `AlarmManager`
+- **Sideload maintenance** — AltStore free certificates expire about every 7 days
+
+**Use Android for production streak protection.** The iOS build remains available for testers who accept these limits.
+
+Full explanation and official Apple documentation links: **[docs/ios-limitations.md](docs/ios-limitations.md)**
+
+## 🚀 Getting Started
+
+1. **Open the app** and tap **Login Required** to sign in to TikTok in the WebView
+2. **Add friends** on the **Friends** page (TikTok username; optional display name)
+3. **Pick a message** on the **Dashboard**: type your own, or enable **Randomize messages** in **Profile** to use the built-in variants
+4. **Configure scheduling** on the **Profile** page: enable **Background automation** and pick a **Run interval** (1–23 hours)
+5. **Grant permissions** when prompted (exact alarms, battery exemption, notifications)
+6. Use **Run Now** on the Dashboard for an immediate send, or rely on background automation when scheduled
+
+## ⚙️ How It Works
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      Streak Saver                           │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  [App Start] → Schedule next-run alarm (1–23 h)             │
+│        ↓                                                    │
+│  [Alarm fires] → AlarmReceiver triggers                     │
+│        ↓                                                    │
+│  [StreakService] → Start foreground service                 │
+│        ↓                                                    │
+│  [Network check] → No internet? Skip + retry in 1 h         │
+│        ↓                                                    │
+│  [WebView] → Load tiktok.com/messages                       │
+│        ↓                                                    │
+│  [For each friend] → Find chat → Send message               │
+│        ↓                                                    │
+│  [Complete] → Schedule next run → Stop service              │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## 🛠️ Tech Stack
+
+- **.NET 9 MAUI** — Cross-platform UI (**Android: supported**, **iOS: experimental port**)
+- **Android WebView** — TikTok web automation (Android + iOS)
+- **AlarmManager** (Android) — Exact-alarm scheduling for precise hourly triggers
+- **Foreground Service** (Android) — Reliable background execution with wake-lock
+- **Shortcuts App Intents** (iOS) — User-scheduled automations; requires unlocked device + foreground app
+- **JavaScript Injection** — Web page automation
+- **Shell + custom FloatingNavBar** — Multi-page navigation
+
+## 📁 Project Structure
+
+```
+TiktokStreakSaver/
+├── src/TiktokStreakSaver/
+│   ├── Models/                    # Data models (FriendConfig, StreakRunResult)
+│   ├── Services/                  # SettingsService, SessionService,
+│   │                              # TikTokWebViewHelper, UpdateService
+│   ├── Pages/                     # DashboardPage, FriendsPage,
+│   │                              # HistoryPage, ProfilePage
+│   ├── Views/                     # FloatingNavBar + custom drawables
+│   ├── Platforms/Android/
+│   │   ├── Services/              # StreakService (foreground)
+│   │   ├── Receivers/             # AlarmReceiver, BootReceiver
+│   │   └── Resources/             # Android resources, splash, themes
+│   ├── Resources/                 # MAUI resources (icons, fonts, styles)
+│   ├── AppShell.xaml              # Multi-tab Shell host (TabBar hidden)
+│   ├── LoginPage.xaml             # TikTok login WebView
+│   └── AboutPopupPage.xaml        # About / changelog / update modal
+├── .github/workflows/             # CI/CD pipelines (see below)
+├── .github/dependabot.yml         # Dependency update PRs (Actions + NuGet)
+└── docs/                          # Documentation & screenshots
+```
+
+### Continuous integration
+
+| Workflow | When it runs | What it does |
+|----------|----------------|----------------|
+| [`ci.yml`](.github/workflows/ci.yml) | Push to `main` / `master`, all pull requests, manual | `dotnet build` for **Android** (Debug, no signing) |
+| [`android-release.yml`](.github/workflows/android-release.yml) | Git tag `v*`, manual dispatch | Signed Release APK, artifact upload, GitHub Release |
+
+## 🔧 Configuration
+
+### Run interval
+
+On the **Profile** page, the **Run interval** stepper sets how many hours to wait after each successful run before the next automatic background run. Allowed range is **1–23 hours**, default **23 h** (the classic streak window).
+
+### Randomized messages
+
+On **Profile**, toggle **Randomize messages** to send a random short variant from a built-in pool of 50 streak phrases instead of your custom text. The pool is reshuffled when exhausted so a sequence is never repeated within a run.
+
+### Custom message
+
+On **Dashboard**, the **Run Configuration** card lets you type any message. The default is:
+
+```
+Hey! Keeping our streak alive! 🔥
+```
+
+## 🤝 Contributing
+
+Contributions are welcome! Here's how you can help:
+
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
+4. **Push** to the branch (`git push origin feature/amazing-feature`)
+5. **Open** a Pull Request
+
+### Development Setup
+
+```bash
+# Prerequisites
+- .NET 9 SDK
+- Visual Studio 2022 or VS Code with C# extension
+- Android SDK (API 24+)
+
+# Install MAUI workload
+dotnet workload install maui-android
+
+# Restore and build
+cd src/TiktokStreakSaver
+dotnet restore
+dotnet build -f net9.0-android
+```
+
+## ⚠️ Disclaimer
+
+This app is for educational purposes only. Use responsibly and in accordance with TikTok's Terms of Service. The developers are not responsible for any account restrictions or bans that may result from using this application.
+
+## 🔒 Privacy
+
+Streak Saver does not collect, transmit, sell, or share any personal data. There are no analytics, no advertising, no third-party tracking SDKs, and no developer-owned servers — everything you configure stays on your device. See the full policy in [PRIVACY.md](PRIVACY.md).
+
+## 📄 License
+
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Built with [.NET MAUI](https://dotnet.microsoft.com/apps/maui)
+- Inspired by the need to never lose a streak again
+
+### Special thanks to [eulfn](https://github.com/eulfn) (Feener / [streak-tiktok](https://github.com/eulfn/streak-tiktok))
+
+The current architecture of this app is a direct port of the rewrite that **eulfn** did in his fork [`streak-tiktok`](https://github.com/eulfn/streak-tiktok) (project name "Feener"). Massive credit to him and contributors for designing and implementing essentially the entire current UX and most of the stability fixes that ship in this version, including:
+
+- **Multi-page architecture** — Dashboard / Friends / History / Profile pages hosted in a hidden Shell `TabBar`, replacing the original single-page layout
+- **Custom `FloatingNavBar`** — Pill-style bottom navigation with active-state indicators
+- **Custom `IDrawable`s** — `NormalProgressDrawable` (linear daily-progress bar) and `SuccessRateDrawable` (donut-style success-rate chart) used on Dashboard and History
+- **Theme system** — Inter font family registration, expanded color palette (`PrimaryLight`, `PrimarySubtle`, warm `OffBlack`, semantic gray ramp, card/border tokens), and `SectionCard` / typography styles
+- **Android 12+ splash screen** — `App.StartingTheme` with `windowSplashScreenAnimatedIcon` + theme-aware splash background
+- **WebView viewport fix** — Headless WebView targets a 1920×1080 CSS viewport so TikTok's virtualized chat list actually renders its lazy children (physical pixels are density-scaled; see RusdiEneri below)
+- **Session-stored user agent** — The user agent captured at login is reused for every background run so TikTok cookies stay valid (with a modern Chrome desktop fallback)
+- **Cookie-based session helper** — `TikTokWebViewHelper` centralizes WebView configuration, cookie checks, and login-status detection
+- **Randomized normal messages** — Built-in pool of 50 short streak variants with shuffle / reshuffle-on-exhaust logic
+- **Bounded per-friend retry** — Replaces the original "advance index on null friend" with a retry budget so a transient mismatch doesn't silently skip a friend
+- **`OnDestroy` mutex reset** — Safety net so a system-killed service doesn't leave the static `_isRunning` lock stuck on
+- **Improved automation `tiktok_automation.js`** — Virtualized list scrolling, checkpoint retry logic, exact-username matching, and pre-click extraction
+- **Friends import / export, search, and bulk enable / disable** UI on the Friends page
+- **Run history with success-rate stats** and exportable run logs on the History page
+- **Profile page** consolidating account, display name / photo, settings toggles, and the explicit *Check for updates* button
+- **CSS-style `Focused` visual states** on `Entry` and `Editor`, and `Android` handler mappers that strip the default Entry/Editor underline
+
+If you like the look and feel of this app, please go star the upstream fork as well: <https://github.com/eulfn/streak-tiktok>.
+
+### Thanks to [RusdiEneri](https://github.com/RusdiEneri)
+
+The custom-scheme login guard and the inbox/viewport fixes that address the “app closes after login” and “friend skipped” reports are ported from [RusdiEneri/TiktokStreakSaver](https://github.com/RusdiEneri/TiktokStreakSaver) commit [`cca1651`](https://github.com/RusdiEneri/TiktokStreakSaver/commit/cca1651688862e0fbb87eace55b64cc8549b672e):
+
+- Block `snssdk://` / `intent://` navigations during login and reload the embedded `params_url` when it is a normal web URL
+- Create the background messages WebView on the UI thread and size it in density-scaled pixels
+- Tighter chat-list selectors and a longer empty-inbox wait
+- Auto-disable a missing friend only after three failed runs
+
+His release-signing workflow changes were not adopted.
+
+---
+
+<p align="center">
+  Made with ❤️ and 🔥
+</p>

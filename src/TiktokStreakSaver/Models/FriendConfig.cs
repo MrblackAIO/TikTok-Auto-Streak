@@ -1,0 +1,84 @@
+namespace TiktokStreakSaver.Models;
+
+/// <summary>
+/// Represents a friend configuration for sending streak messages
+/// </summary>
+[Microsoft.Maui.Controls.Internals.Preserve(AllMembers = true)]
+public class FriendConfig
+{
+    /// <summary>
+    /// Unique identifier for this friend entry
+    /// </summary>
+    public string Id { get; set; } = Guid.NewGuid().ToString();
+
+    /// <summary>
+    /// TikTok username of the friend (without @)
+    /// </summary>
+    public string Username { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Display name for easier identification
+    /// </summary>
+    public string DisplayName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Whether this friend is enabled for streak messages
+    /// </summary>
+    public bool IsEnabled { get; set; } = true;
+
+    /// <summary>
+    /// Last time a streak message was successfully sent to this friend
+    /// </summary>
+    public DateTime? LastMessageSent { get; set; }
+
+    /// <summary>
+    /// Number of successful messages sent
+    /// </summary>
+    public int SuccessCount { get; set; }
+
+    /// <summary>
+    /// Number of failed attempts
+    /// </summary>
+    public int FailureCount { get; set; }
+
+    /// <summary>
+    /// Number of consecutive terminal send failures since the last confirmed success.
+    /// </summary>
+    public int ConsecutiveFailures { get; set; }
+
+    /// <summary>
+    /// If true, this entry represents a TikTok group chat matched by display name
+    /// instead of by username (groups have no profile link / @handle).
+    /// </summary>
+    public bool IsGroup { get; set; } = false;
+}
+
+/// <summary>
+/// Represents the result of a streak run
+/// </summary>
+[Microsoft.Maui.Controls.Internals.Preserve(AllMembers = true)]
+public class StreakRunResult
+{
+    public DateTime RunTime { get; set; } = DateTime.Now;
+    public TimeSpan? Duration { get; set; }
+    public bool Success { get; set; }
+    public bool IsTargetedRetry { get; set; }
+    public string? ErrorMessage { get; set; }
+    public string? FriendsErrorMessage => string.Join(',', FriendResults?.Where(x => x.Failed)?.Select(x => x.ErrorMessage) ?? []);
+    public List<FriendMessageResult> FriendResults { get; set; } = new();
+    public bool Failed => !Success && (!string.IsNullOrEmpty(FriendsErrorMessage) || !string.IsNullOrEmpty(ErrorMessage));
+}
+
+/// <summary>
+/// Result of sending a message to a specific friend
+/// </summary>
+[Microsoft.Maui.Controls.Internals.Preserve(AllMembers = true)]
+public class FriendMessageResult
+{
+    public string FriendId { get; set; } = string.Empty;
+    public string Username { get; set; } = string.Empty;
+    public bool Success { get; set; }
+    public bool Failed => !Success && !string.IsNullOrEmpty(ErrorMessage);
+    public string? ErrorMessage { get; set; }
+    public DateTime Timestamp { get; set; } = DateTime.Now;
+}

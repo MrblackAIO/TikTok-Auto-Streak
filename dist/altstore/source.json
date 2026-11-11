@@ -1,0 +1,36 @@
+{
+  "name": "Streak Saver",
+  "identifier": "com.jon2g.tiktokstreaksaver.altstore",
+  "sourceURL": "https://raw.githubusercontent.com/Jon2G/TiktokStreakSaver/main/dist/altstore/source.json",
+  "subtitle": "TikTok streak automation (iOS)",
+  "description": "Open-source TikTok streak saver distributed for AltStore sideloading.",
+  "iconURL": "https://raw.githubusercontent.com/Jon2G/TiktokStreakSaver/main/docs/imgs/icon.png",
+  "website": "https://github.com/Jon2G/TiktokStreakSaver",
+  "apps": [
+    {
+      "name": "Streak Saver",
+      "bundleIdentifier": "com.jon2g.tiktokstreaksaver",
+      "developerName": "Jon2G",
+      "subtitle": "Keep your TikTok streaks alive",
+      "localizedDescription": "Automatically send TikTok messages to maintain streaks. Uses Shortcuts for daily runs on iOS.",
+      "iconURL": "https://raw.githubusercontent.com/Jon2G/TiktokStreakSaver/main/docs/imgs/icon.png",
+      "tintColor": "#FE2C55",
+      "category": "utilities",
+      "version": "0.1.5",
+      "buildVersion": "105",
+      "downloadURL": "https://github.com/Jon2G/TiktokStreakSaver/releases/download/ios-v0.1.5/StreakSaver.ipa",
+      "size": 18260437,
+      "versionDate": "2026-06-13T22:02:56Z",
+      "appPermissions": {
+        "entitlements": [
+          "com.apple.security.application-groups",
+          "get-task-allow"
+        ],
+        "privacy": {
+          "NSUserNotificationsUsageDescription": "Streak Saver notifies you when streak runs finish or when you need to log in again."
+        }
+      }
+    }
+  ],
+  "news": []
+}

@@ -1,0 +1,457 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:views="clr-namespace:TiktokStreakSaver.Views"
+             x:Class="TiktokStreakSaver.Pages.ProfilePage"
+             Title="Profile"
+             Shell.NavBarIsVisible="False"
+             Shell.TabBarIsVisible="False"
+             NavigationPage.HasNavigationBar="False"
+             BackgroundColor="{StaticResource ObsidianBlack}">
+
+    <Grid>
+
+        <ScrollView>
+            <VerticalStackLayout Padding="20" Spacing="16">
+
+                <!-- Header -->
+                <VerticalStackLayout Spacing="2" Margin="0,8,0,0">
+                    <Label Text="Preferences &amp; Schedule"
+                           Style="{StaticResource PageTitleLabel}"
+                           HorizontalOptions="Start"/>
+                    <Label Text="TIKTOK AUTOSTREAK • CONFIGURATION"
+                           FontFamily="InterSemiBold"
+                           FontSize="11"
+                           CharacterSpacing="1.2"
+                           TextColor="{StaticResource BrandSubtitle}"
+                           HorizontalOptions="Start"/>
+                </VerticalStackLayout>
+
+                <!-- ═══ 1. Session Settings Card ═══ -->
+                <Border Style="{StaticResource SectionCard}">
+                    <VerticalStackLayout Spacing="14">
+                        <Grid ColumnDefinitions="*, Auto">
+                            <Label Text="Session Settings" Style="{StaticResource SectionLabel}" VerticalOptions="Center"/>
+                            <Border Grid.Column="1"
+                                    WidthRequest="10" HeightRequest="10"
+                                    StrokeThickness="0"
+                                    StrokeShape="RoundRectangle 5"
+                                    BackgroundColor="{StaticResource MintGreen}"
+                                    VerticalOptions="Center"
+                                    x:Name="SessionDot"/>
+                        </Grid>
+
+                        <Grid ColumnDefinitions="Auto, *" ColumnSpacing="14" VerticalOptions="Center">
+                            <!-- Avatar / Status Ring -->
+                            <Grid WidthRequest="50" HeightRequest="50" VerticalOptions="Center">
+                                <Border WidthRequest="50" HeightRequest="50"
+                                        StrokeThickness="1"
+                                        Stroke="{StaticResource MintGreen}"
+                                        StrokeShape="RoundRectangle 25"
+                                        BackgroundColor="#2010B981"
+                                        VerticalOptions="Center">
+                                    <Grid>
+                                        <Image x:Name="ProfilePhoto"
+                                               IsVisible="False"
+                                               Aspect="AspectFill"
+                                               WidthRequest="50" HeightRequest="50"/>
+                                        <Label x:Name="ProfileEmoji"
+                                               Text="✓"
+                                               TextColor="{StaticResource MintGreen}"
+                                               FontFamily="InterBold"
+                                               FontSize="22"
+                                               HorizontalOptions="Center"
+                                               VerticalOptions="Center"/>
+                                    </Grid>
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnProfilePhotoTapped"/>
+                                    </Border.GestureRecognizers>
+                                </Border>
+                            </Grid>
+
+                            <!-- Session Status & Refresh Action -->
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="3">
+                                <Label x:Name="SessionStatusLabel"
+                                       Text="TikTok Session: Active"
+                                       FontFamily="InterSemiBold"
+                                       FontSize="15"
+                                       TextColor="{StaticResource TextPrimary}"/>
+                                <Label x:Name="SessionLastCheckLabel"
+                                       Text="Verified and ready for automation"
+                                       FontFamily="InterRegular"
+                                       FontSize="11"
+                                       TextColor="{StaticResource TextSecondary}"/>
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <!-- Display Name Box -->
+                        <Border Stroke="{StaticResource ObsidianBorder}"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 14"
+                                BackgroundColor="{StaticResource ObsidianSurfaceElevated}">
+                            <Entry x:Name="DisplayNameEntry"
+                                   Placeholder="Mrblack"
+                                   Text="Mrblack"
+                                   Margin="12,2"
+                                   BackgroundColor="Transparent"
+                                   TextColor="{StaticResource TextPrimary}"
+                                   FontFamily="InterSemiBold"
+                                   FontSize="14"
+                                   Completed="OnDisplayNameChanged"
+                                   Unfocused="OnDisplayNameChanged"/>
+                        </Border>
+                        <Label x:Name="DisplayNameHint"
+                               Text="Personalized operator name for this device."
+                               Style="{StaticResource DataLabel}"
+                               IsVisible="False"/>
+
+                        <!-- Login / Refresh Token Button -->
+                        <Button x:Name="LoginButton"
+                                Text="Refresh Token"
+                                BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                                TextColor="{StaticResource TextPrimary}"
+                                FontFamily="InterSemiBold"
+                                FontSize="13"
+                                CornerRadius="14"
+                                HeightRequest="44"
+                                Clicked="OnLoginClicked"/>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- ═══ 2. Automation Config Card ═══ -->
+                <Border Style="{StaticResource SectionCard}">
+                    <VerticalStackLayout Spacing="14">
+                        <Label Text="Automation Config" Style="{StaticResource SectionLabel}"/>
+
+                        <!-- 2x2 Feature Toggles Grid -->
+                        <Grid RowDefinitions="Auto, Auto" ColumnDefinitions="*, *" RowSpacing="10" ColumnSpacing="10">
+                            
+                            <!-- Auto-Retry (Fail-safe) -->
+                            <Border Grid.Row="0" Grid.Column="0"
+                                    Stroke="{StaticResource ObsidianBorder}"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 16"
+                                    BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                                    Padding="12,10">
+                                <VerticalStackLayout Spacing="8">
+                                    <Label Text="Auto-Retry"
+                                           FontFamily="InterSemiBold" FontSize="13"
+                                           TextColor="{StaticResource TextPrimary}"/>
+                                    <Label Text="Fail-safe skip"
+                                           FontFamily="InterRegular" FontSize="11"
+                                           TextColor="{StaticResource CoralRed}"/>
+                                    <Switch x:Name="SkipUnreachableSwitch"
+                                            OnColor="{StaticResource CoralRed}"
+                                            ThumbColor="{StaticResource White}"
+                                            HorizontalOptions="Start"
+                                            Toggled="OnSkipUnreachableToggled"/>
+                                </VerticalStackLayout>
+                            </Border>
+
+                            <!-- Custom Messages -->
+                            <Border Grid.Row="0" Grid.Column="1"
+                                    Stroke="{StaticResource ObsidianBorder}"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 16"
+                                    BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                                    Padding="12,10">
+                                <VerticalStackLayout Spacing="8">
+                                    <Label Text="Custom Messages"
+                                           FontFamily="InterSemiBold" FontSize="13"
+                                           TextColor="{StaticResource TextPrimary}"/>
+                                    <Label Text="Randomizer mode"
+                                           FontFamily="InterRegular" FontSize="11"
+                                           TextColor="{StaticResource VioletPurple}"/>
+                                    <Switch x:Name="RandomizeMessagesSwitch"
+                                            OnColor="{StaticResource VioletPurple}"
+                                            ThumbColor="{StaticResource White}"
+                                            HorizontalOptions="Start"
+                                            Toggled="OnRandomizeMessagesToggled"/>
+                                </VerticalStackLayout>
+                            </Border>
+
+                            <!-- Target Queue 1 (Friends) -->
+                            <Border Grid.Row="1" Grid.Column="0"
+                                    Stroke="{StaticResource ObsidianBorder}"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 16"
+                                    BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                                    Padding="12,10">
+                                <VerticalStackLayout Spacing="8">
+                                    <Label Text="Target Queue 1"
+                                           FontFamily="InterSemiBold" FontSize="13"
+                                           TextColor="{StaticResource TextPrimary}"/>
+                                    <Label Text="Direct buddies"
+                                           FontFamily="InterRegular" FontSize="11"
+                                           TextColor="{StaticResource TealCyan}"/>
+                                    <Switch IsToggled="True"
+                                            OnColor="{StaticResource TealCyan}"
+                                            ThumbColor="{StaticResource White}"
+                                            HorizontalOptions="Start"/>
+                                </VerticalStackLayout>
+                            </Border>
+
+                            <!-- Target Queue 2 (Groups) -->
+                            <Border Grid.Row="1" Grid.Column="1"
+                                    Stroke="{StaticResource ObsidianBorder}"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 16"
+                                    BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                                    Padding="12,10">
+                                <VerticalStackLayout Spacing="8">
+                                    <Label Text="Target Queue 2"
+                                           FontFamily="InterSemiBold" FontSize="13"
+                                           TextColor="{StaticResource TextPrimary}"/>
+                                    <Label Text="Group chats"
+                                           FontFamily="InterRegular" FontSize="11"
+                                           TextColor="{StaticResource TextSecondary}"/>
+                                    <Switch IsToggled="False"
+                                            OnColor="{StaticResource TealCyan}"
+                                            ThumbColor="{StaticResource Gray400}"
+                                            HorizontalOptions="Start"/>
+                                </VerticalStackLayout>
+                            </Border>
+                        </Grid>
+
+                        <!-- Priority Picker -->
+                        <Grid ColumnDefinitions="*, 140" ColumnSpacing="12" Margin="0,4,0,0">
+                            <VerticalStackLayout VerticalOptions="Center" Spacing="2">
+                                <Label Text="Chat Queue Priority" Style="{StaticResource ControlTitleLabel}"/>
+                                <Label Text="Order of target processing" Style="{StaticResource DataLabel}"/>
+                            </VerticalStackLayout>
+                            <Picker x:Name="ChatPriorityPicker"
+                                    Grid.Column="1"
+                                    Title="Priority"
+                                    TextColor="{StaticResource TextPrimary}"
+                                    FontFamily="InterMedium"
+                                    FontSize="13"
+                                    VerticalOptions="Center"
+                                    SelectedIndexChanged="OnChatPriorityChanged">
+                                <Picker.Items>
+                                    <x:String>Mixed</x:String>
+                                    <x:String>Friends first</x:String>
+                                    <x:String>Groups first</x:String>
+                                </Picker.Items>
+                            </Picker>
+                        </Grid>
+
+                        <!-- Run Interval Panel -->
+                        <VerticalStackLayout x:Name="IntervalPanel" Spacing="6" Margin="0,4,0,0">
+                            <Grid ColumnDefinitions="*, Auto" ColumnSpacing="12">
+                                <VerticalStackLayout VerticalOptions="Center" Spacing="2">
+                                    <Label Text="Delay Timer / Interval" Style="{StaticResource ControlTitleLabel}"/>
+                                    <Label x:Name="IntervalSummaryLabel"
+                                           Text="Every 23 hours between automatic runs."
+                                           Style="{StaticResource DataLabel}"/>
+                                </VerticalStackLayout>
+                                <Label x:Name="IntervalHoursValueLabel"
+                                       Grid.Column="1"
+                                       Text="23h"
+                                       VerticalOptions="Center"
+                                       FontFamily="InterBold"
+                                       FontSize="16"
+                                       TextColor="{StaticResource VioletPurple}"/>
+                            </Grid>
+                            <Stepper x:Name="IntervalHoursStepper"
+                                     Minimum="1"
+                                     Maximum="23"
+                                     Increment="1"
+                                     Value="23"
+                                     VerticalOptions="Center"
+                                     ValueChanged="OnIntervalHoursChanged"/>
+                        </VerticalStackLayout>
+
+                        <!-- iOS Shortcuts Compatibility Panel -->
+                        <VerticalStackLayout x:Name="IosShortcutsSettingsPanel" IsVisible="False" Spacing="10">
+                            <Button x:Name="IosLimitationsButton"
+                                    Text="Why iOS is different"
+                                    BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                                    TextColor="{StaticResource TextPrimary}"
+                                    CornerRadius="14" HeightRequest="40"
+                                    Clicked="OnIosLimitationsClicked"/>
+                            <Button x:Name="ShortcutTutorialButton"
+                                    Text="Shortcut setup guide"
+                                    BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                                    TextColor="{StaticResource TextPrimary}"
+                                    CornerRadius="14" HeightRequest="40"
+                                    Clicked="OnShortcutTutorialClicked"/>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout x:Name="SharedRunSettingsPanel" IsVisible="False"/>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- ═══ 3. Preferences & Schedule Card (Futuristic Radial Timer) ═══ -->
+                <Border Style="{StaticResource SectionCard}">
+                    <VerticalStackLayout x:Name="AndroidSchedulingPanel" Spacing="16">
+                        
+                        <!-- Header with AM/PM pill switches -->
+                        <Grid ColumnDefinitions="*, Auto">
+                            <Label Text="Schedule" Style="{StaticResource SectionLabel}" VerticalOptions="Center"/>
+                            <Grid Grid.Column="1" ColumnDefinitions="Auto, Auto" ColumnSpacing="6" VerticalOptions="Center">
+                                <Border StrokeThickness="1"
+                                        Stroke="{StaticResource ObsidianBorder}"
+                                        StrokeShape="RoundRectangle 12"
+                                        BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                                        Padding="10,4">
+                                    <Label Text="AM"
+                                           FontFamily="InterSemiBold" FontSize="11"
+                                           TextColor="{StaticResource TextSecondary}"/>
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnAmTapped"/>
+                                    </Border.GestureRecognizers>
+                                </Border>
+                                <Border Grid.Column="1"
+                                        StrokeThickness="1"
+                                        Stroke="{StaticResource VioletPurple}"
+                                        StrokeShape="RoundRectangle 12"
+                                        BackgroundColor="#268B5CF6"
+                                        Padding="10,4">
+                                    <Label Text="PM"
+                                           FontFamily="InterSemiBold" FontSize="11"
+                                           TextColor="{StaticResource VioletPurple}"/>
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnPmTapped"/>
+                                    </Border.GestureRecognizers>
+                                </Border>
+                            </Grid>
+                        </Grid>
+
+                        <!-- Futuristic Radial Arc Dial Timer -->
+                        <GraphicsView x:Name="RadialTimerGraphicsView"
+                                      HeightRequest="160"
+                                      WidthRequest="160"
+                                      HorizontalOptions="Center"/>
+
+                        <!-- Time Slider Controller -->
+                        <VerticalStackLayout Spacing="4">
+                            <Slider x:Name="ScheduleTimeSlider"
+                                    Minimum="0"
+                                    Maximum="1439"
+                                    Value="720"
+                                    ThumbColor="{StaticResource VioletPurple}"
+                                    MinimumTrackColor="{StaticResource VioletPurple}"
+                                    MaximumTrackColor="{StaticResource ObsidianSurfaceElevated}"
+                                    ValueChanged="OnScheduleSliderChanged"/>
+                            <Label Text="Swipe or Tap to set daily run-time"
+                                   FontFamily="InterRegular" FontSize="11"
+                                   TextColor="{StaticResource TextSecondary}"
+                                   HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+
+                        <!-- Hidden TimePicker for platform synchronization -->
+                        <TimePicker x:Name="ScheduleTimePicker"
+                                    Format="HH:mm"
+                                    IsVisible="False"
+                                    PropertyChanged="OnTimePickerChanged"/>
+
+                        <!-- Background Run Toggle -->
+                        <Grid ColumnDefinitions="*, Auto" ColumnSpacing="16" Margin="0,4,0,0">
+                            <VerticalStackLayout VerticalOptions="Center" Spacing="2">
+                                <Label x:Name="ScheduleTitleLabel" Text="Background Run" Style="{StaticResource ControlTitleLabel}"/>
+                                <Label x:Name="ScheduleSubtitleLabel" Text="Automate streaks daily in background" Style="{StaticResource DataLabel}"/>
+                            </VerticalStackLayout>
+                            <Switch x:Name="ScheduleSwitch"
+                                    Grid.Column="1"
+                                    OnColor="{StaticResource CoralRed}"
+                                    ThumbColor="{StaticResource White}"
+                                    VerticalOptions="Center"
+                                    Toggled="OnScheduleToggled"/>
+                        </Grid>
+
+                        <VerticalStackLayout x:Name="ScheduleOptionsPanel" IsVisible="False">
+                            <Switch x:Name="FixedTimeSwitch" IsToggled="True" Toggled="OnFixedTimeToggled" IsVisible="False"/>
+                            <Grid x:Name="TimePickerRow" IsVisible="False"/>
+                        </VerticalStackLayout>
+
+                        <!-- Low Battery Saver Toggle -->
+                        <Grid x:Name="BatteryLowRow" ColumnDefinitions="*, Auto" ColumnSpacing="16">
+                            <VerticalStackLayout VerticalOptions="Center" Spacing="2">
+                                <Label Text="Low Battery Saver" Style="{StaticResource ControlTitleLabel}"/>
+                                <Label Text="Send before battery depletion triggers" Style="{StaticResource DataLabel}"/>
+                            </VerticalStackLayout>
+                            <Switch x:Name="SendOnBatteryLowSwitch"
+                                    Grid.Column="1"
+                                    OnColor="{StaticResource TealCyan}"
+                                    ThumbColor="{StaticResource Gray400}"
+                                    VerticalOptions="Center"
+                                    Toggled="OnSendOnBatteryLowToggled"/>
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- ═══ 4. About & System Card ═══ -->
+                <Border Style="{StaticResource SectionCard}">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="About" Style="{StaticResource SectionLabel}"/>
+                        <VerticalStackLayout Spacing="3" Margin="0,2,0,4" HorizontalOptions="Center">
+                            <Label Text="BY MRBLACK"
+                                   FontFamily="InterBold" FontSize="14"
+                                   CharacterSpacing="2"
+                                   TextColor="{StaticResource TextPrimary}"
+                                   HorizontalOptions="Center"/>
+                            <Label x:Name="VersionLabel"
+                                   Text="v2.0.0 (Premium) • By Mrblack"
+                                   FontFamily="InterRegular" FontSize="12"
+                                   TextColor="{StaticResource BrandSubtitle}"
+                                   HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+
+                        <Grid ColumnDefinitions="*, *" ColumnSpacing="10">
+                            <Button x:Name="CheckUpdatesButton"
+                                    Text="Check for Updates"
+                                    BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                                    TextColor="{StaticResource TextPrimary}"
+                                    FontFamily="InterSemiBold"
+                                    FontSize="12"
+                                    CornerRadius="14"
+                                    HeightRequest="42"
+                                    Clicked="OnCheckUpdatesClicked"/>
+                            <Button x:Name="PrivacyPolicyButton"
+                                    Grid.Column="1"
+                                    Text="Privacy Hub"
+                                    BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                                    TextColor="{StaticResource TextPrimary}"
+                                    FontFamily="InterSemiBold"
+                                    FontSize="12"
+                                    CornerRadius="14"
+                                    HeightRequest="42"
+                                    Clicked="OnPrivacyPolicyClicked"/>
+                        </Grid>
+
+                        <Button Text="Design &amp; Brand Guide"
+                                BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                                TextColor="{StaticResource VioletPurple}"
+                                FontFamily="InterSemiBold"
+                                FontSize="12"
+                                CornerRadius="14"
+                                HeightRequest="42"
+                                Clicked="OnAboutClicked"/>
+
+                        <Label x:Name="AltStoreUpdatesLabel" Text="" IsVisible="False"/>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- ═══ 5. Data & Session Reset ═══ -->
+                <Border Style="{StaticResource SectionCard}">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Account Data" Style="{StaticResource SectionLabel}"/>
+                        <Button Text="Logout / Clear Session"
+                                BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                                TextColor="{StaticResource CoralRed}"
+                                FontFamily="InterSemiBold"
+                                FontSize="13"
+                                CornerRadius="14"
+                                HeightRequest="44"
+                                Clicked="OnLogoutClicked"/>
+                    </VerticalStackLayout>
+                </Border>
+
+                <BoxView HeightRequest="100" BackgroundColor="Transparent"/>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <views:FloatingNavBar CurrentTab="Profile" VerticalOptions="End"/>
+    </Grid>
+</ContentPage>

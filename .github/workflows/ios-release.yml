@@ -1,0 +1,148 @@
+name: iOS Release Build
+
+on:
+  push:
+    tags:
+      - 'ios-v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g., 1.0.0)'
+        required: true
+        default: '1.0.0'
+
+env:
+  DOTNET_VERSION: '9.0.203'
+  PROJECT_PATH: 'src/TiktokStreakSaver/TiktokStreakSaver.csproj'
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Apply CI SDK pin
+        run: cp global.ci.json global.json
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          global-json-file: global.json
+
+      - name: Verify .NET SDK
+        run: dotnet --info
+
+      - name: Install MAUI iOS workload
+        run: |
+          dotnet workload install maui-ios
+          dotnet workload list
+
+      - name: Install xcodegen
+        run: brew install xcodegen
+
+      - name: Install iOS signing certificate and profiles
+        env:
+          IOS_DISTRIBUTION_CERTIFICATE_BASE64: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_BASE64 }}
+          IOS_DISTRIBUTION_CERTIFICATE_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_PASSWORD }}
+          IOS_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+          IOS_EXTENSION_PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_EXTENSION_PROVISIONING_PROFILE_BASE64 }}
+          IOS_DEVELOPMENT_TEAM: ${{ secrets.IOS_DEVELOPMENT_TEAM }}
+        run: |
+          chmod +x scripts/install-ios-signing-ci.sh
+          ./scripts/install-ios-signing-ci.sh
+
+      - name: Resolve iOS release version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION="${GITHUB_REF_NAME#ios-v}"
+          fi
+          TAG="ios-v${VERSION}"
+          VERSION_CODE=$(python3 - <<PY
+          parts = "$VERSION".split(".")
+          while len(parts) < 3:
+              parts.append("0")
+          print(int(parts[0]) * 10000 + int(parts[1]) * 100 + int(parts[2]))
+          PY
+          )
+          echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "TAG=$TAG" >> "$GITHUB_OUTPUT"
+          echo "VERSION_CODE=$VERSION_CODE" >> "$GITHUB_OUTPUT"
+          echo "iOS release: $TAG (version $VERSION, build $VERSION_CODE)"
+
+      - name: Build native StreakEngine & extension
+        env:
+          DEVELOPMENT_TEAM: ${{ secrets.IOS_DEVELOPMENT_TEAM }}
+          IOS_MAIN_PROFILE_NAME: ${{ env.IOS_MAIN_PROFILE_NAME }}
+          IOS_EXTENSION_PROFILE_NAME: ${{ env.IOS_EXTENSION_PROFILE_NAME }}
+        run: |
+          chmod +x src/ios/build.sh scripts/ensure-ios-native-built.sh
+          ./src/ios/build.sh
+
+      - name: Publish iOS IPA
+        env:
+          DEVELOPMENT_TEAM: ${{ secrets.IOS_DEVELOPMENT_TEAM }}
+        run: |
+          chmod +x scripts/sync-ios-provisioning-profiles.sh scripts/ensure-main-ios-profile.sh
+          ./scripts/sync-ios-provisioning-profiles.sh
+          ./scripts/ensure-main-ios-profile.sh
+          dotnet publish "$PROJECT_PATH" -f net9.0-ios -c Release \
+            -p:TargetFrameworks=net9.0-ios \
+            -p:ArchiveOnBuild=true \
+            -p:RuntimeIdentifier=ios-arm64 \
+            -p:DevelopmentTeam="$DEVELOPMENT_TEAM" \
+            -p:ApplicationDisplayVersion="${{ steps.version.outputs.VERSION }}" \
+            -p:ApplicationVersion="${{ steps.version.outputs.VERSION_CODE }}" \
+            -p:CodesignEntitlements=Platforms/iOS/Entitlements.plist \
+            -p:SkipIosNativeBuild=true \
+            -o ./artifacts/ios
+
+      - name: Collect IPA artifact
+        run: |
+          mkdir -p release-out
+          find . -name "*.ipa" -maxdepth 6 -exec cp {} release-out/StreakSaver.ipa \;
+          ls -la release-out || true
+
+      - name: Update AltStore source JSON
+        run: |
+          chmod +x scripts/update-altstore-source.sh
+          ./scripts/update-altstore-source.sh release-out/StreakSaver.ipa \
+            "${{ steps.version.outputs.TAG }}"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.TAG }}
+          name: Streak Saver iOS v${{ steps.version.outputs.VERSION }}
+          generate_release_notes: true
+          files: release-out/StreakSaver.ipa
+          overwrite_files: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit AltStore source JSON
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          cp dist/altstore/source.json /tmp/altstore-source.json
+          git fetch origin main
+          git checkout --force main
+          git reset --hard origin/main
+          cp /tmp/altstore-source.json dist/altstore/source.json
+          git add dist/altstore/source.json
+          git diff --staged --quiet && exit 0
+          git commit -m "chore(ios): update AltStore source ${{ steps.version.outputs.VERSION }}"
+          git push "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" main
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ipa
+          path: release-out/
+          if-no-files-found: warn

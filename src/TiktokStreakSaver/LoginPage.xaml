@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TiktokStreakSaver.LoginPage"
+             Title="Login to TikTok"
+             Shell.NavBarIsVisible="False"
+             NavigationPage.HasNavigationBar="False"
+             BackgroundColor="{StaticResource ObsidianBlack}">
+
+    <Grid RowDefinitions="Auto, *, Auto">
+
+        <Border Grid.Row="0"
+                BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                Stroke="{StaticResource ObsidianBorder}"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 0,0,20,20"
+                Padding="20">
+            <VerticalStackLayout Spacing="4">
+                <Label Text="Login to TikTok"
+                       TextColor="{StaticResource TextPrimary}"
+                       FontFamily="InterSemiBold"
+                       FontSize="20"/>
+                <Label Text="Login to your TikTok account. Your session token will be saved for background automation."
+                       TextColor="{StaticResource TextSecondary}"
+                       FontSize="13"
+                       LineBreakMode="WordWrap"/>
+            </VerticalStackLayout>
+        </Border>
+
+        <WebView x:Name="TikTokWebView"
+                 Grid.Row="1"
+                 Navigating="OnWebViewNavigating"
+                 Navigated="OnWebViewNavigated"/>
+
+        <Grid x:Name="LoadingOverlay"
+              Grid.Row="1"
+              IsVisible="True"
+              BackgroundColor="{StaticResource OverlayDark}">
+            <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="16">
+                <ActivityIndicator IsRunning="True"
+                                   Color="{StaticResource CoralRed}"
+                                   HeightRequest="48"
+                                   WidthRequest="48"/>
+                <Label Text="Connecting to TikTok..."
+                       TextColor="{StaticResource TextSecondary}"
+                       FontSize="13"
+                       HorizontalOptions="Center"/>
+            </VerticalStackLayout>
+        </Grid>
+
+        <Border Grid.Row="2" Style="{StaticResource BottomActionBorder}">
+            <Grid ColumnDefinitions="*, *" ColumnSpacing="12">
+                <Button Text="Back"
+                        Style="{StaticResource TextButton}"
+                        TextColor="{StaticResource TextSecondary}"
+                        HeightRequest="44"
+                        Clicked="OnBackClicked"/>
+                <Button Grid.Column="1"
+                        Text="Refresh"
+                        BackgroundColor="{StaticResource CoralRed}"
+                        TextColor="{StaticResource White}"
+                        FontFamily="InterSemiBold"
+                        CornerRadius="14"
+                        HeightRequest="44"
+                        Clicked="OnRefreshClicked"/>
+            </Grid>
+        </Border>
+    </Grid>
+</ContentPage>

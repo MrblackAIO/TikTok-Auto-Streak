@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TiktokStreakSaver.Pages.SplashPage"
+             Shell.NavBarIsVisible="False"
+             NavigationPage.HasNavigationBar="False"
+             BackgroundColor="#12151D">
+
+    <Grid x:Name="MainContentGrid" RowDefinitions="*, Auto, *">
+
+        <!-- Center Brand Container -->
+        <VerticalStackLayout Grid.Row="1"
+                             x:Name="CenterStack"
+                             Spacing="0"
+                             HorizontalOptions="Center"
+                             VerticalOptions="Center">
+
+            <!-- Vector Flame Logo (AutoStreakLogo.svg) -->
+            <Image x:Name="LogoImage"
+                   Source="autostreaklogo.svg"
+                   WidthRequest="180"
+                   HeightRequest="195"
+                   Aspect="AspectFit"
+                   HorizontalOptions="Center"/>
+
+            <BoxView HeightRequest="22" BackgroundColor="Transparent"/>
+
+            <!-- Stylish Brand Typography -->
+            <VerticalStackLayout x:Name="TitleStack"
+                                 Spacing="2"
+                                 HorizontalOptions="Center">
+                <Label Text="TIKTOK"
+                       TextColor="#FFFFFF"
+                       FontFamily="InterRegular"
+                       FontSize="22"
+                       CharacterSpacing="3.5"
+                       HorizontalTextAlignment="Center"/>
+
+                <Label HorizontalTextAlignment="Center"
+                       CharacterSpacing="2.0">
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="AUTO" TextColor="#2DEFF9" FontFamily="InterBold" FontSize="32"/>
+                            <Span Text="ST" TextColor="#FFFFFF" FontFamily="InterBold" FontSize="32"/>
+                            <Span Text="REAK" TextColor="#FF3B5C" FontFamily="InterBold" FontSize="32"/>
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+
+        <!-- Bottom Footer: Bold BY MRBLACK and Version -->
+        <VerticalStackLayout Grid.Row="2"
+                             x:Name="FooterStack"
+                             Spacing="4"
+                             HorizontalOptions="Center"
+                             VerticalOptions="End"
+                             Margin="0,0,0,32">
+            <Label Text="BY MRBLACK"
+                   FontFamily="InterBold"
+                   FontSize="13"
+                   CharacterSpacing="2.5"
+                   TextColor="#8E95A5"
+                   HorizontalTextAlignment="Center"/>
+
+            <Label Text="v2.0.0 (Premium) • By Mrblack"
+                   FontFamily="InterRegular"
+                   FontSize="11"
+                   TextColor="#6B7280"
+                   HorizontalTextAlignment="Center"/>
+
+            <BoxView HeightRequest="8" BackgroundColor="Transparent"/>
+
+            <!-- Home indicator bar -->
+            <Border WidthRequest="36"
+                    HeightRequest="3"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 1.5"
+                    BackgroundColor="#374151"
+                    HorizontalOptions="Center"/>
+        </VerticalStackLayout>
+
+    </Grid>
+</ContentPage>

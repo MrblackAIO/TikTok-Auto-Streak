@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:views="clr-namespace:TiktokStreakSaver.Views"
+             x:Class="TiktokStreakSaver.Pages.HistoryPage"
+             Title="History"
+             Shell.NavBarIsVisible="False"
+             Shell.TabBarIsVisible="False"
+             NavigationPage.HasNavigationBar="False"
+             BackgroundColor="{StaticResource ObsidianBlack}">
+
+    <Grid>
+
+        <RefreshView x:Name="MainRefreshView" Refreshing="OnRefreshing">
+            <ScrollView>
+                <VerticalStackLayout Padding="20" Spacing="16">
+
+                    <!-- Header -->
+                    <VerticalStackLayout Spacing="2" Margin="0,8,0,0">
+                        <Label Text="Analytics &amp; Log"
+                               Style="{StaticResource PageTitleLabel}"
+                               HorizontalOptions="Start"/>
+                        <Label Text="Performance metrics &amp; streak history"
+                               FontFamily="InterRegular"
+                               FontSize="13"
+                               TextColor="{StaticResource TextSecondary}"
+                               HorizontalOptions="Start"/>
+                    </VerticalStackLayout>
+
+                    <!-- Circular Performance Gauge Card -->
+                    <Border Style="{StaticResource SectionCard}">
+                        <VerticalStackLayout Spacing="12" HorizontalOptions="Center">
+                            <GraphicsView x:Name="SuccessChartView"
+                                          WidthRequest="130" HeightRequest="130"
+                                          HorizontalOptions="Center"/>
+                            <VerticalStackLayout Spacing="2" HorizontalOptions="Center">
+                                <Label x:Name="SuccessRateLabel"
+                                       Text="No data yet"
+                                       FontFamily="InterBold"
+                                       FontSize="15"
+                                       TextColor="{StaticResource TextPrimary}"
+                                       HorizontalTextAlignment="Center"/>
+                                <Label x:Name="TotalRunsLabel"
+                                       Text=""
+                                       FontFamily="InterRegular"
+                                       FontSize="12"
+                                       TextColor="{StaticResource TextSecondary}"
+                                       HorizontalTextAlignment="Center"/>
+                                <Label x:Name="AvgDurationLabel"
+                                       Text=""
+                                       FontFamily="InterRegular"
+                                       FontSize="12"
+                                       TextColor="{StaticResource MintGreen}"
+                                       HorizontalTextAlignment="Center"/>
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- Activity Feed / Run Log Card -->
+                    <Border Style="{StaticResource SectionCard}">
+                        <VerticalStackLayout Spacing="12">
+                            <Grid ColumnDefinitions="*, Auto, Auto, Auto" ColumnSpacing="8">
+                                <Label Text="Activity Feed"
+                                       Style="{StaticResource SectionLabel}"
+                                       VerticalOptions="Center"/>
+                                <Border Grid.Column="1"
+                                        StrokeThickness="1"
+                                        Stroke="{StaticResource ObsidianBorder}"
+                                        StrokeShape="RoundRectangle 12"
+                                        BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                                        Padding="10,4">
+                                    <Label Text="Filters"
+                                           FontFamily="InterMedium" FontSize="11"
+                                           TextColor="{StaticResource TextSecondary}"/>
+                                </Border>
+                                <Button Grid.Column="2"
+                                        Text="Export"
+                                        Style="{StaticResource TextButton}"
+                                        FontSize="12"
+                                        TextColor="{StaticResource TextSecondary}"
+                                        Clicked="OnExportLogsClicked"/>
+                                <Button Grid.Column="3"
+                                        Text="Clear"
+                                        Style="{StaticResource TextButton}"
+                                        FontSize="12"
+                                        TextColor="{StaticResource CoralRed}"
+                                        Clicked="OnClearHistoryClicked"/>
+                            </Grid>
+
+                            <VerticalStackLayout x:Name="HistoryContainer" Spacing="8">
+                                <Label x:Name="NoHistoryLabel"
+                                       Text="No activity yet."
+                                       Style="{StaticResource DataLabel}"
+                                       HorizontalOptions="Center"/>
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <BoxView HeightRequest="100" BackgroundColor="Transparent"/>
+
+                </VerticalStackLayout>
+            </ScrollView>
+        </RefreshView>
+
+        <views:FloatingNavBar CurrentTab="History" VerticalOptions="End"/>
+    </Grid>
+</ContentPage>

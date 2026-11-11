@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TiktokStreakSaver.AboutPopupPage"
+             BackgroundColor="{StaticResource ObsidianBlack}"
+             Shell.PresentationMode="ModalAnimated">
+
+    <Grid RowDefinitions="Auto, *, Auto" Padding="24" RowSpacing="20">
+        
+        <!-- Header & Flame Glyph Logo -->
+        <VerticalStackLayout Grid.Row="0" Spacing="8" HorizontalOptions="Center" Margin="0, 8, 0, 0">
+            <!-- Minimalist Flame Glyph Logo (Screen 6) -->
+            <Border WidthRequest="68" HeightRequest="68"
+                    StrokeThickness="1"
+                    Stroke="{StaticResource ObsidianBorder}"
+                    StrokeShape="RoundRectangle 22"
+                    BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                    HorizontalOptions="Center">
+                <Border.Shadow>
+                    <Shadow Brush="#80FF3B5C" Offset="0,0" Radius="16" Opacity="0.4"/>
+                </Border.Shadow>
+                <Image Source="autostreaklogo.svg"
+                       WidthRequest="46"
+                       HeightRequest="46"
+                       Aspect="AspectFit"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"/>
+            </Border>
+
+            <Label x:Name="HeaderTitle"
+                   Text="TikTok AutoStreak"
+                   Style="{StaticResource PageTitleLabel}"
+                   HorizontalOptions="Center"
+                   HorizontalTextAlignment="Center"/>
+            <Label Text="BY MRBLACK"
+                   FontFamily="InterBold"
+                   FontSize="13"
+                   CharacterSpacing="2.2"
+                   TextColor="{StaticResource TextPrimary}"
+                   HorizontalOptions="Center"
+                   HorizontalTextAlignment="Center"/>
+            <Label x:Name="VersionLabel" 
+                   Text="v2.0.0 (Premium) • By Mrblack" 
+                   FontFamily="InterSemiBold"
+                   FontSize="12"
+                   TextColor="{StaticResource BrandSubtitle}"
+                   HorizontalOptions="Center"
+                   HorizontalTextAlignment="Center"/>
+            <Label x:Name="SubHeaderLabel" 
+                   Text="Stealth Obsidian Streak Automation" 
+                   FontFamily="InterRegular"
+                   FontSize="12"
+                   TextColor="{StaticResource TextSecondary}"
+                   HorizontalOptions="Center"
+                   HorizontalTextAlignment="Center"/>
+        </VerticalStackLayout>
+
+        <!-- Scrollable content area -->
+        <ScrollView Grid.Row="1" VerticalScrollBarVisibility="Never">
+            <VerticalStackLayout Spacing="16">
+
+                <!-- ═══ Design & Brand Guide Card (Screen 6) ═══ -->
+                <Border Style="{StaticResource SectionCard}">
+                    <VerticalStackLayout Spacing="12">
+                        <Label Text="Design &amp; Brand Guide" Style="{StaticResource SectionLabel}"/>
+
+                        <!-- Typographic Style: Stealth Sans -->
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Typographic Style"
+                                   FontFamily="InterRegular" FontSize="11"
+                                   TextColor="{StaticResource TextSecondary}"/>
+                            <Label Text="Stealth Sans"
+                                   FontFamily="InterBold" FontSize="20"
+                                   TextColor="{StaticResource TextPrimary}"/>
+                            <Label Text="Heavy 700 • Medium 500 • Regular 400"
+                                   FontFamily="InterMedium" FontSize="12"
+                                   TextColor="{StaticResource VioletPurple}"/>
+                        </VerticalStackLayout>
+
+                        <!-- Color Palette Swatch Capsules -->
+                        <VerticalStackLayout Spacing="6" Margin="0,4,0,0">
+                            <Label Text="Color Palette"
+                                   FontFamily="InterRegular" FontSize="11"
+                                   TextColor="{StaticResource TextSecondary}"/>
+                            <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="6">
+                                <Border BackgroundColor="{StaticResource ObsidianBlack}"
+                                        Stroke="{StaticResource ObsidianBorder}" StrokeThickness="1"
+                                        StrokeShape="RoundRectangle 8" Padding="6,6">
+                                    <Label Text="Obsidian" FontSize="9" TextColor="#FFFFFF" HorizontalTextAlignment="Center"/>
+                                </Border>
+                                <Border Grid.Column="1" BackgroundColor="{StaticResource DarkSlate}"
+                                        Stroke="{StaticResource ObsidianBorder}" StrokeThickness="1"
+                                        StrokeShape="RoundRectangle 8" Padding="6,6">
+                                    <Label Text="#1E1E24" FontSize="9" TextColor="#FFFFFF" HorizontalTextAlignment="Center"/>
+                                </Border>
+                                <Border Grid.Column="2" BackgroundColor="{StaticResource MutedIndigo}"
+                                        Stroke="{StaticResource ObsidianBorder}" StrokeThickness="1"
+                                        StrokeShape="RoundRectangle 8" Padding="6,6">
+                                    <Label Text="Indigo" FontSize="9" TextColor="#FFFFFF" HorizontalTextAlignment="Center"/>
+                                </Border>
+                                <Border Grid.Column="3" BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                                        Stroke="{StaticResource ObsidianBorder}" StrokeThickness="1"
+                                        StrokeShape="RoundRectangle 8" Padding="6,6">
+                                    <Label Text="Surface" FontSize="9" TextColor="#FFFFFF" HorizontalTextAlignment="Center"/>
+                                </Border>
+                            </Grid>
+                            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="6" Margin="0,4,0,0">
+                                <Border BackgroundColor="#20F59E0B"
+                                        Stroke="{StaticResource WarmAmber}" StrokeThickness="1"
+                                        StrokeShape="RoundRectangle 8" Padding="6,6">
+                                    <Label Text="Amber" FontSize="10" TextColor="{StaticResource WarmAmber}" HorizontalTextAlignment="Center"/>
+                                </Border>
+                                <Border Grid.Column="1" BackgroundColor="#2010B981"
+                                        Stroke="{StaticResource MintGreen}" StrokeThickness="1"
+                                        StrokeShape="RoundRectangle 8" Padding="6,6">
+                                    <Label Text="Mint Green" FontSize="10" TextColor="{StaticResource MintGreen}" HorizontalTextAlignment="Center"/>
+                                </Border>
+                                <Border Grid.Column="2" BackgroundColor="#20FF3B5C"
+                                        Stroke="{StaticResource CoralRed}" StrokeThickness="1"
+                                        StrokeShape="RoundRectangle 8" Padding="6,6">
+                                    <Label Text="Coral Red" FontSize="10" TextColor="{StaticResource CoralRed}" HorizontalTextAlignment="Center"/>
+                                </Border>
+                            </Grid>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+                
+                <!-- Changelog WebView (preserved) -->
+                <Border Style="{StaticResource SectionCard}" 
+                        StrokeThickness="1"
+                        Padding="0"
+                        x:Name="ChangelogBorder">
+                    <WebView x:Name="ChangelogWebView"
+                             HeightRequest="240"
+                             BackgroundColor="Transparent"
+                             VerticalOptions="FillAndExpand"/>
+                </Border>
+
+                <!-- App Information -->
+                <Border Style="{StaticResource SectionCard}">
+                    <VerticalStackLayout Spacing="8">
+                        <Label Text="About this app" Style="{StaticResource SectionLabel}"/>
+                        <Label Text="TikTok AutoStreak is designed to automate and protect your TikTok streaks. It runs natively in the background on a schedule you configure, messaging your streak partners so you never miss a day." 
+                               FontFamily="InterRegular"
+                               FontSize="13"
+                               TextColor="{StaticResource TextSecondary}"
+                               LineBreakMode="WordWrap"/>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Project & author -->
+                <Border Style="{StaticResource SectionCard}">
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Open source base" Style="{StaticResource SectionLabel}"/>
+                        <Label Text="Base: TiktokStreakSaver by Jon2G"
+                               FontFamily="InterMedium" FontSize="13" TextColor="{StaticResource TextPrimary}"/>
+                        <Label Text="https://github.com/Jon2G/TiktokStreakSaver"
+                               TextColor="{StaticResource TealCyan}"
+                               FontSize="11" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Data & Permissions Notice -->
+                <VerticalStackLayout Spacing="6" Margin="0, 0, 0, 12">
+                    <Label Text="Privacy &amp; System Permissions" 
+                           FontFamily="InterSemiBold"
+                           TextColor="{StaticResource TextSecondary}" 
+                           FontSize="12"/>
+                    <Label Text="All operations execute locally on your device. Zero credentials or messaging session keys are extracted or broadcasted remotely. Background automations require battery exemptions and exact-alarm scheduling to function reliably." 
+                           FontFamily="InterRegular"
+                           TextColor="{StaticResource BrandSubtitle}"
+                           LineBreakMode="WordWrap" 
+                           FontSize="11"/>
+                </VerticalStackLayout>
+                
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Sticky Footer -->
+        <VerticalStackLayout Grid.Row="2" Spacing="8">
+
+            <Label x:Name="ProgressLabel"
+                   IsVisible="False"
+                   HorizontalTextAlignment="Center"
+                   TextColor="{StaticResource TextSecondary}"
+                   FontSize="13"/>
+
+            <Grid x:Name="UpdateButtonGrid"
+                  ColumnDefinitions="*, 12, *"
+                  IsVisible="False">
+                <Button x:Name="LaterButton"
+                        Grid.Column="0"
+                        Text="Later"
+                        BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                        TextColor="{StaticResource TextSecondary}"
+                        CornerRadius="14"
+                        HeightRequest="48"
+                        Clicked="OnLaterClicked"/>
+                <Button x:Name="InstallButton"
+                        Grid.Column="2"
+                        Text="Install"
+                        BackgroundColor="{StaticResource CoralRed}"
+                        TextColor="{StaticResource White}"
+                        FontFamily="InterSemiBold"
+                        CornerRadius="14"
+                        HeightRequest="48"
+                        Clicked="OnInstallClicked"/>
+            </Grid>
+
+            <Button x:Name="CloseButton"
+                    Text="Continue"
+                    BackgroundColor="{StaticResource CoralRed}"
+                    TextColor="{StaticResource White}"
+                    FontFamily="InterBold"
+                    FontSize="15"
+                    CornerRadius="16"
+                    HeightRequest="50"
+                    Clicked="OnCloseClicked"/>
+
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

@@ -1,0 +1,32 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Install MAUI Android Workload
+        run: dotnet workload install maui-android
+
+      - name: Build and Package APK
+        run: |
+          dotnet publish src/TiktokStreakSaver/TiktokStreakSaver.csproj -f net9.0-android -c Release -p:AndroidPackageFormat=apk
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TikTokAutoStreak-APK
+          path: src/TiktokStreakSaver/bin/Release/net9.0-android/**/*.apk
