@@ -10,9 +10,9 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version number (e.g., 2.0.2)'
+        description: 'Version number (e.g., 2.0.3)'
         required: true
-        default: '2.0.2'
+        default: '2.0.3'
 
 env:
   DOTNET_VERSION: '9.0.x'
@@ -79,7 +79,7 @@ jobs:
           $version = "${{ github.ref_name }}".TrimStart('v')
           echo "VERSION=$version" >> $env:GITHUB_OUTPUT
         } else {
-          echo "VERSION=2.0.2" >> $env:GITHUB_OUTPUT
+          echo "VERSION=2.0.3" >> $env:GITHUB_OUTPUT
         }
       shell: pwsh
 

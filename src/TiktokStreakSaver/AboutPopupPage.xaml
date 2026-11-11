@@ -124,7 +124,7 @@
                 <Border Style="{StaticResource SectionCard}">
                     <VerticalStackLayout Spacing="6">
                         <Label Text="Verified Release" Style="{StaticResource SectionLabel}"/>
-                        <Label Text="Custom Engineered for Mrblack"
+                        <Label Text="Engineered by Mrblack"
                                FontFamily="InterBold" FontSize="13" TextColor="{StaticResource TextPrimary}"/>
                         <Label Text="Obsidian Edition • Standalone Background Automation"
                                TextColor="{StaticResource TealCyan}"

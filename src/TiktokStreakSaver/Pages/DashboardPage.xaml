@@ -19,7 +19,7 @@
                     <Grid ColumnDefinitions="*, Auto" Margin="0,8,0,4">
                         <VerticalStackLayout Grid.Column="0" Spacing="2">
                             <Label x:Name="GreetingLabel"
-                                   Text="Hello, Mrblack"
+                                   Text="Hello"
                                    Style="{StaticResource PageTitleLabel}"
                                    HorizontalOptions="Start"/>
                             <Label Text="TIKTOK AUTOSTREAK"
@@ -44,7 +44,7 @@
                                        WidthRequest="44" HeightRequest="44"/>
                             </Border>
                             <Label x:Name="ProfileAvatarEmoji"
-                                   Text="⚡" FontSize="20"
+                                   Text="🔥" FontSize="20"
                                    HorizontalOptions="Center" VerticalOptions="Center"
                                    IsVisible="False"/>
                         </Grid>

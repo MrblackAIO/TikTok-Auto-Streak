@@ -7,6 +7,17 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [2.0.3] - 2026-11-11
+
+### Added
+- **TikTok Account Profile Card**: When logged in, the Session Settings card renders as a full TikTok profile displaying user avatar, display name, handle (`@username`), following & follower stats, and bio.
+- **HH:MM Schedule Input Fields**: Replaced the 1440-minute swipe slider with precise side-by-side numeric input boxes (`HH` and `MM`) with AM/PM selection capsules.
+
+### Changed
+- **Home Page Avatar**: Replaced default lightning (`⚡`) with fire (`🔥`). Shows circular TikTok profile picture when logged in.
+- **Generic Defaults**: Removed hardcoded "Mrblack" operator placeholder and default name on Profile and Home pages, defaulting to generic user or TikTok nickname.
+- **Attribution Cleanup**: Changed "Custom Engineered for Mrblack" to "Engineered by Mrblack" in the release documentation and About screens.
+
 ## [2.0.2] - 2026-11-11
 
 ### Fixed

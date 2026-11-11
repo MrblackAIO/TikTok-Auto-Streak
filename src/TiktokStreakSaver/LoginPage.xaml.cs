@@ -188,6 +188,9 @@ public partial class LoginPage : ContentPage
                 return;
             }
 
+            // Extract TikTok profile info (avatar, nickname, username, bio, stats)
+            await TryExtractTikTokProfileAsync();
+
             AppStorageProvider.Current.SetBool(AppConstants.AuthRequiredKey, false);
 
             bool justEnabled = false;
@@ -233,5 +236,116 @@ public partial class LoginPage : ContentPage
             await Navigation.PopModalAsync();
         else if (Shell.Current != null)
             await Shell.Current.GoToAsync("//DashboardPage");
+    }
+
+    private async Task TryExtractTikTokProfileAsync()
+    {
+        try
+        {
+            const string extractScript = @"
+(async function() {
+    try {
+        let res = await fetch('https://www.tiktok.com/passport/web/account/info/', { credentials: 'include' });
+        let data = await res.json();
+        if (data && data.data) {
+            let uniqueId = data.data.unique_id || '';
+            let avatarUrl = data.data.avatar_url || '';
+            let nickname = data.data.nickname || uniqueId;
+            let bio = '';
+            let followers = 0;
+            let following = 0;
+
+            if (uniqueId) {
+                try {
+                    let detailRes = await fetch('https://www.tiktok.com/api/user/detail/?uniqueId=' + encodeURIComponent(uniqueId) + '&aid=1988', { credentials: 'include' });
+                    let detailData = await detailRes.json();
+                    if (detailData && detailData.userInfo) {
+                        bio = detailData.userInfo.user?.signature || '';
+                        nickname = detailData.userInfo.user?.nickname || nickname;
+                        avatarUrl = detailData.userInfo.user?.avatarLarger || detailData.userInfo.user?.avatarMedium || avatarUrl;
+                        followers = detailData.userInfo.stats?.followerCount || 0;
+                        following = detailData.userInfo.stats?.followingCount || 0;
+                    }
+                } catch(e) {}
+            }
+
+            return JSON.stringify({
+                username: uniqueId,
+                nickname: nickname,
+                avatarUrl: avatarUrl,
+                bio: bio,
+                followers: followers,
+                following: following
+            });
+        }
+    } catch(e) {}
+    return '';
+})();";
+
+            var rawJson = await TikTokWebView.EvaluateJavaScriptAsync(extractScript);
+            if (!string.IsNullOrWhiteSpace(rawJson) && rawJson != "\"\"" && rawJson != "null")
+            {
+                string jsonString = rawJson;
+                if (jsonString.StartsWith("\"") && jsonString.EndsWith("\""))
+                {
+                    try
+                    {
+                        jsonString = System.Text.Json.JsonSerializer.Deserialize<string>(rawJson) ?? rawJson;
+                    }
+                    catch { }
+                }
+
+                using var doc = System.Text.Json.JsonDocument.Parse(jsonString);
+                var root = doc.RootElement;
+                if (root.TryGetProperty("username", out var uProp) && !string.IsNullOrEmpty(uProp.GetString()))
+                {
+                    var username = uProp.GetString()!;
+                    _sessionService.SetTikTokUsername(username);
+
+                    if (root.TryGetProperty("nickname", out var nProp) && !string.IsNullOrEmpty(nProp.GetString()))
+                    {
+                        var nick = nProp.GetString()!;
+                        _sessionService.SetTikTokNickname(nick);
+                        _sessionService.SetDisplayName(nick);
+                    }
+
+                    if (root.TryGetProperty("bio", out var bProp))
+                        _sessionService.SetTikTokBio(bProp.GetString() ?? "");
+
+                    if (root.TryGetProperty("followers", out var fProp))
+                        _sessionService.SetTikTokFollowers(fProp.GetInt32());
+
+                    if (root.TryGetProperty("following", out var fgProp))
+                        _sessionService.SetTikTokFollowing(fgProp.GetInt32());
+
+                    if (root.TryGetProperty("avatarUrl", out var aProp) && !string.IsNullOrEmpty(aProp.GetString()))
+                    {
+                        var avatarUrl = aProp.GetString()!;
+                        await DownloadAndSaveAvatarAsync(avatarUrl);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[LoginPage] Failed to extract TikTok profile: {ex.Message}");
+        }
+    }
+
+    private async Task DownloadAndSaveAvatarAsync(string avatarUrl)
+    {
+        try
+        {
+            using var client = new System.Net.Http.HttpClient();
+            client.Timeout = TimeSpan.FromSeconds(10);
+            var imageBytes = await client.GetByteArrayAsync(avatarUrl);
+            var localPath = System.IO.Path.Combine(FileSystem.AppDataDirectory, "tiktok_avatar.jpg");
+            await System.IO.File.WriteAllBytesAsync(localPath, imageBytes);
+            _sessionService.SetProfileImagePath(localPath);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[LoginPage] Failed to download avatar image: {ex.Message}");
+        }
     }
 }

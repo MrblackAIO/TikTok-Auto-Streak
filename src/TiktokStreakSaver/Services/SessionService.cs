@@ -3,7 +3,7 @@ using TiktokStreakSaver.Services.Storage;
 namespace TiktokStreakSaver.Services;
 
 /// <summary>
-/// Service for managing TikTok session state
+/// Service for managing TikTok session state and profile info
 /// </summary>
 [Microsoft.Maui.Controls.Internals.Preserve(AllMembers = true)]
 public class SessionService
@@ -15,6 +15,12 @@ public class SessionService
     private const string DisplayNameKey = "session_display_name";
     private const string LoginUserAgentKey = "session_login_ua";
     private const string ProfileImagePathKey = "session_profile_photo";
+
+    private const string TikTokUsernameKey = "session_tiktok_username";
+    private const string TikTokNicknameKey = "session_tiktok_nickname";
+    private const string TikTokBioKey = "session_tiktok_bio";
+    private const string TikTokFollowersKey = "session_tiktok_followers";
+    private const string TikTokFollowingKey = "session_tiktok_following";
 
     /// <summary>
     /// Get whether the session was valid on last check
@@ -76,11 +82,14 @@ public class SessionService
     }
 
     /// <summary>
-    /// Get the user's display name
+    /// Get the user's display name (defaults to TikTok nickname if set, otherwise "User")
     /// </summary>
     public string GetDisplayName()
     {
-        return _storage.GetString(DisplayNameKey, "Mrblack");
+        var nick = GetTikTokNickname();
+        if (!string.IsNullOrWhiteSpace(nick))
+            return nick;
+        return _storage.GetString(DisplayNameKey, "User");
     }
 
     /// <summary>
@@ -88,7 +97,7 @@ public class SessionService
     /// </summary>
     public void SetDisplayName(string name)
     {
-        _storage.SetString(DisplayNameKey, string.IsNullOrWhiteSpace(name) ? "Mrblack" : name.Trim());
+        _storage.SetString(DisplayNameKey, string.IsNullOrWhiteSpace(name) ? "User" : name.Trim());
     }
 
     /// <summary>
@@ -125,6 +134,36 @@ public class SessionService
     }
 
     /// <summary>
+    /// TikTok Handle / Unique ID (e.g. "username")
+    /// </summary>
+    public string GetTikTokUsername() => _storage.GetString(TikTokUsernameKey, string.Empty);
+    public void SetTikTokUsername(string username) => _storage.SetString(TikTokUsernameKey, username ?? string.Empty);
+
+    /// <summary>
+    /// TikTok Display Name / Nickname
+    /// </summary>
+    public string GetTikTokNickname() => _storage.GetString(TikTokNicknameKey, string.Empty);
+    public void SetTikTokNickname(string nickname) => _storage.SetString(TikTokNicknameKey, nickname ?? string.Empty);
+
+    /// <summary>
+    /// TikTok Profile Bio / Signature
+    /// </summary>
+    public string GetTikTokBio() => _storage.GetString(TikTokBioKey, string.Empty);
+    public void SetTikTokBio(string bio) => _storage.SetString(TikTokBioKey, bio ?? string.Empty);
+
+    /// <summary>
+    /// TikTok Followers count
+    /// </summary>
+    public int GetTikTokFollowers() => (int)_storage.GetLong(TikTokFollowersKey, 0L);
+    public void SetTikTokFollowers(int count) => _storage.SetLong(TikTokFollowersKey, count);
+
+    /// <summary>
+    /// TikTok Following count
+    /// </summary>
+    public int GetTikTokFollowing() => (int)_storage.GetLong(TikTokFollowingKey, 0L);
+    public void SetTikTokFollowing(int count) => _storage.SetLong(TikTokFollowingKey, count);
+
+    /// <summary>
     /// Clear session data (logout). Also physically destroys WebView cookies
     /// to guarantee a clean logout.
     /// </summary>
@@ -132,6 +171,12 @@ public class SessionService
     {
         _storage.SetBool(SessionValidKey, false);
         _storage.Remove(SessionLastCheckKey);
+        _storage.Remove(TikTokUsernameKey);
+        _storage.Remove(TikTokNicknameKey);
+        _storage.Remove(TikTokBioKey);
+        _storage.Remove(TikTokFollowersKey);
+        _storage.Remove(TikTokFollowingKey);
+        _storage.Remove(ProfileImagePathKey);
 
         TikTokWebViewHelper.ClearAllCookies();
 #if IOS

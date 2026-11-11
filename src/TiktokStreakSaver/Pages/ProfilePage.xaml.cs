@@ -17,7 +17,7 @@ public partial class ProfilePage : ContentPage
     private bool _isCheckingUpdates = false;
 #endif
     private readonly RadialTimerDrawable _radialTimerDrawable = new RadialTimerDrawable();
-    private bool _suppressSliderChanged = false;
+    private bool _suppressTimeInputChanged = false;
 
     public ProfilePage()
     {
@@ -128,14 +128,15 @@ public partial class ProfilePage : ContentPage
             ProfileEmoji.IsVisible = false;
             ProfilePhoto.Clip = new EllipseGeometry
             {
-                Center = new Point(28, 28),
-                RadiusX = 28,
-                RadiusY = 28
+                Center = new Point(36, 36),
+                RadiusX = 36,
+                RadiusY = 36
             };
         }
         else
         {
             ProfilePhoto.IsVisible = false;
+            ProfileEmoji.Text = "🔥";
             ProfileEmoji.IsVisible = true;
         }
     }
@@ -185,29 +186,52 @@ public partial class ProfilePage : ContentPage
 
     private async Task ApplyLoginButtonStateAsync(bool isSessionValid)
     {
-        await LoginButton.FadeTo(0.5, 100);
-
         if (isSessionValid)
         {
-            LoginButton.Text = "Session OK";
-            LoginButton.BackgroundColor = GetThemeColor("Success", "#22946E");
-            LoginButton.IsEnabled = false;
-            SessionDot.BackgroundColor = GetThemeColor("Success", "#22946E");
-            SessionStatusLabel.Text = "Session active";
+            LoggedOutPanel.IsVisible = false;
+            LoggedInProfilePanel.IsVisible = true;
+            SessionCardTitle.Text = "TikTok Profile";
+            SessionDot.BackgroundColor = GetThemeColor("Success", "#10B981");
+
+            var nick = _sessionService.GetTikTokNickname();
+            if (string.IsNullOrWhiteSpace(nick))
+                nick = _sessionService.GetDisplayName();
+            ProfileNicknameLabel.Text = string.IsNullOrWhiteSpace(nick) ? "User" : nick;
+
+            var username = _sessionService.GetTikTokUsername();
+            ProfileUsernameLabel.Text = string.IsNullOrWhiteSpace(username) ? "@tiktok_user" : $"@{username}";
+
+            var bio = _sessionService.GetTikTokBio();
+            BioLabel.Text = string.IsNullOrWhiteSpace(bio) ? "TikTok Streak Automation Operator 🔥" : bio;
+
+            int followers = _sessionService.GetTikTokFollowers();
+            FollowersCountLabel.Text = FormatMetricCount(followers);
+
+            int following = _sessionService.GetTikTokFollowing();
+            FollowingCountLabel.Text = FormatMetricCount(following);
+
             var lastCheck = _sessionService.GetLastCheckTime();
-            SessionLastCheckLabel.Text = lastCheck.HasValue ? $"Verified {lastCheck.Value:MMM dd, HH:mm}" : "";
+            SessionLastCheckLabel.Text = lastCheck.HasValue ? $"Verified {lastCheck.Value:MMM dd, HH:mm}" : "Verified and ready";
+
+            LoadProfilePhoto();
         }
         else
         {
-            LoginButton.Text = "Login to TikTok";
-            LoginButton.BackgroundColor = GetThemeColor("Primary", "#FE2C55");
-            LoginButton.IsEnabled = true;
-            SessionDot.BackgroundColor = GetThemeColor("Error", "#9C2121");
-            SessionStatusLabel.Text = "Not logged in";
-            SessionLastCheckLabel.Text = "Tap below to login";
+            LoggedOutPanel.IsVisible = true;
+            LoggedInProfilePanel.IsVisible = false;
+            SessionCardTitle.Text = "Session Settings";
+            SessionDot.BackgroundColor = GetThemeColor("CoralRed", "#FF3B5C");
+            DisplayNameEntry.Text = _sessionService.GetDisplayName();
         }
+    }
 
-        await LoginButton.FadeTo(1.0, 200);
+    private static string FormatMetricCount(int count)
+    {
+        if (count >= 1_000_000)
+            return $"{(count / 1_000_000.0):0.#}M";
+        if (count >= 1_000)
+            return $"{(count / 1_000.0):0.#}K";
+        return count > 0 ? count.ToString() : "--";
     }
 
     private async void UpdateLoginButtonState(bool isSessionValid)
@@ -287,36 +311,93 @@ public partial class ProfilePage : ContentPage
         _radialTimerDrawable.Progress = (float)(time.TotalMinutes / 1440.0);
         RadialTimerGraphicsView.Invalidate();
 
-        _suppressSliderChanged = true;
+        _suppressTimeInputChanged = true;
         try
         {
-            ScheduleTimeSlider.Value = time.TotalMinutes;
+            ScheduleHourEntry.Text = $"{displayHour:D2}";
+            ScheduleMinuteEntry.Text = $"{minute:D2}";
+            UpdateAmPmPills(period == "AM");
         }
         finally
         {
-            _suppressSliderChanged = false;
+            _suppressTimeInputChanged = false;
         }
     }
 
-    private void OnScheduleSliderChanged(object? sender, ValueChangedEventArgs e)
+    private void UpdateAmPmPills(bool isAm)
     {
-        if (_suppressSliderChanged) return;
-        int totalMins = (int)Math.Clamp(Math.Round(e.NewValue), 0, 1439);
-        var hour = totalMins / 60;
-        var min = totalMins % 60;
-        var newTime = new TimeSpan(hour, min, 0);
-        ScheduleTimePicker.Time = newTime;
-        _settingsService.SetFixedTimeHour(hour);
-        _settingsService.SetFixedTimeMinute(min);
+        if (Application.Current?.Resources == null) return;
+        var purple = (Color)Application.Current.Resources["VioletPurple"];
+        var border = (Brush)Application.Current.Resources["ObsidianBorder"];
+        var elevated = (Color)Application.Current.Resources["ObsidianSurfaceElevated"];
+        var muted = (Color)Application.Current.Resources["TextSecondary"];
 
-        var period = hour >= 12 ? "PM" : "AM";
-        var displayHour = hour % 12;
-        if (displayHour == 0) displayHour = 12;
+        if (isAm)
+        {
+            AmPill.BackgroundColor = Color.FromArgb("#268B5CF6");
+            AmPill.Stroke = new SolidColorBrush(purple);
+            AmPillLabel.TextColor = purple;
 
-        _radialTimerDrawable.TimeText = $"{displayHour:D2}:{min:D2}";
-        _radialTimerDrawable.PeriodText = period;
-        _radialTimerDrawable.Progress = (float)(totalMins / 1440.0);
-        RadialTimerGraphicsView.Invalidate();
+            PmPill.BackgroundColor = elevated;
+            PmPill.Stroke = border;
+            PmPillLabel.TextColor = muted;
+        }
+        else
+        {
+            PmPill.BackgroundColor = Color.FromArgb("#268B5CF6");
+            PmPill.Stroke = new SolidColorBrush(purple);
+            PmPillLabel.TextColor = purple;
+
+            AmPill.BackgroundColor = elevated;
+            AmPill.Stroke = border;
+            AmPillLabel.TextColor = muted;
+        }
+    }
+
+    private void OnScheduleTimeInputChanged(object? sender, TextChangedEventArgs e)
+    {
+        if (_suppressTimeInputChanged) return;
+
+        if (int.TryParse(ScheduleHourEntry.Text, out var h) &&
+            int.TryParse(ScheduleMinuteEntry.Text, out var m))
+        {
+            bool isPm = _radialTimerDrawable.PeriodText == "PM";
+            int hour24;
+            if (h >= 13)
+            {
+                hour24 = Math.Clamp(h, 0, 23);
+                isPm = hour24 >= 12;
+            }
+            else
+            {
+                var h12 = Math.Clamp(h, 1, 12);
+                hour24 = (h12 % 12) + (isPm ? 12 : 0);
+            }
+
+            int minute = Math.Clamp(m, 0, 59);
+            var newTime = new TimeSpan(hour24, minute, 0);
+
+            ScheduleTimePicker.Time = newTime;
+            _settingsService.SetFixedTimeHour(hour24);
+            _settingsService.SetFixedTimeMinute(minute);
+
+            var displayHour = hour24 % 12;
+            if (displayHour == 0) displayHour = 12;
+
+            _radialTimerDrawable.TimeText = $"{displayHour:D2}:{minute:D2}";
+            _radialTimerDrawable.PeriodText = isPm ? "PM" : "AM";
+            _radialTimerDrawable.Progress = (float)(newTime.TotalMinutes / 1440.0);
+            RadialTimerGraphicsView.Invalidate();
+            UpdateAmPmPills(!isPm);
+
+#if ANDROID
+            if (_settingsService.IsScheduled() && _settingsService.GetUseFixedTime())
+            {
+                var context = Platform.CurrentActivity ?? Android.App.Application.Context;
+                TiktokStreakSaver.Platforms.Android.StreakScheduler.ScheduleNextRun(context);
+            }
+#endif
+        }
     }
 
     private void OnAmTapped(object? sender, TappedEventArgs e)
@@ -324,7 +405,10 @@ public partial class ProfilePage : ContentPage
         var time = ScheduleTimePicker.Time;
         if (time.Hours >= 12)
         {
-            ScheduleTimePicker.Time = new TimeSpan(time.Hours - 12, time.Minutes, 0);
+            var newTime = new TimeSpan(time.Hours - 12, time.Minutes, 0);
+            ScheduleTimePicker.Time = newTime;
+            _settingsService.SetFixedTimeHour(newTime.Hours);
+            UpdateRadialTimerDisplay(newTime);
         }
     }
 
@@ -333,7 +417,10 @@ public partial class ProfilePage : ContentPage
         var time = ScheduleTimePicker.Time;
         if (time.Hours < 12)
         {
-            ScheduleTimePicker.Time = new TimeSpan(time.Hours + 12, time.Minutes, 0);
+            var newTime = new TimeSpan(time.Hours + 12, time.Minutes, 0);
+            ScheduleTimePicker.Time = newTime;
+            _settingsService.SetFixedTimeHour(newTime.Hours);
+            UpdateRadialTimerDisplay(newTime);
         }
     }
 

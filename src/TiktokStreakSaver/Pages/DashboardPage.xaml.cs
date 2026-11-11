@@ -116,7 +116,8 @@ public partial class DashboardPage : ContentPage
     private void LoadProfilePhoto()
     {
         var photoPath = _sessionService.GetProfileImagePath();
-        if (!string.IsNullOrEmpty(photoPath) && System.IO.File.Exists(photoPath))
+        bool isLoggedIn = _sessionService.IsSessionValid();
+        if (isLoggedIn && !string.IsNullOrEmpty(photoPath) && System.IO.File.Exists(photoPath))
         {
             ProfileAvatarImage.Source = ImageSource.FromFile(photoPath);
             ProfileAvatarImage.IsVisible = true;
@@ -131,6 +132,7 @@ public partial class DashboardPage : ContentPage
         else
         {
             ProfileAvatarImage.IsVisible = false;
+            ProfileAvatarEmoji.Text = "🔥";
             ProfileAvatarEmoji.IsVisible = true;
         }
     }

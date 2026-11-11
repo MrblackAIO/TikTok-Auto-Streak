@@ -27,11 +27,14 @@
                            HorizontalOptions="Start"/>
                 </VerticalStackLayout>
 
-                <!-- ═══ 1. Session Settings Card ═══ -->
+                <!-- ═══ 1. Session Settings / TikTok Profile Card ═══ -->
                 <Border Style="{StaticResource SectionCard}">
                     <VerticalStackLayout Spacing="14">
                         <Grid ColumnDefinitions="*, Auto">
-                            <Label Text="Session Settings" Style="{StaticResource SectionLabel}" VerticalOptions="Center"/>
+                            <Label x:Name="SessionCardTitle"
+                                   Text="Session Settings"
+                                   Style="{StaticResource SectionLabel}"
+                                   VerticalOptions="Center"/>
                             <Border Grid.Column="1"
                                     WidthRequest="10" HeightRequest="10"
                                     StrokeThickness="0"
@@ -41,25 +44,79 @@
                                     x:Name="SessionDot"/>
                         </Grid>
 
-                        <Grid ColumnDefinitions="Auto, *" ColumnSpacing="14" VerticalOptions="Center">
-                            <!-- Avatar / Status Ring -->
-                            <Grid WidthRequest="50" HeightRequest="50" VerticalOptions="Center">
+                        <!-- A. Logged Out View -->
+                        <VerticalStackLayout x:Name="LoggedOutPanel" Spacing="14" IsVisible="True">
+                            <Grid ColumnDefinitions="Auto, *" ColumnSpacing="14" VerticalOptions="Center">
                                 <Border WidthRequest="50" HeightRequest="50"
                                         StrokeThickness="1"
-                                        Stroke="{StaticResource MintGreen}"
+                                        Stroke="{StaticResource CoralRed}"
                                         StrokeShape="RoundRectangle 25"
-                                        BackgroundColor="#2010B981"
+                                        BackgroundColor="#20FF3B5C"
                                         VerticalOptions="Center">
+                                    <Label Text="✕"
+                                           TextColor="{StaticResource CoralRed}"
+                                           FontFamily="InterBold"
+                                           FontSize="22"
+                                           HorizontalOptions="Center"
+                                           VerticalOptions="Center"/>
+                                </Border>
+                                <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="3">
+                                    <Label Text="Not logged in"
+                                           FontFamily="InterSemiBold"
+                                           FontSize="15"
+                                           TextColor="{StaticResource TextPrimary}"/>
+                                    <Label Text="Connect TikTok to automate streaks"
+                                           FontFamily="InterRegular"
+                                           FontSize="11"
+                                           TextColor="{StaticResource TextSecondary}"/>
+                                </VerticalStackLayout>
+                            </Grid>
+
+                            <!-- Generic Display Name Entry -->
+                            <Border Stroke="{StaticResource ObsidianBorder}"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 14"
+                                    BackgroundColor="{StaticResource ObsidianSurfaceElevated}">
+                                <Entry x:Name="DisplayNameEntry"
+                                       Placeholder="Enter display name"
+                                       Text="User"
+                                       Margin="12,2"
+                                       BackgroundColor="Transparent"
+                                       TextColor="{StaticResource TextPrimary}"
+                                       FontFamily="InterSemiBold"
+                                       FontSize="14"
+                                       Completed="OnDisplayNameChanged"
+                                       Unfocused="OnDisplayNameChanged"/>
+                            </Border>
+
+                            <Button x:Name="LoginButton"
+                                    Text="Login to TikTok"
+                                    BackgroundColor="{StaticResource Primary}"
+                                    TextColor="{StaticResource TextPrimary}"
+                                    FontFamily="InterSemiBold"
+                                    FontSize="13"
+                                    CornerRadius="14"
+                                    HeightRequest="44"
+                                    Clicked="OnLoginClicked"/>
+                        </VerticalStackLayout>
+
+                        <!-- B. Logged In Profile Account View -->
+                        <VerticalStackLayout x:Name="LoggedInProfilePanel" Spacing="14" IsVisible="False">
+                            <!-- Avatar & Identity -->
+                            <VerticalStackLayout Spacing="8" HorizontalOptions="Center">
+                                <Border WidthRequest="72" HeightRequest="72"
+                                        StrokeThickness="2"
+                                        Stroke="{StaticResource CoralRed}"
+                                        StrokeShape="RoundRectangle 36"
+                                        BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                                        HorizontalOptions="Center">
                                     <Grid>
                                         <Image x:Name="ProfilePhoto"
-                                               IsVisible="False"
                                                Aspect="AspectFill"
-                                               WidthRequest="50" HeightRequest="50"/>
+                                               WidthRequest="72" HeightRequest="72"/>
                                         <Label x:Name="ProfileEmoji"
-                                               Text="✓"
-                                               TextColor="{StaticResource MintGreen}"
-                                               FontFamily="InterBold"
-                                               FontSize="22"
+                                               Text="🔥"
+                                               FontSize="32"
                                                HorizontalOptions="Center"
                                                VerticalOptions="Center"/>
                                     </Grid>
@@ -67,54 +124,120 @@
                                         <TapGestureRecognizer Tapped="OnProfilePhotoTapped"/>
                                     </Border.GestureRecognizers>
                                 </Border>
+
+                                <VerticalStackLayout Spacing="2" HorizontalOptions="Center">
+                                    <Label x:Name="ProfileNicknameLabel"
+                                           Text="User"
+                                           FontFamily="InterBold"
+                                           FontSize="18"
+                                           TextColor="{StaticResource TextPrimary}"
+                                           HorizontalTextAlignment="Center"/>
+                                    <Label x:Name="ProfileUsernameLabel"
+                                           Text="@tiktok_user"
+                                           FontFamily="InterMedium"
+                                           FontSize="13"
+                                           TextColor="{StaticResource TealCyan}"
+                                           HorizontalTextAlignment="Center"/>
+                                </VerticalStackLayout>
+                            </VerticalStackLayout>
+
+                            <!-- Follower / Following Stats Bar -->
+                            <Grid ColumnDefinitions="*, *" ColumnSpacing="10">
+                                <!-- Following Capsule -->
+                                <Border StrokeThickness="1"
+                                        Stroke="{StaticResource ObsidianBorder}"
+                                        StrokeShape="RoundRectangle 14"
+                                        BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                                        Padding="12,8">
+                                    <VerticalStackLayout Spacing="1" HorizontalOptions="Center">
+                                        <Label x:Name="FollowingCountLabel"
+                                               Text="--"
+                                               FontFamily="InterBold"
+                                               FontSize="15"
+                                               TextColor="{StaticResource TextPrimary}"
+                                               HorizontalTextAlignment="Center"/>
+                                        <Label Text="Following"
+                                               FontFamily="InterRegular"
+                                               FontSize="11"
+                                               TextColor="{StaticResource TextSecondary}"
+                                               HorizontalTextAlignment="Center"/>
+                                    </VerticalStackLayout>
+                                </Border>
+
+                                <!-- Followers Capsule -->
+                                <Border Grid.Column="1"
+                                        StrokeThickness="1"
+                                        Stroke="{StaticResource ObsidianBorder}"
+                                        StrokeShape="RoundRectangle 14"
+                                        BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                                        Padding="12,8">
+                                    <VerticalStackLayout Spacing="1" HorizontalOptions="Center">
+                                        <Label x:Name="FollowersCountLabel"
+                                               Text="--"
+                                               FontFamily="InterBold"
+                                               FontSize="15"
+                                               TextColor="{StaticResource TextPrimary}"
+                                               HorizontalTextAlignment="Center"/>
+                                        <Label Text="Followers"
+                                               FontFamily="InterRegular"
+                                               FontSize="11"
+                                               TextColor="{StaticResource TextSecondary}"
+                                               HorizontalTextAlignment="Center"/>
+                                    </VerticalStackLayout>
+                                </Border>
                             </Grid>
 
-                            <!-- Session Status & Refresh Action -->
-                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="3">
-                                <Label x:Name="SessionStatusLabel"
-                                       Text="TikTok Session: Active"
-                                       FontFamily="InterSemiBold"
-                                       FontSize="15"
-                                       TextColor="{StaticResource TextPrimary}"/>
-                                <Label x:Name="SessionLastCheckLabel"
-                                       Text="Verified and ready for automation"
-                                       FontFamily="InterRegular"
-                                       FontSize="11"
-                                       TextColor="{StaticResource TextSecondary}"/>
-                            </VerticalStackLayout>
-                        </Grid>
+                            <!-- Bio Block -->
+                            <Border x:Name="BioContainer"
+                                    StrokeThickness="1"
+                                    Stroke="{StaticResource ObsidianBorder}"
+                                    StrokeShape="RoundRectangle 12"
+                                    BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                                    Padding="12,10">
+                                <VerticalStackLayout Spacing="4">
+                                    <Label Text="Bio"
+                                           FontFamily="InterSemiBold"
+                                           FontSize="11"
+                                           TextColor="{StaticResource BrandSubtitle}"/>
+                                    <Label x:Name="BioLabel"
+                                           Text="TikTok Streak Automation Operator 🔥"
+                                           FontFamily="InterRegular"
+                                           FontSize="12"
+                                           TextColor="{StaticResource TextSecondary}"
+                                           LineBreakMode="WordWrap"/>
+                                </VerticalStackLayout>
+                            </Border>
 
-                        <!-- Display Name Box -->
-                        <Border Stroke="{StaticResource ObsidianBorder}"
-                                StrokeThickness="1"
-                                StrokeShape="RoundRectangle 14"
-                                BackgroundColor="{StaticResource ObsidianSurfaceElevated}">
-                            <Entry x:Name="DisplayNameEntry"
-                                   Placeholder="Mrblack"
-                                   Text="Mrblack"
-                                   Margin="12,2"
-                                   BackgroundColor="Transparent"
-                                   TextColor="{StaticResource TextPrimary}"
-                                   FontFamily="InterSemiBold"
-                                   FontSize="14"
-                                   Completed="OnDisplayNameChanged"
-                                   Unfocused="OnDisplayNameChanged"/>
-                        </Border>
-                        <Label x:Name="DisplayNameHint"
-                               Text="Personalized operator name for this device."
-                               Style="{StaticResource DataLabel}"
-                               IsVisible="False"/>
+                            <!-- Session Status Indicator -->
+                            <Grid ColumnDefinitions="Auto, *" ColumnSpacing="10" VerticalOptions="Center">
+                                <Label Text="●"
+                                       TextColor="{StaticResource MintGreen}"
+                                       FontSize="14"
+                                       VerticalOptions="Center"/>
+                                <VerticalStackLayout Grid.Column="1" Spacing="1">
+                                    <Label Text="Session Active"
+                                           FontFamily="InterSemiBold"
+                                           FontSize="13"
+                                           TextColor="{StaticResource TextPrimary}"/>
+                                    <Label x:Name="SessionLastCheckLabel"
+                                           Text="Verified and ready for automation"
+                                           FontFamily="InterRegular"
+                                           FontSize="11"
+                                           TextColor="{StaticResource TextSecondary}"/>
+                                </VerticalStackLayout>
+                            </Grid>
 
-                        <!-- Login / Refresh Token Button -->
-                        <Button x:Name="LoginButton"
-                                Text="Refresh Token"
-                                BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
-                                TextColor="{StaticResource TextPrimary}"
-                                FontFamily="InterSemiBold"
-                                FontSize="13"
-                                CornerRadius="14"
-                                HeightRequest="44"
-                                Clicked="OnLoginClicked"/>
+                            <!-- Switch Account / Re-login Button -->
+                            <Button x:Name="SwitchAccountButton"
+                                    Text="Switch Account / Re-login"
+                                    BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                                    TextColor="{StaticResource TextPrimary}"
+                                    FontFamily="InterSemiBold"
+                                    FontSize="13"
+                                    CornerRadius="14"
+                                    HeightRequest="42"
+                                    Clicked="OnLoginClicked"/>
+                        </VerticalStackLayout>
                     </VerticalStackLayout>
                 </Border>
 
@@ -285,55 +408,103 @@
                 <Border Style="{StaticResource SectionCard}">
                     <VerticalStackLayout x:Name="AndroidSchedulingPanel" Spacing="16">
                         
-                        <!-- Header with AM/PM pill switches -->
-                        <Grid ColumnDefinitions="*, Auto">
-                            <Label Text="Schedule" Style="{StaticResource SectionLabel}" VerticalOptions="Center"/>
-                            <Grid Grid.Column="1" ColumnDefinitions="Auto, Auto" ColumnSpacing="6" VerticalOptions="Center">
-                                <Border StrokeThickness="1"
-                                        Stroke="{StaticResource ObsidianBorder}"
-                                        StrokeShape="RoundRectangle 12"
-                                        BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
-                                        Padding="10,4">
-                                    <Label Text="AM"
-                                           FontFamily="InterSemiBold" FontSize="11"
-                                           TextColor="{StaticResource TextSecondary}"/>
-                                    <Border.GestureRecognizers>
-                                        <TapGestureRecognizer Tapped="OnAmTapped"/>
-                                    </Border.GestureRecognizers>
-                                </Border>
-                                <Border Grid.Column="1"
-                                        StrokeThickness="1"
-                                        Stroke="{StaticResource VioletPurple}"
-                                        StrokeShape="RoundRectangle 12"
-                                        BackgroundColor="#268B5CF6"
-                                        Padding="10,4">
-                                    <Label Text="PM"
-                                           FontFamily="InterSemiBold" FontSize="11"
-                                           TextColor="{StaticResource VioletPurple}"/>
-                                    <Border.GestureRecognizers>
-                                        <TapGestureRecognizer Tapped="OnPmTapped"/>
-                                    </Border.GestureRecognizers>
-                                </Border>
-                            </Grid>
-                        </Grid>
+                        <!-- Header -->
+                        <Label Text="Schedule" Style="{StaticResource SectionLabel}" VerticalOptions="Center"/>
 
                         <!-- Futuristic Radial Arc Dial Timer -->
                         <GraphicsView x:Name="RadialTimerGraphicsView"
-                                      HeightRequest="160"
-                                      WidthRequest="160"
+                                      HeightRequest="150"
+                                      WidthRequest="150"
                                       HorizontalOptions="Center"/>
 
-                        <!-- Time Slider Controller -->
-                        <VerticalStackLayout Spacing="4">
-                            <Slider x:Name="ScheduleTimeSlider"
-                                    Minimum="0"
-                                    Maximum="1439"
-                                    Value="720"
-                                    ThumbColor="{StaticResource VioletPurple}"
-                                    MinimumTrackColor="{StaticResource VioletPurple}"
-                                    MaximumTrackColor="{StaticResource ObsidianSurfaceElevated}"
-                                    ValueChanged="OnScheduleSliderChanged"/>
-                            <Label Text="Swipe or Tap to set daily run-time"
+                        <!-- HH:MM Time Input Fields & AM/PM Pills -->
+                        <VerticalStackLayout Spacing="8">
+                            <Grid ColumnDefinitions="Auto, Auto, Auto, Auto" ColumnSpacing="8" HorizontalOptions="Center" VerticalOptions="Center">
+                                <!-- Hour Input -->
+                                <Border WidthRequest="64" HeightRequest="52"
+                                        StrokeThickness="1"
+                                        Stroke="{StaticResource ObsidianBorder}"
+                                        StrokeShape="RoundRectangle 12"
+                                        BackgroundColor="{StaticResource ObsidianSurfaceElevated}">
+                                    <Entry x:Name="ScheduleHourEntry"
+                                           Text="12"
+                                           Placeholder="12"
+                                           Keyboard="Numeric"
+                                           MaxLength="2"
+                                           HorizontalTextAlignment="Center"
+                                           VerticalTextAlignment="Center"
+                                           FontFamily="InterBold"
+                                           FontSize="22"
+                                           TextColor="{StaticResource TextPrimary}"
+                                           BackgroundColor="Transparent"
+                                           TextChanged="OnScheduleTimeInputChanged"/>
+                                </Border>
+
+                                <!-- Colon Separator -->
+                                <Label Grid.Column="1"
+                                       Text=":"
+                                       FontFamily="InterBold"
+                                       FontSize="26"
+                                       TextColor="{StaticResource VioletPurple}"
+                                       VerticalOptions="Center"
+                                       HorizontalOptions="Center"/>
+
+                                <!-- Minute Input -->
+                                <Border Grid.Column="2"
+                                        WidthRequest="64" HeightRequest="52"
+                                        StrokeThickness="1"
+                                        Stroke="{StaticResource ObsidianBorder}"
+                                        StrokeShape="RoundRectangle 12"
+                                        BackgroundColor="{StaticResource ObsidianSurfaceElevated}">
+                                    <Entry x:Name="ScheduleMinuteEntry"
+                                           Text="00"
+                                           Placeholder="00"
+                                           Keyboard="Numeric"
+                                           MaxLength="2"
+                                           HorizontalTextAlignment="Center"
+                                           VerticalTextAlignment="Center"
+                                           FontFamily="InterBold"
+                                           FontSize="22"
+                                           TextColor="{StaticResource TextPrimary}"
+                                           BackgroundColor="Transparent"
+                                           TextChanged="OnScheduleTimeInputChanged"/>
+                                </Border>
+
+                                <!-- AM/PM Selection Capsules -->
+                                <Grid Grid.Column="3" ColumnDefinitions="Auto, Auto" ColumnSpacing="6" VerticalOptions="Center" Margin="6,0,0,0">
+                                    <Border x:Name="AmPill"
+                                            StrokeThickness="1"
+                                            Stroke="{StaticResource ObsidianBorder}"
+                                            StrokeShape="RoundRectangle 12"
+                                            BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                                            Padding="10,8">
+                                        <Label x:Name="AmPillLabel"
+                                               Text="AM"
+                                               FontFamily="InterSemiBold" FontSize="12"
+                                               TextColor="{StaticResource TextSecondary}"/>
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnAmTapped"/>
+                                        </Border.GestureRecognizers>
+                                    </Border>
+                                    <Border Grid.Column="1"
+                                            x:Name="PmPill"
+                                            StrokeThickness="1"
+                                            Stroke="{StaticResource VioletPurple}"
+                                            StrokeShape="RoundRectangle 12"
+                                            BackgroundColor="#268B5CF6"
+                                            Padding="10,8">
+                                        <Label x:Name="PmPillLabel"
+                                               Text="PM"
+                                               FontFamily="InterSemiBold" FontSize="12"
+                                               TextColor="{StaticResource VioletPurple}"/>
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnPmTapped"/>
+                                        </Border.GestureRecognizers>
+                                    </Border>
+                                </Grid>
+                            </Grid>
+
+                            <Label Text="Enter time in HH:MM (e.g. 08:30)"
                                    FontFamily="InterRegular" FontSize="11"
                                    TextColor="{StaticResource TextSecondary}"
                                    HorizontalOptions="Center"/>
