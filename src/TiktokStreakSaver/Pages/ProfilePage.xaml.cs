@@ -339,6 +339,26 @@ public partial class ProfilePage : ContentPage
         }
     }
 
+    private async void OnEditUsernameClicked(object? sender, EventArgs e)
+    {
+        var currentUsername = _sessionService.GetTikTokUsername();
+
+        var newUsername = await DisplayPromptAsync(
+            "TikTok Username",
+            "Enter your TikTok handle (e.g. adrian.official09):",
+            initialValue: currentUsername,
+            placeholder: "username without @",
+            maxLength: 35);
+
+        if (newUsername != null)
+        {
+            var clean = newUsername.Trim().TrimStart('@');
+            _sessionService.SetTikTokUsername(clean);
+            ProfileUsernameLabel.Text = string.IsNullOrWhiteSpace(clean) ? "@tiktok_user" : $"@{clean}";
+            SessionState.NotifyChanged();
+        }
+    }
+
     private async void OnEditBioClicked(object? sender, EventArgs e)
     {
         var currentBio = _sessionService.GetTikTokBio();

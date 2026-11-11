@@ -170,13 +170,17 @@
                                         </Border>
                                     </Grid>
 
-                                    <!-- Single @username handle -->
+                                    <!-- Single @username handle (Tap to edit/set) -->
                                     <Label x:Name="ProfileUsernameLabel"
                                            Text="@tiktok_user"
                                            FontFamily="InterMedium"
                                            FontSize="13"
                                            TextColor="{StaticResource TealCyan}"
-                                           HorizontalTextAlignment="Center"/>
+                                           HorizontalTextAlignment="Center">
+                                        <Label.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnEditUsernameClicked"/>
+                                        </Label.GestureRecognizers>
+                                    </Label>
                                 </VerticalStackLayout>
                             </VerticalStackLayout>
 

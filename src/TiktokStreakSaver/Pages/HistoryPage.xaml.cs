@@ -56,38 +56,36 @@ public partial class HistoryPage : ContentPage
         _chartDrawable.SubText = "Success Rate";
         SuccessChartView.Invalidate();
 
+        var lastRunTime = _settingsService.GetLastRunTime() ?? history.FirstOrDefault()?.RunTime;
+        string lastRunText;
+        if (lastRunTime.HasValue)
+        {
+            var t = lastRunTime.Value;
+            string timeStr = t.Date == DateTime.Today
+                ? $"Today at {t:h:mm tt}"
+                : t.Date == DateTime.Today.AddDays(-1)
+                    ? $"Yesterday at {t:h:mm tt}"
+                    : $"{t:MMM dd} at {t:h:mm tt}";
+            lastRunText = $"Last run: {timeStr}";
+        }
+        else
+        {
+            lastRunText = "Last run: None yet";
+        }
+
+        AvgDurationLabel.Text = lastRunText;
+
         if (history.Count > 0)
         {
             SuccessRateLabel.Text = totalMessages > 0
                 ? $"{successMessages} of {totalMessages} messages successful"
                 : $"{history.Count(r => r.Success)} of {history.Count} runs successful";
             TotalRunsLabel.Text = $"Last {Math.Min(history.Count, 50)} runs tracked";
-
-            var lastRun = history.FirstOrDefault();
-            if (lastRun != null && lastRun.Duration.HasValue)
-            {
-                var dur = lastRun.Duration.Value;
-                if (dur.TotalSeconds < 1)
-                {
-                    AvgDurationLabel.Text = "Last run: < 1s";
-                }
-                else
-                {
-                    AvgDurationLabel.Text = dur.TotalMinutes >= 1
-                        ? $"Last run: ~{(int)dur.TotalMinutes}m {dur.Seconds}s"
-                        : $"Last run: ~{(int)dur.TotalSeconds}s";
-                }
-            }
-            else
-            {
-                AvgDurationLabel.Text = "Last run: N/A";
-            }
         }
         else
         {
             SuccessRateLabel.Text = "No data yet";
             TotalRunsLabel.Text = "";
-            AvgDurationLabel.Text = "N/A";
         }
     }
 

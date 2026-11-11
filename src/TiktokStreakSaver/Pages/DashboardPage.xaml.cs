@@ -507,6 +507,7 @@ public partial class DashboardPage : ContentPage
         _settingsService.SetFixedTimeHour(now.Hour);
         _settingsService.SetFixedTimeMinute(now.Minute);
         _settingsService.SetScheduled(true);
+        _settingsService.SetLastRunTime(now);
 
 #if ANDROID
         bool permissionGranted = await RequestNotificationPermission();

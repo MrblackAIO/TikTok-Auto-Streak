@@ -12,7 +12,7 @@ namespace TiktokStreakSaver.Services;
 public static class TikTokProfileSyncHelper
 {
     public const string ExtractScript = @"
-(function() {
+(async function() {
     try {
         let profile = {
             username: '',
@@ -23,22 +23,47 @@ public static class TikTokProfileSyncHelper
             following: 0
         };
 
+        // 1. Primary authenticated endpoint: TikTok Passport Web Account Info
+        try {
+            let res = await fetch('https://www.tiktok.com/passport/web/account/info/', { credentials: 'include' });
+            let data = await res.json();
+            if (data && data.data) {
+                profile.username = data.data.unique_id || data.data.user_id || '';
+                profile.nickname = data.data.nickname || profile.username;
+                profile.avatarUrl = data.data.avatar_url || '';
+            }
+        } catch(e) {}
+
+        // 2. If username obtained, fetch extended detail for bio, avatar, and stats
+        if (profile.username) {
+            try {
+                let detailRes = await fetch('https://www.tiktok.com/api/user/detail/?uniqueId=' + encodeURIComponent(profile.username) + '&aid=1988', { credentials: 'include' });
+                let detailData = await detailRes.json();
+                if (detailData && detailData.userInfo) {
+                    profile.bio = detailData.userInfo.user?.signature || '';
+                    profile.nickname = detailData.userInfo.user?.nickname || profile.nickname;
+                    profile.avatarUrl = detailData.userInfo.user?.avatarLarger || detailData.userInfo.user?.avatarMedium || profile.avatarUrl;
+                    profile.followers = detailData.userInfo.stats?.followerCount || 0;
+                    profile.following = detailData.userInfo.stats?.followingCount || 0;
+                }
+            } catch(e) {}
+            return JSON.stringify(profile);
+        }
+
+        // 3. SSR Hydration fallback
         const rehydrateEl = document.getElementById('__UNIVERSAL_DATA_FOR_REHYDRATION__');
         if (rehydrateEl && rehydrateEl.textContent) {
             try {
                 const data = JSON.parse(rehydrateEl.textContent);
                 const defaultScope = data?.['__DEFAULT_SCOPE__'];
-                
-                // WebApp user/account scopes
                 const userDetail = defaultScope?.['webapp.user-detail'];
                 const appContext = defaultScope?.['webapp.app-context'];
-                
                 const user = userDetail?.userInfo?.user || appContext?.user;
                 const stats = userDetail?.userInfo?.stats;
 
                 if (user && (user.uniqueId || user.id)) {
                     profile.username = user.uniqueId || user.id || '';
-                    profile.nickname = user.nickname || user.uniqueId || '';
+                    profile.nickname = user.nickname || profile.username;
                     profile.avatarUrl = user.avatarLarger || user.avatarMedium || user.avatarThumb || '';
                     profile.bio = user.signature || '';
                     profile.followers = stats?.followerCount || 0;
@@ -48,7 +73,7 @@ public static class TikTokProfileSyncHelper
             } catch(e) {}
         }
 
-        // Secondary fallback: inspect existing DOM anchors & images without outbound network requests
+        // 4. Secondary fallback: inspect existing DOM anchors & images
         const profileAnchor = document.querySelector('a[href*=""/@""]');
         if (profileAnchor) {
             const href = profileAnchor.getAttribute('href') || '';
@@ -125,7 +150,7 @@ public static class TikTokProfileSyncHelper
 
             if (root.TryGetProperty("username", out var uProp) && !string.IsNullOrEmpty(uProp.GetString()))
             {
-                var username = uProp.GetString()!.Trim();
+                var username = uProp.GetString()!.Trim().TrimStart('@');
                 if (!string.IsNullOrEmpty(username))
                 {
                     sessionService.SetTikTokUsername(username);

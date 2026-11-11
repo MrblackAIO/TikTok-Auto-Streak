@@ -7,6 +7,14 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [2.0.10] - 2026-11-11
+
+### Fixed
+- **Profile Username Extraction**: Restored authenticated `passport/web/account/info/` API inspection inside WebView to automatically extract the true TikTok account handle (`unique_id`), eliminating the fallback `@tiktok_user` display.
+- **Manual Handle Override**: Enabled tap gestures on `@username` on the Profile page allowing users to directly edit, set, or correct their TikTok handle via prompt dialog.
+- **History Last Run 12H Time Display**: Replaced the persistent `"Last run: N/A"` label with the actual 12-hour AM/PM execution timestamp (e.g. `Last run: Today at 6:46 PM` or `Last run: Yesterday at 8:30 AM`).
+- **Immediate Execution Time Sync**: Guaranteed that triggering "RUN AUTOMATION NOW" from the Dashboard or background service executions instantly updates `_settingsService.SetLastRunTime(DateTime.Now)`.
+
 ## [2.0.9] - 2026-11-11
 
 ### Added

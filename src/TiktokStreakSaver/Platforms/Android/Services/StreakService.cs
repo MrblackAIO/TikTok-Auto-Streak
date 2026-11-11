@@ -752,6 +752,7 @@ public class StreakService : Service
                 _runResult.Success = false;
                 _runResult.ErrorMessage = "Skipped: no Wi‑Fi or mobile data";
                 _settingsService.AddRunResult(_runResult);
+                _settingsService.SetLastRunTime(DateTime.Now);
             }
 
             var attempt = StreakScheduler.TryScheduleRetryOrGiveUp(this, SettingsService.FailureReasonNoNetwork);
