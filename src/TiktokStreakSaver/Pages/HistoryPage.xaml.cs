@@ -27,15 +27,9 @@ public partial class HistoryPage : ContentPage
         return Color.FromArgb(fallbackHex);
     }
 
-    protected override async void OnAppearing()
+    protected override void OnAppearing()
     {
         base.OnAppearing();
-        this.Opacity = 0;
-        this.TranslationY = 12;
-        await Task.WhenAll(
-            this.FadeTo(1, 280, Easing.SinInOut),
-            this.TranslateTo(0, 0, 280, Easing.SinInOut));
-
         LoadStats();
         LoadHistory();
     }

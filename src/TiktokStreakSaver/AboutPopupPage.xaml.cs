@@ -24,7 +24,7 @@ public partial class AboutPopupPage : ContentPage
 
         HeaderTitle.Text = title;
         string cleanVersion = version.TrimStart('v', 'V');
-        VersionLabel.Text = $"v{cleanVersion} (Premium) • By Mrblack";
+        VersionLabel.Text = $"v{cleanVersion} (Premium) • Signed Version";
 
         if (isUpdate)
         {

@@ -1,10 +1,9 @@
-# Privacy Policy — Streak Saver
+# Privacy Policy — TikTok AutoStreak
 
 **Effective date:** June 9, 2026
 
-Streak Saver ("the app") is an open-source Android application maintained by
-Jon2G and contributors. This policy explains what data the app handles and
-what it does NOT do.
+TikTok AutoStreak ("the app") is an Android application created for Mrblack.
+This policy explains what data the app handles and what it does NOT do.
 
 ## TL;DR
 
@@ -37,7 +36,7 @@ You can erase all of this at any time by:
 
 - Tapping "Logout / Clear Session" on the Profile page (clears TikTok
   cookies and session flag), and/or
-- Android Settings → Apps → Streak Saver → Storage → Clear data, or by
+- Android Settings → Apps → TikTok AutoStreak → Storage → Clear data, or by
   uninstalling the app.
 
 ## Network connections

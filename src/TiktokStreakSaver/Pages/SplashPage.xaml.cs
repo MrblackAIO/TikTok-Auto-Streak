@@ -54,12 +54,9 @@ public partial class SplashPage : ContentPage
         {
             this.Window.Page = new AppShell();
         }
-        else if (Application.Current != null)
+        else if (Application.Current?.Windows.Count > 0)
         {
-            if (Application.Current.Windows.Count > 0)
-                Application.Current.Windows[0].Page = new AppShell();
-            else
-                Application.Current.MainPage = new AppShell();
+            Application.Current.Windows[0].Page = new AppShell();
         }
     }
 }

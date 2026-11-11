@@ -391,7 +391,7 @@
                                    TextColor="{StaticResource TextPrimary}"
                                    HorizontalOptions="Center"/>
                             <Label x:Name="VersionLabel"
-                                   Text="v2.0.0 (Premium) • By Mrblack"
+                                   Text="v2.0.0 (Premium) • Signed Version"
                                    FontFamily="InterRegular" FontSize="12"
                                    TextColor="{StaticResource BrandSubtitle}"
                                    HorizontalOptions="Center"/>
@@ -419,7 +419,7 @@
                                     Clicked="OnPrivacyPolicyClicked"/>
                         </Grid>
 
-                        <Button Text="Design &amp; Brand Guide"
+                        <Button Text="Automation Guide &amp; Tips"
                                 BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
                                 TextColor="{StaticResource VioletPurple}"
                                 FontFamily="InterSemiBold"

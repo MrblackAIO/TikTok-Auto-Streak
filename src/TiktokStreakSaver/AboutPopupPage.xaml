@@ -5,10 +5,10 @@
              BackgroundColor="{StaticResource ObsidianBlack}"
              Shell.PresentationMode="ModalAnimated">
 
-    <Grid RowDefinitions="Auto, *, Auto" Padding="24" RowSpacing="20">
+    <Grid RowDefinitions="Auto, *, Auto" Padding="20,16,20,12" RowSpacing="14">
         
         <!-- Header & Flame Glyph Logo -->
-        <VerticalStackLayout Grid.Row="0" Spacing="8" HorizontalOptions="Center" Margin="0, 8, 0, 0">
+        <VerticalStackLayout Grid.Row="0" Spacing="8" HorizontalOptions="Center" Margin="0, 4, 0, 0">
             <!-- Minimalist Flame Glyph Logo (Screen 6) -->
             <Border WidthRequest="68" HeightRequest="68"
                     StrokeThickness="1"
@@ -40,7 +40,7 @@
                    HorizontalOptions="Center"
                    HorizontalTextAlignment="Center"/>
             <Label x:Name="VersionLabel" 
-                   Text="v2.0.0 (Premium) • By Mrblack" 
+                   Text="v2.0.0 (Premium) • Signed Version" 
                    FontFamily="InterSemiBold"
                    FontSize="12"
                    TextColor="{StaticResource BrandSubtitle}"
@@ -57,71 +57,44 @@
 
         <!-- Scrollable content area -->
         <ScrollView Grid.Row="1" VerticalScrollBarVisibility="Never">
-            <VerticalStackLayout Spacing="16">
+            <VerticalStackLayout Spacing="14">
 
-                <!-- ═══ Design & Brand Guide Card (Screen 6) ═══ -->
+                <!-- ═══ Automation & Safety Guide ═══ -->
                 <Border Style="{StaticResource SectionCard}">
-                    <VerticalStackLayout Spacing="12">
-                        <Label Text="Design &amp; Brand Guide" Style="{StaticResource SectionLabel}"/>
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Automation &amp; Safety Guide" Style="{StaticResource SectionLabel}"/>
 
-                        <!-- Typographic Style: Stealth Sans -->
-                        <VerticalStackLayout Spacing="4">
-                            <Label Text="Typographic Style"
-                                   FontFamily="InterRegular" FontSize="11"
-                                   TextColor="{StaticResource TextSecondary}"/>
-                            <Label Text="Stealth Sans"
-                                   FontFamily="InterBold" FontSize="20"
-                                   TextColor="{StaticResource TextPrimary}"/>
-                            <Label Text="Heavy 700 • Medium 500 • Regular 400"
-                                   FontFamily="InterMedium" FontSize="12"
-                                   TextColor="{StaticResource VioletPurple}"/>
-                        </VerticalStackLayout>
+                        <Grid ColumnDefinitions="Auto, *" ColumnSpacing="12" Margin="0,2">
+                            <Label Text="🕒" FontSize="16" VerticalOptions="Start"/>
+                            <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                <Label Text="Daily Schedule" FontFamily="InterSemiBold" FontSize="13" TextColor="{StaticResource TextPrimary}"/>
+                                <Label Text="Runs quietly in the background at your chosen target hour." FontFamily="InterRegular" FontSize="11" TextColor="{StaticResource TextSecondary}"/>
+                            </VerticalStackLayout>
+                        </Grid>
 
-                        <!-- Color Palette Swatch Capsules -->
-                        <VerticalStackLayout Spacing="6" Margin="0,4,0,0">
-                            <Label Text="Color Palette"
-                                   FontFamily="InterRegular" FontSize="11"
-                                   TextColor="{StaticResource TextSecondary}"/>
-                            <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="6">
-                                <Border BackgroundColor="{StaticResource ObsidianBlack}"
-                                        Stroke="{StaticResource ObsidianBorder}" StrokeThickness="1"
-                                        StrokeShape="RoundRectangle 8" Padding="6,6">
-                                    <Label Text="Obsidian" FontSize="9" TextColor="#FFFFFF" HorizontalTextAlignment="Center"/>
-                                </Border>
-                                <Border Grid.Column="1" BackgroundColor="{StaticResource DarkSlate}"
-                                        Stroke="{StaticResource ObsidianBorder}" StrokeThickness="1"
-                                        StrokeShape="RoundRectangle 8" Padding="6,6">
-                                    <Label Text="#1E1E24" FontSize="9" TextColor="#FFFFFF" HorizontalTextAlignment="Center"/>
-                                </Border>
-                                <Border Grid.Column="2" BackgroundColor="{StaticResource MutedIndigo}"
-                                        Stroke="{StaticResource ObsidianBorder}" StrokeThickness="1"
-                                        StrokeShape="RoundRectangle 8" Padding="6,6">
-                                    <Label Text="Indigo" FontSize="9" TextColor="#FFFFFF" HorizontalTextAlignment="Center"/>
-                                </Border>
-                                <Border Grid.Column="3" BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
-                                        Stroke="{StaticResource ObsidianBorder}" StrokeThickness="1"
-                                        StrokeShape="RoundRectangle 8" Padding="6,6">
-                                    <Label Text="Surface" FontSize="9" TextColor="#FFFFFF" HorizontalTextAlignment="Center"/>
-                                </Border>
-                            </Grid>
-                            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="6" Margin="0,4,0,0">
-                                <Border BackgroundColor="#20F59E0B"
-                                        Stroke="{StaticResource WarmAmber}" StrokeThickness="1"
-                                        StrokeShape="RoundRectangle 8" Padding="6,6">
-                                    <Label Text="Amber" FontSize="10" TextColor="{StaticResource WarmAmber}" HorizontalTextAlignment="Center"/>
-                                </Border>
-                                <Border Grid.Column="1" BackgroundColor="#2010B981"
-                                        Stroke="{StaticResource MintGreen}" StrokeThickness="1"
-                                        StrokeShape="RoundRectangle 8" Padding="6,6">
-                                    <Label Text="Mint Green" FontSize="10" TextColor="{StaticResource MintGreen}" HorizontalTextAlignment="Center"/>
-                                </Border>
-                                <Border Grid.Column="2" BackgroundColor="#20FF3B5C"
-                                        Stroke="{StaticResource CoralRed}" StrokeThickness="1"
-                                        StrokeShape="RoundRectangle 8" Padding="6,6">
-                                    <Label Text="Coral Red" FontSize="10" TextColor="{StaticResource CoralRed}" HorizontalTextAlignment="Center"/>
-                                </Border>
-                            </Grid>
-                        </VerticalStackLayout>
+                        <Grid ColumnDefinitions="Auto, *" ColumnSpacing="12" Margin="0,2">
+                            <Label Text="🔋" FontSize="16" VerticalOptions="Start"/>
+                            <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                <Label Text="Smart Battery Guard" FontFamily="InterSemiBold" FontSize="13" TextColor="{StaticResource TextPrimary}"/>
+                                <Label Text="Automatically sends streaks early before low-battery triggers." FontFamily="InterRegular" FontSize="11" TextColor="{StaticResource TextSecondary}"/>
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <Grid ColumnDefinitions="Auto, *" ColumnSpacing="12" Margin="0,2">
+                            <Label Text="⚡" FontSize="16" VerticalOptions="Start"/>
+                            <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                <Label Text="Auto-Retry Engine" FontFamily="InterSemiBold" FontSize="13" TextColor="{StaticResource TextPrimary}"/>
+                                <Label Text="Retries automatically if Wi-Fi or mobile data is temporarily disconnected." FontFamily="InterRegular" FontSize="11" TextColor="{StaticResource TextSecondary}"/>
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <Grid ColumnDefinitions="Auto, *" ColumnSpacing="12" Margin="0,2">
+                            <Label Text="🛡️" FontSize="16" VerticalOptions="Start"/>
+                            <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                <Label Text="Streak Anti-Drop Protection" FontFamily="InterSemiBold" FontSize="13" TextColor="{StaticResource TextPrimary}"/>
+                                <Label Text="Uses safe human-like intervals and customizable messages." FontFamily="InterRegular" FontSize="11" TextColor="{StaticResource TextSecondary}"/>
+                            </VerticalStackLayout>
+                        </Grid>
                     </VerticalStackLayout>
                 </Border>
                 
@@ -148,20 +121,21 @@
                     </VerticalStackLayout>
                 </Border>
 
-                <!-- Project & author -->
+                <!-- Verified Release -->
                 <Border Style="{StaticResource SectionCard}">
                     <VerticalStackLayout Spacing="6">
-                        <Label Text="Open source base" Style="{StaticResource SectionLabel}"/>
-                        <Label Text="Base: TiktokStreakSaver by Jon2G"
-                               FontFamily="InterMedium" FontSize="13" TextColor="{StaticResource TextPrimary}"/>
-                        <Label Text="https://github.com/Jon2G/TiktokStreakSaver"
+                        <Label Text="Verified Release" Style="{StaticResource SectionLabel}"/>
+                        <Label Text="Custom Engineered for Mrblack"
+                               FontFamily="InterBold" FontSize="13" TextColor="{StaticResource TextPrimary}"/>
+                        <Label Text="Obsidian Edition • Standalone Background Automation"
                                TextColor="{StaticResource TealCyan}"
+                               FontFamily="InterMedium"
                                FontSize="11" />
                     </VerticalStackLayout>
                 </Border>
 
                 <!-- Data & Permissions Notice -->
-                <VerticalStackLayout Spacing="6" Margin="0, 0, 0, 12">
+                <VerticalStackLayout Spacing="6" Margin="0, 0, 0, 8">
                     <Label Text="Privacy &amp; System Permissions" 
                            FontFamily="InterSemiBold"
                            TextColor="{StaticResource TextSecondary}" 

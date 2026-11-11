@@ -49,12 +49,6 @@ public partial class ProfilePage : ContentPage
         SessionState.Changed -= OnSessionStateChanged;
         SessionState.Changed += OnSessionStateChanged;
 
-        this.Opacity = 0;
-        this.TranslationY = 12;
-        await Task.WhenAll(
-            this.FadeTo(1, 280, Easing.SinInOut),
-            this.TranslateTo(0, 0, 280, Easing.SinInOut));
-
         LoadProfilePhoto();
 
         DisplayNameEntry.Text = _sessionService.GetDisplayName();
@@ -103,7 +97,7 @@ public partial class ProfilePage : ContentPage
             _suppressIntervalChanged = false;
         }
 
-        VersionLabel.Text = $"v2.0.0 (Premium) • By Mrblack";
+        VersionLabel.Text = $"v2.0.0 (Premium) • Signed Version";
 
 #if IOS
         IosShortcutsSettingsPanel.IsVisible = true;

@@ -38,11 +38,6 @@ public partial class FriendsPage : ContentPage
         SessionState.Changed -= OnSessionStateChanged;
         SessionState.Changed += OnSessionStateChanged;
 
-        this.Opacity = 0;
-        this.TranslationY = 12;
-        await Task.WhenAll(
-            this.FadeTo(1, 280, Easing.SinInOut),
-            this.TranslateTo(0, 0, 280, Easing.SinInOut));
         LoadLists();
         await RefreshLoginBannerAsync();
 

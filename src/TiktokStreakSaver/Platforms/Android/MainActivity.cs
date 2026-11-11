@@ -1,4 +1,4 @@
-﻿using Android.App;
+using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.OS;
@@ -16,6 +16,22 @@ namespace TiktokStreakSaver
         protected override void OnCreate(Bundle? savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
+
+            if (Window != null)
+            {
+                var darkColor = Android.Graphics.Color.ParseColor("#0A0D12");
+                Window.SetStatusBarColor(darkColor);
+                Window.SetNavigationBarColor(darkColor);
+
+                AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(Window, false);
+
+                var controller = AndroidX.Core.View.WindowCompat.GetInsetsController(Window, Window.DecorView);
+                if (controller != null)
+                {
+                    controller.AppearanceLightStatusBars = false;
+                    controller.AppearanceLightNavigationBars = false;
+                }
+            }
             
             // Create notification channel on app start
             CreateNotificationChannel();

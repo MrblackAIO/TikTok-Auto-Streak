@@ -50,12 +50,14 @@
 	</PropertyGroup>
 
 	<!-- Android Release Signing Configuration -->
-	<PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Release'">
-		<AndroidKeyStore>true</AndroidKeyStore>
+	<PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Release' and Exists('streaksaver.keystore')">
+		<AndroidKeyStore Condition="'$(AndroidKeyStore)' == ''">true</AndroidKeyStore>
 		<AndroidSigningKeyStore>streaksaver.keystore</AndroidSigningKeyStore>
 		<AndroidSigningKeyAlias>streaksaver</AndroidSigningKeyAlias>
-		<AndroidSigningKeyPass>$(ANDROID_SIGNING_PASSWORD)</AndroidSigningKeyPass>
-		<AndroidSigningStorePass>$(ANDROID_SIGNING_PASSWORD)</AndroidSigningStorePass>
+		<AndroidSigningKeyPass Condition="'$(AndroidSigningKeyPass)' == ''">$(ANDROID_SIGNING_PASSWORD)</AndroidSigningKeyPass>
+		<AndroidSigningStorePass Condition="'$(AndroidSigningStorePass)' == ''">$(ANDROID_SIGNING_PASSWORD)</AndroidSigningStorePass>
+	</PropertyGroup>
+	<PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Configuration)' == 'Release'">
 		<AndroidPackageFormat>apk</AndroidPackageFormat>
 		<AndroidLinkTool>r8</AndroidLinkTool>
 	</PropertyGroup>

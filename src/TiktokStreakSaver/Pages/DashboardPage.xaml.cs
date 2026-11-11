@@ -75,12 +75,6 @@ public partial class DashboardPage : ContentPage
         NextRunTitleLabel.Text = "Automation";
 #endif
 
-        this.Opacity = 0;
-        this.TranslationY = 12;
-        await Task.WhenAll(
-            this.FadeTo(1, 280, Easing.SinInOut),
-            this.TranslateTo(0, 0, 280, Easing.SinInOut));
-
         GreetingLabel.Text = $"Hello, {_sessionService.GetDisplayName()}";
 
         LoadProfilePhoto();

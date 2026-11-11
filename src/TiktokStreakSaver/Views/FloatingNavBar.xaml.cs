@@ -85,32 +85,36 @@ public partial class FloatingNavBar : ContentView
         activeLabel.TextColor = activeText;
     }
 
-    private async void OnDashboardTapped(object? sender, TappedEventArgs e)
+    private void OnDashboardTapped(object? sender, TappedEventArgs e)
     {
         if (CurrentTab == "Dashboard") return;
-        await AnimatePress(DashboardIndicator);
-        await Shell.Current.GoToAsync("//DashboardPage");
+        UpdateVisualState("Dashboard");
+        _ = AnimatePress(DashboardIndicator);
+        _ = Shell.Current.GoToAsync("//DashboardPage", false);
     }
 
-    private async void OnHistoryTapped(object? sender, TappedEventArgs e)
+    private void OnHistoryTapped(object? sender, TappedEventArgs e)
     {
         if (CurrentTab == "History") return;
-        await AnimatePress(HistoryIndicator);
-        await Shell.Current.GoToAsync("//HistoryPage");
+        UpdateVisualState("History");
+        _ = AnimatePress(HistoryIndicator);
+        _ = Shell.Current.GoToAsync("//HistoryPage", false);
     }
 
-    private async void OnFriendsTapped(object? sender, TappedEventArgs e)
+    private void OnFriendsTapped(object? sender, TappedEventArgs e)
     {
         if (CurrentTab == "Friends") return;
-        await AnimatePress(FriendsIndicator);
-        await Shell.Current.GoToAsync("//FriendsPage");
+        UpdateVisualState("Friends");
+        _ = AnimatePress(FriendsIndicator);
+        _ = Shell.Current.GoToAsync("//FriendsPage", false);
     }
 
-    private async void OnProfileTapped(object? sender, TappedEventArgs e)
+    private void OnProfileTapped(object? sender, TappedEventArgs e)
     {
         if (CurrentTab == "Profile") return;
-        await AnimatePress(ProfileIndicator);
-        await Shell.Current.GoToAsync("//ProfilePage");
+        UpdateVisualState("Profile");
+        _ = AnimatePress(ProfileIndicator);
+        _ = Shell.Current.GoToAsync("//ProfilePage", false);
     }
 
     private static async Task AnimatePress(View target)
