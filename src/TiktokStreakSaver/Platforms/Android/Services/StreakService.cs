@@ -93,6 +93,7 @@ public class StreakService : Service
         // Create notification channel FIRST before anything else
         CreateNotificationChannel();
         CreateStatusNotificationChannel();
+        StreakSoundNotificationHelper.CreateStreakNotificationChannel(this);
 
         _mainHandler = new Handler(Looper.MainLooper!);
         _settingsService = new SettingsService();
@@ -766,14 +767,8 @@ public class StreakService : Service
                 UpdateNotification($"No Wi‑Fi or mobile data — {max} retries exhausted");
             }
 
-            var finalNotification = new NotificationCompat.Builder(this, StatusChannelId)
-                .SetContentTitle(title)
-                .SetContentText(body)
-                .SetStyle(new NotificationCompat.BigTextStyle().BigText(body))
-                .SetSmallIcon(Resource.Drawable.ic_notification)
+            var finalNotification = StreakSoundNotificationHelper.CreateAlertBuilder(this, title, body)
                 .SetContentIntent(CreateMainActivityPendingIntent())
-                .SetAutoCancel(true)
-                .SetPriority(NotificationCompat.PriorityDefault)
                 .Build()!;
 
             var notificationManager = (NotificationManager?)GetSystemService(NotificationService);
@@ -839,14 +834,8 @@ public class StreakService : Service
                 ? $"Done: {string.Join(", ", summaryParts)}"
                 : $"Stopped: {message}";
 
-            var finalNotification = new NotificationCompat.Builder(this, StatusChannelId)
-                .SetContentTitle("TikTok AutoStreak")
-                .SetContentText(finalText)
-                .SetStyle(new NotificationCompat.BigTextStyle().BigText(finalText))
-                .SetSmallIcon(Resource.Drawable.ic_notification)
+            var finalNotification = StreakSoundNotificationHelper.CreateAlertBuilder(this, "TikTok AutoStreak", finalText)
                 .SetContentIntent(CreateMainActivityPendingIntent())
-                .SetAutoCancel(true)
-                .SetPriority(NotificationCompat.PriorityDefault)
                 .Build()!;
 
             var notificationManager = (NotificationManager?)GetSystemService(NotificationService);

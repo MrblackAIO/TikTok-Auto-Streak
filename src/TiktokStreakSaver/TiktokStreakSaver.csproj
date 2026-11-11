@@ -62,6 +62,10 @@
 		<AndroidLinkTool>r8</AndroidLinkTool>
 	</PropertyGroup>
 
+	<ItemGroup Condition="$(TargetFramework.Contains('-android'))">
+		<AndroidResource Include="Platforms\Android\Resources\raw\new_notification.mp3" />
+	</ItemGroup>
+
 	<ItemGroup>
 		<!-- App icon: Android adaptive (background layer + foreground). ForegroundScale keeps the flame inside the safe zone. -->
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#12151D" ForegroundScale="0.65" />

@@ -7,6 +7,13 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [2.0.7] - 2026-11-11
+
+### Added
+- **Instant Custom Notification Sound (`new_notification.mp3`)**: Bundled custom audio directly into Android package raw resources (`res/raw/new_notification.mp3`).
+- **Dedicated High-Priority Sound Channel (`streak_alerts_custom_v2`)**: Configured a dedicated NotificationChannel with `NotificationImportance.High` and hardware-level `AudioAttributes` (`Notification`, `Sonification`, `AudibilityEnforced`) for zero-lag heads-up alerts.
+- **Instant Alert Dispatching**: Wired `StreakSoundNotificationHelper` into `StreakService` and `MainActivity` for immediate completion and retry notifications.
+
 ## [2.0.6] - 2026-11-11
 
 ### Fixed

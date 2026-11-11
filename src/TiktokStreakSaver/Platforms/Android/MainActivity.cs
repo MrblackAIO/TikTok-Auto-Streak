@@ -38,6 +38,7 @@ namespace TiktokStreakSaver
             // Create notification channel on app start
             CreateNotificationChannel();
             CreateUpdateNotificationChannel();
+            TiktokStreakSaver.Platforms.Android.Services.StreakSoundNotificationHelper.CreateStreakNotificationChannel(this);
 
             // Handle direct update intent from notification tap
             HandleUpdateIntent(Intent);
