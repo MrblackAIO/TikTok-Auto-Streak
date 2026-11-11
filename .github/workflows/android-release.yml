@@ -10,9 +10,9 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version number (e.g., 2.0.10)'
+        description: 'Version number (e.g., 2.0.12)'
         required: true
-        default: '2.0.10'
+        default: '2.0.12'
 
 env:
   DOTNET_VERSION: '9.0.x'

@@ -12,7 +12,7 @@ namespace TiktokStreakSaver.Services;
 public static class TikTokProfileSyncHelper
 {
     public const string ExtractScript = @"
-(async function() {
+(function() {
     try {
         let profile = {
             username: '',
@@ -23,34 +23,7 @@ public static class TikTokProfileSyncHelper
             following: 0
         };
 
-        // 1. Primary authenticated endpoint: TikTok Passport Web Account Info
-        try {
-            let res = await fetch('https://www.tiktok.com/passport/web/account/info/', { credentials: 'include' });
-            let data = await res.json();
-            if (data && data.data) {
-                profile.username = data.data.unique_id || data.data.user_id || '';
-                profile.nickname = data.data.nickname || profile.username;
-                profile.avatarUrl = data.data.avatar_url || '';
-            }
-        } catch(e) {}
-
-        // 2. If username obtained, fetch extended detail for bio, avatar, and stats
-        if (profile.username) {
-            try {
-                let detailRes = await fetch('https://www.tiktok.com/api/user/detail/?uniqueId=' + encodeURIComponent(profile.username) + '&aid=1988', { credentials: 'include' });
-                let detailData = await detailRes.json();
-                if (detailData && detailData.userInfo) {
-                    profile.bio = detailData.userInfo.user?.signature || '';
-                    profile.nickname = detailData.userInfo.user?.nickname || profile.nickname;
-                    profile.avatarUrl = detailData.userInfo.user?.avatarLarger || detailData.userInfo.user?.avatarMedium || profile.avatarUrl;
-                    profile.followers = detailData.userInfo.stats?.followerCount || 0;
-                    profile.following = detailData.userInfo.stats?.followingCount || 0;
-                }
-            } catch(e) {}
-            return JSON.stringify(profile);
-        }
-
-        // 3. SSR Hydration fallback
+        // 1. SSR Hydration fallback
         const rehydrateEl = document.getElementById('__UNIVERSAL_DATA_FOR_REHYDRATION__');
         if (rehydrateEl && rehydrateEl.textContent) {
             try {
@@ -73,7 +46,7 @@ public static class TikTokProfileSyncHelper
             } catch(e) {}
         }
 
-        // 4. Secondary fallback: inspect existing DOM anchors & images
+        // 2. Secondary fallback: inspect existing DOM anchors & images
         const profileAnchor = document.querySelector('a[href*=""/@""]');
         if (profileAnchor) {
             const href = profileAnchor.getAttribute('href') || '';
@@ -105,12 +78,121 @@ public static class TikTokProfileSyncHelper
 })();";
 
     /// <summary>
-    /// Executes the passive extraction script on a MAUI WebView and persists extracted profile data.
+    /// Fetches profile information directly from TikTok's authenticated passport endpoint
+    /// using session cookies stored in the device's CookieManager or storage.
+    /// Bypasses JavaScript evaluation and returns true user profile information.
+    /// </summary>
+    public static async Task<bool> FetchAndSaveProfileViaHttpAsync(SessionService sessionService, string? userAgent = null)
+    {
+        if (sessionService == null) return false;
+
+        string cookies = string.Empty;
+#if ANDROID
+        try
+        {
+            var cookieManager = Android.Webkit.CookieManager.Instance;
+            if (cookieManager != null)
+            {
+                var c1 = cookieManager.GetCookie("https://www.tiktok.com") ?? string.Empty;
+                var c2 = cookieManager.GetCookie("https://tiktok.com") ?? string.Empty;
+                cookies = string.IsNullOrWhiteSpace(c1) ? c2 : c1;
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[ProfileSync] Cookie retrieval error: {ex.Message}");
+        }
+#endif
+
+        if (string.IsNullOrWhiteSpace(cookies) || !cookies.Contains("sessionid="))
+        {
+            System.Diagnostics.Debug.WriteLine("[ProfileSync] No active sessionid cookie available for HTTP profile sync");
+            return false;
+        }
+
+        try
+        {
+            using var handler = new System.Net.Http.HttpClientHandler
+            {
+                UseCookies = false
+            };
+            using var client = new System.Net.Http.HttpClient(handler);
+            client.Timeout = TimeSpan.FromSeconds(8);
+
+            var ua = !string.IsNullOrEmpty(userAgent)
+                ? userAgent
+                : (sessionService.GetLoginUserAgent() ?? AppConstants.DesktopChromeUserAgent);
+
+            using var request = new System.Net.Http.HttpRequestMessage(System.Net.Http.HttpMethod.Get, "https://www.tiktok.com/passport/web/account/info/");
+            request.Headers.Add("Cookie", cookies);
+            request.Headers.Add("User-Agent", ua);
+            request.Headers.Add("Accept", "application/json, text/plain, */*");
+            request.Headers.Add("Referer", "https://www.tiktok.com/");
+
+            var response = await client.SendAsync(request);
+            if (!response.IsSuccessStatusCode)
+            {
+                System.Diagnostics.Debug.WriteLine($"[ProfileSync] HTTP passport request failed with code: {response.StatusCode}");
+                return false;
+            }
+
+            var json = await response.Content.ReadAsStringAsync();
+            using var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+
+            if (root.TryGetProperty("data", out var dataProp))
+            {
+                string username = string.Empty;
+                if (dataProp.TryGetProperty("unique_id", out var uidProp) && !string.IsNullOrEmpty(uidProp.GetString()))
+                    username = uidProp.GetString()!.Trim().TrimStart('@');
+                else if (dataProp.TryGetProperty("user_id", out var idProp) && !string.IsNullOrEmpty(idProp.GetString()))
+                    username = idProp.GetString()!.Trim().TrimStart('@');
+
+                if (!string.IsNullOrEmpty(username))
+                {
+                    sessionService.SetTikTokUsername(username);
+
+                    string nickname = username;
+                    if (dataProp.TryGetProperty("nickname", out var nickProp) && !string.IsNullOrEmpty(nickProp.GetString()))
+                    {
+                        nickname = nickProp.GetString()!.Trim();
+                        sessionService.SetTikTokNickname(nickname);
+                        sessionService.SetDisplayName(nickname);
+                    }
+
+                    if (dataProp.TryGetProperty("avatar_url", out var avProp) && !string.IsNullOrEmpty(avProp.GetString()))
+                    {
+                        var avatarUrl = avProp.GetString()!;
+                        await DownloadAndSaveAvatarAsync(avatarUrl, sessionService);
+                    }
+
+                    System.Diagnostics.Debug.WriteLine($"[ProfileSync] Successfully extracted profile handle @{username} via HTTP passport endpoint");
+                    return true;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[ProfileSync] HTTP profile extraction error: {ex.Message}");
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Executes profile extraction (HTTP first, falling back to WebView script) and persists extracted data.
     /// </summary>
     public static async Task<bool> ExtractAndSaveProfileAsync(WebView webView, SessionService sessionService)
     {
-        if (webView == null || sessionService == null) return false;
+        if (sessionService == null) return false;
 
+        // 1. Try direct HTTP extraction first (instant and reliable)
+        if (await FetchAndSaveProfileViaHttpAsync(sessionService))
+            return true;
+
+        if (webView == null) return false;
+
+        // 2. Fallback to synchronous DOM extraction inside WebView
         try
         {
             var rawJson = await webView.EvaluateJavaScriptAsync(ExtractScript);

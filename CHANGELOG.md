@@ -7,6 +7,15 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [2.0.12] - 2026-11-11
+
+### Fixed
+- **Chat Automation Speed & Reliability**: Fixed the regression where messaging failed and looped through 50 scrolls. Grounded chat selection in upstream logic and removed the broken `isInsideChatList` selector which falsely disqualified TikTok's `ConversationHeader`.
+- **Top Conversation False-Positive**: Fixed the bug where the first friend in the inbox failed on missing input. The automation now requires a live message input box before considering an open chat active, and explicitly clicks conversation items in the inbox.
+- **Ultra-Fast Inbox Scanning**: Added pre-click matching for both profile links (`a[href*="/@"]`) and inline `@username` text in the conversation sidebar, eliminating 1.5s per-item delays and reducing messaging to ~2-3 seconds per friend.
+- **Profile Handle Extraction (@tiktok_user)**: Solved the root cause of `@tiktok_user` displaying after login. Replaced unawaited WebView Promises with direct C# authenticated HTTP retrieval via `passport/web/account/info/` using session cookies, instantly extracting the real TikTok `unique_id`.
+- **Background Profile Sync**: Automatically syncs profile details and avatar on ProfilePage appearance and streak execution if the handle is not yet populated.
+
 ## [2.0.10] - 2026-11-11
 
 ### Fixed

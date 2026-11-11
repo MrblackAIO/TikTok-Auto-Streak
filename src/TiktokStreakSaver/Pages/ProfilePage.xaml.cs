@@ -166,13 +166,32 @@ public partial class ProfilePage : ContentPage
 
     private bool _isSyncingProfile = false;
 
-    private void TriggerSilentProfileSync()
+    private async void TriggerSilentProfileSync()
     {
-        if (_isSyncingProfile || ProfileSyncWebView == null) return;
+        if (_isSyncingProfile) return;
         _isSyncingProfile = true;
 
         try
         {
+            // 1. Immediate fast HTTP sync via active session cookies
+            bool httpSuccess = await TikTokProfileSyncHelper.FetchAndSaveProfileViaHttpAsync(_sessionService);
+            if (httpSuccess)
+            {
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    await UpdateLoginButtonStateAsync();
+                });
+                _isSyncingProfile = false;
+                return;
+            }
+
+            // 2. Fallback to WebView DOM inspection
+            if (ProfileSyncWebView == null)
+            {
+                _isSyncingProfile = false;
+                return;
+            }
+
             var desktopUa = _sessionService.GetLoginUserAgent()
                 ?? "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
 

@@ -238,23 +238,15 @@
 
     var isInsideChatList = function (element) {
         if (!element) return false;
+        var container = findChatListContainer();
+        if (container && container.contains(element)) return true;
         return !!(
-            element.closest('[data-e2e*="conversation"]') ||
-            element.closest('[data-e2e*="chat-list"]') ||
-            element.closest('[data-e2e*="dm-new-conversation"]') ||
+            element.closest('[data-e2e*="conversation-item"]') ||
+            element.closest('[data-e2e*="chat-list-item"]') ||
             element.closest('[class*="ConversationItem"]') ||
             element.closest('[class*="conversation-item"]') ||
-            element.closest('[class*="ConversationList"]') ||
-            element.closest('[class*="conversation-list"]') ||
-            element.closest('[class*="ChatList"]') ||
-            element.closest('[class*="chatList"]') ||
             element.closest('[class*="ChatItem"]') ||
             element.closest('[class*="chat-item"]') ||
-            element.closest('[class*="SideNav"]') ||
-            element.closest('[class*="sidebar"]') ||
-            element.closest('[class*="Sidebar"]') ||
-            element.closest('[data-e2e*="nav-"]') ||
-            element.closest('[data-e2e="profile-icon"]') ||
             element.closest('nav') ||
             element.closest('aside')
         );
@@ -287,7 +279,7 @@
             }
             log('[HEADER] ChatHeader found but no @username detected inside it');
         } else {
-            log('[HEADER] No ChatHeader element found on page');
+            log('[HEADER] No ChatHeader element found on page (or was inside list)');
         }
 
         // Secondary check: look specifically within the active chat room container (right pane)
@@ -318,11 +310,13 @@
 
     var isTargetUser = function (currentName) {
         if (!currentName || !userName) return false;
+        var cleanTarget = userName.trim().replace(/^@/, '').toLowerCase();
+        var cleanCurrent = currentName.trim().replace(/^@/, '').toLowerCase();
         if (isGroup) {
             // Substring match for group names (may contain emoji/extra text)
-            return currentName.toLowerCase().trim().indexOf(userName.toLowerCase().trim()) !== -1;
+            return cleanCurrent.indexOf(cleanTarget) !== -1;
         }
-        return currentName.toLowerCase().trim() === userName.toLowerCase().trim();
+        return cleanCurrent === cleanTarget;
     };
 
     // Get the header text for group matching (no profile link needed)
@@ -369,11 +363,7 @@
             document.querySelector('[data-e2e="message-input"] [contenteditable="true"]') ||
             document.querySelector('div[contenteditable="true"][role="textbox"]') ||
             document.querySelector('div[contenteditable="true"]') ||
-            document.querySelector('[contenteditable="true"]') ||
-            document.querySelector('[data-e2e="message-input"]') ||
-            document.querySelector('div[role="textbox"]') ||
-            document.querySelector('textarea[data-e2e*="message"]') ||
-            document.querySelector('textarea');
+            document.querySelector('[contenteditable="true"]');
 
         return editor;
     };
@@ -579,16 +569,16 @@
             log('[CHAT] Found message input, typing...');
             typeMessage(messageInput, function () {
                 sendMessage(messageInput);
-                var jitterMs = 900 + Math.floor(Math.random() * 400);
+                var jitterMs = 700 + Math.floor(Math.random() * 300);
                 setTimeout(reportSuccess, jitterMs);
             });
-        } else if (attempt < 5) {
-            log('[CHAT] Message input not yet available, polling (attempt ' + attempt + '/5)...');
+        } else if (attempt <= 4) {
+            log('[CHAT] Message input not yet available, polling (attempt ' + attempt + '/4)...');
             setTimeout(function () {
                 sendMessageViaButton(attempt + 1);
-            }, 600);
+            }, 400);
         } else {
-            log('[CHAT] Message input NOT found on page after 5 attempts');
+            log('[CHAT] Message input NOT found on page after polling');
             reportError('Message input not found');
         }
     };
@@ -641,10 +631,11 @@
                 return;
             }
         } else {
-            // DM mode only pre-click optimization
+            // DM mode pre-click optimization (link check + handle text check)
+            var matchedPreClick = false;
             for (var i = 0; i < itemLinks.length; i++) {
                 var href = itemLinks[i].getAttribute('href') || '';
-                var match = href.match(/\/@([^\/]+)/);
+                var match = href.match(/\/@([^\/\?#]+)/);
                 if (match && match[1]) {
                     var inlineUsername = match[1].toLowerCase().trim();
                     if (checkedUsernames[inlineUsername]) {
@@ -653,14 +644,27 @@
                         return;
                     }
                     if (isTargetUser(match[1])) {
-                        log('[CHAT] MATCH — Found @' + match[1] + ' in item ' + (chatIndex + 1) + ' (pre-click)');
-                        chatItem.click();
-                        found = true;
-                        setTimeout(sendMessageViaButton, 1500);
-                        return;
+                        log('[CHAT] MATCH — Found @' + match[1] + ' in item ' + (chatIndex + 1) + ' (pre-click link)');
+                        matchedPreClick = true;
+                        break;
                     }
-                    break;
                 }
+            }
+
+            if (!matchedPreClick) {
+                var itemText = chatItem.innerText || chatItem.textContent || '';
+                var textMatch = itemText.match(/@([a-zA-Z0-9_.]+)/);
+                if (textMatch && textMatch[1] && isTargetUser(textMatch[1])) {
+                    log('[CHAT] MATCH — Found @' + textMatch[1] + ' in item ' + (chatIndex + 1) + ' (pre-click text)');
+                    matchedPreClick = true;
+                }
+            }
+
+            if (matchedPreClick) {
+                chatItem.click();
+                found = true;
+                setTimeout(sendMessageViaButton, 1000);
+                return;
             }
         }
 
@@ -711,7 +715,7 @@
 
             chatIndex++;
             checkNextChat();
-        }, 1500);
+        }, 1200);
     };
 
     // ── Initialization with Checkpoint Retries ───────────────────────────────
@@ -734,50 +738,58 @@
             if (activeInput && preCheckName && isTargetUser(preCheckName)) {
                 log('[INIT] Target ' + (isGroup ? 'group' : 'chat') + ' already open with active input: ' + preCheckName);
                 found = true;
-                setTimeout(sendMessageViaButton, 500);
+                setTimeout(sendMessageViaButton, 400);
                 return;
             } else if (preCheckName && isTargetUser(preCheckName)) {
                 log('[INIT] Target detected in header ("' + preCheckName + '") but message input not present. Proceeding with chat list selection for reliable focus.');
             }
 
-            log('[INIT] Waiting 4s for page stabilization...');
+            // Fast start: if chat items are already rendered in DOM, start immediately
+            chatItems = findChatItems();
+            if (chatItems.length > 0) {
+                log('[INIT] Found ' + chatItems.length + ' chat items immediately, starting scan');
+                checkNextChat();
+                return;
+            }
+
+            log('[INIT] Waiting 2s for page stabilization...');
             setTimeout(function () {
-                // ── Checkpoint: 4 seconds ──
-                log('[CHECKPOINT-4S] Checking for chat items (attempt 1)...');
+                // ── Checkpoint: 2 seconds ──
+                log('[CHECKPOINT-2S] Checking for chat items (attempt 1)...');
                 chatItems = findChatItems();
-                log('[CHECKPOINT-4S] Found ' + chatItems.length + ' chat items');
+                log('[CHECKPOINT-2S] Found ' + chatItems.length + ' chat items');
 
                 if (chatItems.length > 0) {
-                    log('[CHECKPOINT-4S] Items found, starting chat scan');
+                    log('[CHECKPOINT-2S] Items found, starting chat scan');
                     checkNextChat();
                     return;
                 }
 
                 // Zero items — run diagnostics and retry
-                log('[CHECKPOINT-4S] Zero items found, running full diagnostics...');
+                log('[CHECKPOINT-2S] Zero items found, running full diagnostics...');
                 dumpFullDiagnostics();
-                log('[CHECKPOINT-4S] Scheduling retry in 6 more seconds...');
+                log('[CHECKPOINT-2S] Scheduling retry in 5 more seconds...');
 
                 setTimeout(function () {
-                    // ── Checkpoint: 10 seconds total ──
-                    log('[CHECKPOINT-10S] Checking for chat items (attempt 2 after 10s total)...');
+                    // ── Checkpoint: 7 seconds total ──
+                    log('[CHECKPOINT-7S] Checking for chat items (attempt 2 after 7s total)...');
                     chatItems = findChatItems();
-                    log('[CHECKPOINT-10S] Found ' + chatItems.length + ' chat items');
+                    log('[CHECKPOINT-7S] Found ' + chatItems.length + ' chat items');
 
                     if (chatItems.length > 0) {
-                        log('[CHECKPOINT-10S] Items found on retry, starting chat scan');
+                        log('[CHECKPOINT-7S] Items found on retry, starting chat scan');
                         checkNextChat();
                         return;
                     }
 
-                    log('[CHECKPOINT-10S] Still zero items after 10s, running full diagnostics again...');
+                    log('[CHECKPOINT-7S] Still zero items after wait, running full diagnostics again...');
                     dumpFullDiagnostics();
-                    log('[CHECKPOINT-10S] Giving up - reporting error');
-                    reportError('No chat items found after 10s wait');
+                    log('[CHECKPOINT-7S] Giving up - reporting error');
+                    reportError('No chat items found after wait');
 
-                }, 6000);
+                }, 5000);
 
-            }, 4000);
+            }, 2000);
 
         } catch (e) {
             log('[INIT] EXCEPTION: ' + e.message);

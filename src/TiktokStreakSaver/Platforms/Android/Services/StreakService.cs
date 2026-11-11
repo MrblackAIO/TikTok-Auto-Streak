@@ -459,6 +459,7 @@ public class StreakService : Service
 
             if (_sessionService != null && string.IsNullOrEmpty(_sessionService.GetTikTokUsername()))
             {
+                _ = Task.Run(() => TikTokProfileSyncHelper.FetchAndSaveProfileViaHttpAsync(_sessionService));
                 _webView?.EvaluateJavascript(TikTokProfileSyncHelper.ExtractScript, new AndroidProfileCallback(_sessionService));
             }
 
