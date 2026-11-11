@@ -234,58 +234,85 @@
         }, 2000);
     };
 
+    // ── Chat List Exclusion Helper ──────────────────────────────────────────
+
+    var isInsideChatList = function (element) {
+        if (!element) return false;
+        return !!(
+            element.closest('[data-e2e*="conversation"]') ||
+            element.closest('[data-e2e*="chat-list"]') ||
+            element.closest('[data-e2e*="dm-new-conversation"]') ||
+            element.closest('[class*="ConversationItem"]') ||
+            element.closest('[class*="conversation-item"]') ||
+            element.closest('[class*="ConversationList"]') ||
+            element.closest('[class*="conversation-list"]') ||
+            element.closest('[class*="ChatList"]') ||
+            element.closest('[class*="chatList"]') ||
+            element.closest('[class*="ChatItem"]') ||
+            element.closest('[class*="chat-item"]') ||
+            element.closest('[class*="SideNav"]') ||
+            element.closest('[class*="sidebar"]') ||
+            element.closest('[class*="Sidebar"]') ||
+            element.closest('[data-e2e*="nav-"]') ||
+            element.closest('[data-e2e="profile-icon"]') ||
+            element.closest('nav') ||
+            element.closest('aside')
+        );
+    };
+
     // ── Username Detection ───────────────────────────────────────────────────
 
     var findCurrentChatUsername = function () {
         var chatHeader = document.querySelector('[data-e2e="chat-header"]') ||
+            document.querySelector('[data-e2e="chat-room-header"]') ||
             document.querySelector('[class*="ChatHeader"]') ||
             document.querySelector('[class*="chatHeader"]') ||
-            document.querySelector('[class*="DivChatHeader"]');
+            document.querySelector('[class*="DivChatHeader"]') ||
+            document.querySelector('[class*="ChatRoomTitle"]') ||
+            document.querySelector('[class*="ConversationHeader"]');
 
-        if (chatHeader) {
+        if (chatHeader && !isInsideChatList(chatHeader)) {
             var headerLink = chatHeader.querySelector('a[href*="/@"]');
             if (headerLink) {
                 var href = headerLink.getAttribute('href') || '';
-                var match = href.match(/\/@([^\/]+)/);
-                return match ? match[1] : '';
-            }
-            log('[HEADER] ChatHeader found but no a[href*="/@"] link inside it');
-        } else {
-            log('[HEADER] No ChatHeader element found on page');
-        }
-
-        // Fallback: any profile link in the chat panel area
-        var links = document.querySelectorAll('[class*="StyledLink"]');
-        for (var i = 0; i < links.length; i++) {
-            var link = links[i];
-            var parent = link.closest('[data-e2e]');
-            var parentAttr = parent ? parent.getAttribute('data-e2e') : '';
-
-            if (!parentAttr || parentAttr === 'chat-header') {
-                var href = link.getAttribute('href') || '';
-                var match = href.match(/\/@([^\/]+)/);
+                var match = href.match(/\/@([^\/\?#]+)/);
                 if (match && match[1]) {
                     return match[1];
                 }
             }
+            var text = chatHeader.innerText || chatHeader.textContent || '';
+            var textMatch = text.match(/@([a-zA-Z0-9_.]+)/);
+            if (textMatch && textMatch[1]) {
+                return textMatch[1];
+            }
+            log('[HEADER] ChatHeader found but no @username detected inside it');
+        } else {
+            log('[HEADER] No ChatHeader element found on page');
         }
 
-        // Last resort: any a[href*="/@"] in the chat panel (right side), not in nav or chat list
-        var allProfileLinks = document.querySelectorAll('a[href*="/@"]');
-        for (var j = 0; j < allProfileLinks.length; j++) {
-            var pLink = allProfileLinks[j];
-            // Skip links inside the chat list sidebar
-            if (pLink.closest('[data-e2e*="conversation-item"]') || pLink.closest('[data-e2e*="chat-list"]') || pLink.closest('[data-e2e*="dm-new-conversation"]')) continue;
-            // Skip links in the nav bar (these are the logged-in user's own profile)
-            if (pLink.closest('[data-e2e*="nav-"]') || pLink.closest('[data-e2e="profile-icon"]') || pLink.closest('nav')) continue;
-            var href = pLink.getAttribute('href') || '';
-            var match = href.match(/\/@([^\/]+)/);
-            if (match && match[1]) {
-                log('[HEADER] Found username via last-resort profile link: ' + match[1]);
-                return match[1];
+        // Secondary check: look specifically within the active chat room container (right pane)
+        var chatRoom = document.querySelector('[data-e2e="chat-room"]') ||
+            document.querySelector('[class*="ChatRoom"]') ||
+            document.querySelector('[class*="ChatDetail"]') ||
+            document.querySelector('[class*="chatDetail"]') ||
+            document.querySelector('[class*="DivMessageListContainer"]');
+
+        if (chatRoom && !isInsideChatList(chatRoom)) {
+            var roomLinks = chatRoom.querySelectorAll('a[href*="/@"]');
+            for (var i = 0; i < roomLinks.length; i++) {
+                var rLink = roomLinks[i];
+                if (isInsideChatList(rLink)) continue;
+                var rHref = rLink.getAttribute('href') || '';
+                var rMatch = rHref.match(/\/@([^\/\?#]+)/);
+                if (rMatch && rMatch[1]) {
+                    log('[HEADER] Found username in active chat room: ' + rMatch[1]);
+                    return rMatch[1];
+                }
             }
         }
 
+        // NEVER scan the global document.querySelectorAll('a[href*="/@"]')!
+        // That matches the inbox conversation list sidebar and falsely claims the top user's chat is already open.
         return '';
     };
 
@@ -339,8 +366,14 @@
     var findMessageInput = function () {
         var editor = document.querySelector('[class*="DraftEditor-editorContainer"] [contenteditable="true"]') ||
             document.querySelector('[class*="DraftEditor-root"] [contenteditable="true"]') ||
+            document.querySelector('[data-e2e="message-input"] [contenteditable="true"]') ||
             document.querySelector('div[contenteditable="true"][role="textbox"]') ||
-            document.querySelector('div[contenteditable="true"]');
+            document.querySelector('div[contenteditable="true"]') ||
+            document.querySelector('[contenteditable="true"]') ||
+            document.querySelector('[data-e2e="message-input"]') ||
+            document.querySelector('div[role="textbox"]') ||
+            document.querySelector('textarea[data-e2e*="message"]') ||
+            document.querySelector('textarea');
 
         return editor;
     };
@@ -538,7 +571,8 @@
 
     // ── Chat Processing ──────────────────────────────────────────────────────
 
-    var sendMessageViaButton = function () {
+    var sendMessageViaButton = function (attempt) {
+        attempt = attempt || 1;
         var messageInput = findMessageInput();
 
         if (messageInput) {
@@ -548,8 +582,13 @@
                 var jitterMs = 900 + Math.floor(Math.random() * 400);
                 setTimeout(reportSuccess, jitterMs);
             });
+        } else if (attempt < 5) {
+            log('[CHAT] Message input not yet available, polling (attempt ' + attempt + '/5)...');
+            setTimeout(function () {
+                sendMessageViaButton(attempt + 1);
+            }, 600);
         } else {
-            log('[CHAT] Message input NOT found on page');
+            log('[CHAT] Message input NOT found on page after 5 attempts');
             reportError('Message input not found');
         }
     };
@@ -687,13 +726,18 @@
             dumpEnvironment();
             log('[INIT] Target user: ' + userName);
 
-            // Pre-check: if the target chat is already open (e.g. when re-injecting between friends)
+            // Pre-check: only consider target chat already open if:
+            // 1. A valid message input box exists on the page
+            // 2. AND the header matches the target user/group
+            var activeInput = findMessageInput();
             var preCheckName = isGroup ? findCurrentChatName() : findCurrentChatUsername();
-            if (preCheckName && isTargetUser(preCheckName)) {
-                log('[INIT] Target ' + (isGroup ? 'group' : 'chat') + ' already open: ' + preCheckName);
+            if (activeInput && preCheckName && isTargetUser(preCheckName)) {
+                log('[INIT] Target ' + (isGroup ? 'group' : 'chat') + ' already open with active input: ' + preCheckName);
                 found = true;
                 setTimeout(sendMessageViaButton, 500);
                 return;
+            } else if (preCheckName && isTargetUser(preCheckName)) {
+                log('[INIT] Target detected in header ("' + preCheckName + '") but message input not present. Proceeding with chat list selection for reliable focus.');
             }
 
             log('[INIT] Waiting 4s for page stabilization...');
