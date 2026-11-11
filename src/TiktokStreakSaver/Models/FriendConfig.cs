@@ -47,6 +47,11 @@ public class FriendConfig
     public int ConsecutiveFailures { get; set; }
 
     /// <summary>
+    /// Verified consecutive streak count read directly from TikTok DM badge.
+    /// </summary>
+    public int StreakCount { get; set; }
+
+    /// <summary>
     /// If true, this entry represents a TikTok group chat matched by display name
     /// instead of by username (groups have no profile link / @handle).
     /// </summary>
@@ -80,5 +85,6 @@ public class FriendMessageResult
     public bool Success { get; set; }
     public bool Failed => !Success && !string.IsNullOrEmpty(ErrorMessage);
     public string? ErrorMessage { get; set; }
+    public int? StreakCount { get; set; }
     public DateTime Timestamp { get; set; } = DateTime.Now;
 }

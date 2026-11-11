@@ -12,7 +12,7 @@ public class NormalProgressDrawable : IDrawable
     public float Progress { get; set; }
     public bool IsDarkTheme { get; set; } = true;
     public string RatioText { get; set; } = "0/0";
-    public string Subtitle { get; set; } = "Daily Streak Saver active";
+    public string Subtitle { get; set; } = "Streaks Active";
 
     private static readonly Color TrackColor = Color.FromArgb("#161B24");
     private static readonly Color ArcStartColor = Color.FromArgb("#8B5CF6"); // Violet
@@ -74,11 +74,11 @@ public class NormalProgressDrawable : IDrawable
             HorizontalAlignment.Center, VerticalAlignment.Center);
 
         canvas.FontColor = TextMuted;
-        canvas.FontSize = 11f;
+        canvas.FontSize = 10.5f;
         canvas.DrawString(
             Subtitle,
             0, cy + 12f,
-            dirtyRect.Width, 20f,
+            dirtyRect.Width, 18f,
             HorizontalAlignment.Center, VerticalAlignment.Center);
     }
 }

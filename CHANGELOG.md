@@ -7,6 +7,17 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [2.0.5] - 2026-11-11
+
+### Added
+- **Passive TikTok Profile Extraction**: Extracted account avatar, display name, handle, bio, following and followers counts via zero-network-signature SSR hydration inspection (`__UNIVERSAL_DATA_FOR_REHYDRATION__`) avoiding anti-bot detection.
+- **Existing Session Auto-Sync**: Automatically syncs profile details in the background on `ProfilePage` for already authenticated sessions, plus on-demand tap-to-sync.
+- **Live Streak Synchronization**: Automation dynamically scrapes the true streak value from active TikTok chat room headers and updates each friend's real streak count.
+
+### Fixed
+- **Arc Gauge Text Overlap**: Rephrased the progress gauge subtitle from `"Daily Streak Saver active"` to `"Streaks Active"` with optimized font sizing and vertical alignment, preventing edge collisions.
+- **Friends Streak Display**: Replaced the static `"🔥 12 days"` placeholder with the friend's actual verified live streak count.
+
 ## [2.0.4] - 2026-11-11
 
 ### Fixed

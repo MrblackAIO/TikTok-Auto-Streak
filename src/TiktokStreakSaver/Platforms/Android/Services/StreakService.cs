@@ -453,6 +453,12 @@ public class StreakService : Service
 
             UpdateNotification("Connecting to TikTok...");
             AppLog("NAVIGATION", "-", "Messages page ready");
+
+            if (_sessionService != null && string.IsNullOrEmpty(_sessionService.GetTikTokUsername()))
+            {
+                _webView?.EvaluateJavascript(TikTokProfileSyncHelper.ExtractScript, new AndroidProfileCallback(_sessionService));
+            }
+
             // Wait a bit for the page to fully render, then start automation
             _mainHandler?.PostDelayed(ProcessNextFriend, 3000);
         }
@@ -589,7 +595,7 @@ public class StreakService : Service
         return automationScript;
     }
 
-    internal void OnMessageResult(string username, bool success, string error)
+    internal void OnMessageResult(string username, bool success, string error, int streakCount = 0)
     {
         if (_isCancelRequested) return;
         if (_friendsToProcess == null || _settingsService == null) return;
@@ -677,6 +683,13 @@ public class StreakService : Service
         friend.SuccessCount++;
         friend.ConsecutiveFailures = 0;
         friend.LastMessageSent = DateTime.Now;
+
+        if (streakCount > 0)
+        {
+            friend.StreakCount = streakCount;
+            AppLog("STREAK", label, $"Live streak synchronized: {streakCount} days");
+        }
+
         AppLog("SUCCESS", label, "Message sent");
 
         _settingsService.UpdateFriend(friend);
@@ -686,7 +699,8 @@ public class StreakService : Service
             FriendId = friend.Id,
             Username = username,
             Success = true,
-            ErrorMessage = null
+            ErrorMessage = null,
+            StreakCount = streakCount > 0 ? streakCount : null
         });
 
         AdvanceToNextFriend(username);
@@ -942,10 +956,17 @@ public class StreakService : Service
         }
 
         [JavascriptInterface]
+        [Export("onMessageSentWithStreak")]
+        public void OnMessageSentWithStreak(string username, bool success, string error, int streakCount)
+        {
+            _service._mainHandler?.Post(() => _service.OnMessageResult(username, success, error, streakCount));
+        }
+
+        [JavascriptInterface]
         [Export("onMessageSent")]
         public void OnMessageSent(string username, bool success, string error)
         {
-            _service._mainHandler?.Post(() => _service.OnMessageResult(username, success, error));
+            OnMessageSentWithStreak(username, success, error, 0);
         }
 
         [JavascriptInterface]
@@ -956,6 +977,33 @@ public class StreakService : Service
             lock (LogLock)
                 StreakService._logs.Add(entry);
             global::Android.Util.Log.Debug("StreakJS", message);
+        }
+    }
+
+    [Microsoft.Maui.Controls.Internals.Preserve(AllMembers = true)]
+    private class AndroidProfileCallback : Java.Lang.Object, IValueCallback
+    {
+        private readonly SessionService _sessionService;
+
+        public AndroidProfileCallback(SessionService sessionService)
+        {
+            _sessionService = sessionService;
+        }
+
+        public void OnReceiveValue(Java.Lang.Object? value)
+        {
+            try
+            {
+                var rawJson = value?.ToString();
+                if (!string.IsNullOrWhiteSpace(rawJson))
+                {
+                    Task.Run(async () =>
+                    {
+                        await TikTokProfileSyncHelper.ParseAndSaveJsonAsync(rawJson, _sessionService);
+                    });
+                }
+            }
+            catch { }
         }
     }
 }

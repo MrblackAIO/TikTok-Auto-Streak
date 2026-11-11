@@ -622,6 +622,16 @@
             </VerticalStackLayout>
         </ScrollView>
 
+        <!-- Stealth background WebView for passive TikTok profile sync on existing sessions -->
+        <WebView x:Name="ProfileSyncWebView"
+                 Opacity="0"
+                 WidthRequest="1"
+                 HeightRequest="1"
+                 InputTransparent="True"
+                 HorizontalOptions="Start"
+                 VerticalOptions="Start"
+                 Navigated="OnProfileSyncWebViewNavigated"/>
+
         <views:FloatingNavBar CurrentTab="Profile" VerticalOptions="End"/>
     </Grid>
 </ContentPage>

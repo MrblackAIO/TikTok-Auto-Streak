@@ -239,7 +239,23 @@ public partial class FriendsPage : ContentPage
             TextColor = Color.FromArgb("#FFFFFF")
         });
 
-        var streakText = friend.IsGroup ? "👥 Group Chat" : "🔥 12 days";
+        string streakText;
+        if (friend.IsGroup)
+        {
+            streakText = "👥 Group Chat";
+        }
+        else if (friend.StreakCount > 0)
+        {
+            streakText = $"🔥 {friend.StreakCount} {(friend.StreakCount == 1 ? "day" : "days")}";
+        }
+        else if (friend.SuccessCount > 0)
+        {
+            streakText = $"🔥 {friend.SuccessCount} {(friend.SuccessCount == 1 ? "day" : "days")}";
+        }
+        else
+        {
+            streakText = "⚡ Ready";
+        }
         infoStack.Children.Add(new Label
         {
             Text = streakText,

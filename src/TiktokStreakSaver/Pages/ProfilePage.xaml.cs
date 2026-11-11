@@ -123,6 +123,11 @@ public partial class ProfilePage : ContentPage
 #endif
 
             await UpdateLoginButtonStateAsync();
+
+            if (_sessionService.IsSessionValid() && string.IsNullOrEmpty(_sessionService.GetTikTokUsername()))
+            {
+                TriggerSilentProfileSync();
+            }
         }
         catch (Exception ex)
         {
@@ -159,35 +164,98 @@ public partial class ProfilePage : ContentPage
         }
     }
 
-    private async void OnProfilePhotoTapped(object? sender, TappedEventArgs e)
+    private bool _isSyncingProfile = false;
+
+    private void TriggerSilentProfileSync()
     {
+        if (_isSyncingProfile || ProfileSyncWebView == null) return;
+        _isSyncingProfile = true;
+
         try
         {
-            var result = await MediaPicker.Default.PickPhotoAsync(new MediaPickerOptions
-            {
-                Title = "Please pick a photo"
-            });
+            var desktopUa = _sessionService.GetLoginUserAgent()
+                ?? "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
 
-            if (result != null)
+            TikTokWebViewHelper.TryConfigureWebView(ProfileSyncWebView, desktopUa);
+            ProfileSyncWebView.Source = "https://www.tiktok.com/messages?lang=en";
+        }
+        catch (Exception ex)
+        {
+            _isSyncingProfile = false;
+            System.Diagnostics.Debug.WriteLine($"[ProfilePage] Silent sync init failed: {ex.Message}");
+        }
+    }
+
+    private async void OnProfileSyncWebViewNavigated(object? sender, WebNavigatedEventArgs e)
+    {
+        if (!_isSyncingProfile) return;
+
+        try
+        {
+            // Give 1.5s for SSR hydration and DOM scripts to finish
+            await Task.Delay(1500);
+
+            bool success = await TikTokProfileSyncHelper.ExtractAndSaveProfileAsync(ProfileSyncWebView, _sessionService);
+            if (success)
             {
-                var newFile = System.IO.Path.Combine(FileSystem.AppDataDirectory, result.FileName);
-                var oldPath = _sessionService.GetProfileImagePath();
-                if (!string.IsNullOrEmpty(oldPath) && oldPath != newFile && System.IO.File.Exists(oldPath))
+                MainThread.BeginInvokeOnMainThread(async () =>
                 {
-                    try { System.IO.File.Delete(oldPath); } catch { }
-                }
-
-                using (var stream = await result.OpenReadAsync())
-                using (var newStream = System.IO.File.Create(newFile))
-                    await stream.CopyToAsync(newStream);
-
-                _sessionService.SetProfileImagePath(newFile);
-                LoadProfilePhoto();
+                    await UpdateLoginButtonStateAsync();
+                });
             }
         }
         catch (Exception ex)
         {
-            await DisplayAlert("Photo", $"Could not pick photo: {ex.Message}", "OK");
+            System.Diagnostics.Debug.WriteLine($"[ProfilePage] OnProfileSyncWebViewNavigated error: {ex.Message}");
+        }
+        finally
+        {
+            _isSyncingProfile = false;
+        }
+    }
+
+    private async void OnProfilePhotoTapped(object? sender, TappedEventArgs e)
+    {
+        try
+        {
+            var action = await DisplayActionSheet("Profile Details & Photo", "Cancel", null,
+                "Sync Profile from TikTok", "Choose Photo from Gallery");
+
+            if (action == "Sync Profile from TikTok")
+            {
+                TriggerSilentProfileSync();
+                await DisplayAlert("Syncing", "Syncing profile info from your TikTok session in background...", "OK");
+                return;
+            }
+
+            if (action == "Choose Photo from Gallery")
+            {
+                var result = await MediaPicker.Default.PickPhotoAsync(new MediaPickerOptions
+                {
+                    Title = "Please pick a photo"
+                });
+
+                if (result != null)
+                {
+                    var newFile = System.IO.Path.Combine(FileSystem.AppDataDirectory, result.FileName);
+                    var oldPath = _sessionService.GetProfileImagePath();
+                    if (!string.IsNullOrEmpty(oldPath) && oldPath != newFile && System.IO.File.Exists(oldPath))
+                    {
+                        try { System.IO.File.Delete(oldPath); } catch { }
+                    }
+
+                    using (var stream = await result.OpenReadAsync())
+                    using (var newStream = System.IO.File.Create(newFile))
+                        await stream.CopyToAsync(newStream);
+
+                    _sessionService.SetProfileImagePath(newFile);
+                    LoadProfilePhoto();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Photo", $"Could not update profile: {ex.Message}", "OK");
         }
     }
 

@@ -459,12 +459,73 @@
         }));
     };
 
+    // ── Streak Detection ──────────────────────────────────────────────────────
+
+    var extractThreadStreak = function () {
+        try {
+            // 1. Dedicated streak badges or aria-label markings
+            var streakNodes = document.querySelectorAll(
+                '[data-e2e*="streak"], [class*="streak"], [class*="Streak"], [aria-label*="streak" i], [aria-label*="Streak" i]'
+            );
+
+            for (var i = 0; i < streakNodes.length; i++) {
+                var el = streakNodes[i];
+                var raw = el.textContent || el.getAttribute('aria-label') || '';
+                var match = raw.match(/(\d+)/);
+                if (match) {
+                    var val = parseInt(match[1], 10);
+                    if (!isNaN(val) && val > 0 && val < 5000) {
+                        log('[STREAK] Found badge streak: ' + val);
+                        return val;
+                    }
+                }
+            }
+
+            // 2. Chat room header text or fire emoji patterns
+            var header = document.querySelector('[data-e2e="chat-room-header"], [data-e2e*="chat-header"], header, [class*="ChatHeader"], [class*="chat-header"]');
+            if (header) {
+                var headerText = header.innerText || header.textContent || '';
+                var flameMatch = headerText.match(/(?:🔥|streak|streaks)\s*(\d+)/i) || headerText.match(/(\d+)\s*(?:🔥|streak|streaks)/i);
+                if (flameMatch) {
+                    var fVal = parseInt(flameMatch[1], 10);
+                    if (!isNaN(fVal) && fVal > 0 && fVal < 5000) {
+                        log('[STREAK] Found header text streak: ' + fVal);
+                        return fVal;
+                    }
+                }
+
+                var spans = header.querySelectorAll('span, div');
+                for (var j = 0; j < spans.length; j++) {
+                    var span = spans[j];
+                    if (span.children.length === 0) {
+                        var text = span.textContent.trim();
+                        if (/^\d{1,4}$/.test(text)) {
+                            var sVal = parseInt(text, 10);
+                            if (sVal > 0 && sVal < 5000) {
+                                log('[STREAK] Found header digit streak: ' + sVal);
+                                return sVal;
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (e) {
+            log('[STREAK] Extraction error: ' + e);
+        }
+        return 0;
+    };
+
     // ── Result Reporting ─────────────────────────────────────────────────────
 
     var reportSuccess = function () {
-        log('[RESULT] SUCCESS — Message sent to ' + userName);
+        var streak = extractThreadStreak();
+        log('[RESULT] SUCCESS — Message sent to ' + userName + (streak > 0 ? (' (Streak: ' + streak + ')') : ''));
         if (typeof StreakApp !== 'undefined') {
-            StreakApp.onMessageSent(userName, true, '');
+            if (typeof StreakApp.onMessageSentWithStreak === 'function') {
+                StreakApp.onMessageSentWithStreak(userName, true, '', streak);
+            } else {
+                StreakApp.onMessageSent(userName, true, '');
+            }
         }
     };
 
@@ -484,7 +545,8 @@
             log('[CHAT] Found message input, typing...');
             typeMessage(messageInput, function () {
                 sendMessage(messageInput);
-                setTimeout(reportSuccess, 1000);
+                var jitterMs = 900 + Math.floor(Math.random() * 400);
+                setTimeout(reportSuccess, jitterMs);
             });
         } else {
             log('[CHAT] Message input NOT found on page');
