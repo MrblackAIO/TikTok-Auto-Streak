@@ -267,10 +267,10 @@ public partial class ProfilePage : ContentPage
     private async Task UpdateLoginButtonStateAsync()
     {
         bool runReady = await SessionRefreshHelper.RefreshAndGetRunReadyAsync(_sessionService);
-        await ApplyLoginButtonStateAsync(runReady);
+        ApplyLoginButtonState(runReady);
     }
 
-    private async Task ApplyLoginButtonStateAsync(bool isSessionValid)
+    private void ApplyLoginButtonState(bool isSessionValid)
     {
         try
         {
@@ -314,7 +314,7 @@ public partial class ProfilePage : ContentPage
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[ProfilePage] ApplyLoginButtonStateAsync error: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[ProfilePage] ApplyLoginButtonState error: {ex.Message}");
         }
     }
 
@@ -327,9 +327,9 @@ public partial class ProfilePage : ContentPage
         return count > 0 ? count.ToString() : "--";
     }
 
-    private async void UpdateLoginButtonState(bool isSessionValid)
+    private void UpdateLoginButtonState(bool isSessionValid)
     {
-        await ApplyLoginButtonStateAsync(isSessionValid);
+        ApplyLoginButtonState(isSessionValid);
     }
 
     private async void OnLoginClicked(object? sender, EventArgs e)

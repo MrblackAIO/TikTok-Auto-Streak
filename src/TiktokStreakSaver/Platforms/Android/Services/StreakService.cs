@@ -27,6 +27,7 @@ public class StreakService : Service
     private WebView? _webView;
     private Handler? _mainHandler;
     private SettingsService? _settingsService;
+    private SessionService? _sessionService;
     private List<FriendConfig>? _friendsToProcess;
     private int _currentFriendIndex;
     private StreakRunResult? _runResult;
@@ -95,6 +96,7 @@ public class StreakService : Service
 
         _mainHandler = new Handler(Looper.MainLooper!);
         _settingsService = new SettingsService();
+        _sessionService = new SessionService();
         AcquireWakeLock();
 
         // Start foreground IMMEDIATELY in OnCreate to avoid ANR

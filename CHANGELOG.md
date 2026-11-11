@@ -7,6 +7,12 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [2.0.6] - 2026-11-11
+
+### Fixed
+- **StreakService Compilation Error**: Declared and initialized `_sessionService` inside `StreakService.cs`, resolving compile error `CS0103`.
+- **Compiler Warnings Cleanup**: Converted `ApplyLoginButtonState` in `ProfilePage.xaml.cs` to a clean synchronous method eliminating warning CS1998, and suppressed Android 35+ obsolete API warning CA1422 in `MainActivity.cs`.
+
 ## [2.0.5] - 2026-11-11
 
 ### Added

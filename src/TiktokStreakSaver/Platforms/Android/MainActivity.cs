@@ -20,8 +20,10 @@ namespace TiktokStreakSaver
             if (Window != null)
             {
                 var darkColor = Android.Graphics.Color.ParseColor("#0A0D12");
+#pragma warning disable CA1422
                 Window.SetStatusBarColor(darkColor);
                 Window.SetNavigationBarColor(darkColor);
+#pragma warning restore CA1422
 
                 AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(Window, false);
 
