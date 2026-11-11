@@ -4,7 +4,7 @@ namespace TiktokStreakSaver.Services;
 public static class IosPlatformDocLinks
 {
     public const string FullLimitationsDoc =
-        "https://github.com/Jon2G/TiktokStreakSaver/blob/main/docs/ios-limitations.md";
+        "https://github.com/MrblackAIO/TikTok-Auto-Streak/blob/main/docs/ios-limitations.md";
 
     public const string OpenAppWhenRun =
         "https://developer.apple.com/documentation/appintents/appintent/openappwhenrun";

@@ -4,7 +4,7 @@
 
 Streak Saver on iPhone is a **best-effort experimental port**. Despite substantial engineering (Shortcuts App Intents, native WKWebView automation, widget integration, App Group sharing, and MAUI bridging), **iOS platform policy prevents the same reliability as Android** for automated TikTok streak messaging.
 
-**For daily streak protection, use the [Android app](https://github.com/Jon2G/TiktokStreakSaver/releases).** Do not rely on the iOS build as your primary streak saver today.
+**For daily streak protection, use the [Android app](https://github.com/MrblackAIO/TikTok-Auto-Streak/releases).** Do not rely on the iOS build as your primary streak saver today.
 
 ---
 

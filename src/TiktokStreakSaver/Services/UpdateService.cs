@@ -44,7 +44,7 @@ public class UpdateInfo
 }
 
 /// <summary>
-/// Checks GitHub releases for updates (Jon2G/TiktokStreakSaver).
+/// Checks GitHub releases for updates (MrblackAIO/TikTok-Auto-Streak).
 /// </summary>
 [Microsoft.Maui.Controls.Internals.Preserve(AllMembers = true)]
 public class UpdateService

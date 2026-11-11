@@ -7,6 +7,21 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [2.0.9] - 2026-11-11
+
+### Added
+- **Privacy & Transparency Hub Overhaul**: Completely redesigned the in-app Privacy Hub (`PrivacyPage.xaml`) into a futuristic Obsidian dashboard featuring an illuminated shield emblem (`🛡️`), architectural trust guarantees, and direct interactive action cards.
+- **Direct GitHub Resource Cards**: Added dedicated redirect cards and buttons for:
+  - Official Repository: `https://github.com/MrblackAIO/TikTok-Auto-Streak`
+  - Issue Tracker & Bug Reports: `https://github.com/MrblackAIO/TikTok-Auto-Streak/issues`
+  - Releases & Signed APK Downloads: `https://github.com/MrblackAIO/TikTok-Auto-Streak/releases`
+  - Official Privacy Policy Document: `https://github.com/MrblackAIO/TikTok-Auto-Streak/blob/main/PRIVACY.md`
+  - Open Source License: `https://github.com/MrblackAIO/TikTok-Auto-Streak/blob/main/LICENSE`
+- **In-Hub Local Data Purge**: Added a `"Purge Session & Local Data"` button directly inside the Privacy Hub to wipe stored session cookies, cache, and history with confirmation.
+
+### Changed
+- **Complete Rebranding to Mrblack**: Systematically replaced all legacy `Jon2G` references, documentation links, and author credits throughout the app, `PRIVACY.md`, `LICENSE`, web showcase (`src/Web`), and documentation with `Mrblack` and `MrblackAIO/TikTok-Auto-Streak`.
+
 ## [2.0.8] - 2026-11-11
 
 ### Added
@@ -91,4 +106,4 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - Exact alarms fall back to inexact alarms when Android blocks exact scheduling.
 - A low-battery run starts only when an enabled chat still needs a message, and it is recorded only after the run actually starts.
 
-[2.2.0]: https://github.com/Jon2G/TiktokStreakSaver/compare/v2.1.4...v2.2.0
+[2.2.0]: https://github.com/MrblackAIO/TikTok-Auto-Streak/releases

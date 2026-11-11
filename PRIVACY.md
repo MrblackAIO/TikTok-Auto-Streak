@@ -1,8 +1,8 @@
 # Privacy Policy — TikTok AutoStreak
 
-**Effective date:** June 9, 2026
+**Effective date:** November 11, 2026
 
-TikTok AutoStreak ("the app") is an Android application created for Mrblack.
+TikTok AutoStreak ("the app") is an Android application created by Mrblack.
 This policy explains what data the app handles and what it does NOT do.
 
 ## TL;DR
@@ -52,9 +52,9 @@ this traffic:
    inside that WebView.
 2. **GitHub** (`api.github.com`, `github.com`, and release-asset download
    URLs) — for the in-app "Check for updates" feature. The app calls the
-   public GitHub Releases API for repo `Jon2G/TiktokStreakSaver` and
+   public GitHub Releases API for repo `MrblackAIO/TikTok-Auto-Streak` and
    downloads APK files from release assets. The only header sent is
-   `User-Agent: TiktokStreakSaver/1.0`. No account, device, or personal
+   `User-Agent: TikTokAutoStreak/2.0`. No account, device, or personal
    identifiers are sent.
 
 That is the entire set of outbound connections. There are no analytics
@@ -102,4 +102,4 @@ reflected in the in-app Privacy screen on the next app update. The
 ## Contact
 
 This app is maintained on GitHub. To report a privacy concern, open an
-issue at <https://github.com/Jon2G/TiktokStreakSaver/issues>.
+issue at <https://github.com/MrblackAIO/TikTok-Auto-Streak/issues>.

@@ -77,14 +77,14 @@ gh release create ios-v1.0.0 release-out/StreakSaver.ipa \
 ```
 
 The `downloadURL` in `source.json` must match the iOS release tag:  
-`https://github.com/Jon2G/TiktokStreakSaver/releases/download/ios-v1.0.0/StreakSaver.ipa`
+`https://github.com/MrblackAIO/TikTok-Auto-Streak/releases/download/ios-v1.0.0/StreakSaver.ipa`
 
 iOS releases use the `ios-v*` tag prefix so they do not collide with Android `v*` releases.
 
 ## Install on iPhone (AltStore)
 
 1. **AltStore** → **Sources** → **+**
-2. Add: `https://raw.githubusercontent.com/Jon2G/TiktokStreakSaver/main/dist/altstore/source.json`
+2. Add: `https://raw.githubusercontent.com/MrblackAIO/TikTok-Auto-Streak/main/dist/altstore/source.json`
 3. Install **Streak Saver**
 4. Open app → log in → **Profile → Shortcut setup guide**
 

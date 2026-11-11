@@ -440,7 +440,7 @@ blockquote{{
         if (_isDownloading) return;
 
 #if IOS
-        var url = _apkDownloadUrl ?? "https://github.com/Jon2G/TiktokStreakSaver/releases/latest";
+        var url = _apkDownloadUrl ?? "https://github.com/MrblackAIO/TikTok-Auto-Streak/releases/latest";
         await Launcher.OpenAsync(url);
         Preferences.Default.Set("LastRemoteVersionSeen", _assignedVersion);
         try { await Navigation.PopModalAsync(); } catch { }
@@ -531,7 +531,7 @@ blockquote{{
     {
         try
         {
-            await Launcher.Default.OpenAsync("https://github.com/eulfn/streak-tiktok/releases/latest");
+            await Launcher.Default.OpenAsync("https://github.com/MrblackAIO/TikTok-Auto-Streak/releases/latest");
         }
         catch { }
     }
@@ -540,7 +540,7 @@ blockquote{{
     {
         try
         {
-            await Launcher.Default.OpenAsync("https://github.com/eulfn/streak-tiktok");
+            await Launcher.Default.OpenAsync("https://github.com/MrblackAIO/TikTok-Auto-Streak");
         }
         catch { }
     }
@@ -549,7 +549,7 @@ blockquote{{
     {
         try
         {
-            await Launcher.Default.OpenAsync("https://github.com/RusdiEneri/TiktokStreakSaver");
+            await Launcher.Default.OpenAsync("https://github.com/MrblackAIO/TikTok-Auto-Streak");
         }
         catch { }
     }

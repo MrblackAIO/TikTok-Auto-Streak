@@ -50,7 +50,7 @@ Entitlements must include App Group `group.com.jon2g.tiktokstreaksaver` on **bot
 
 Users add this source URL in AltStore:
 
-`https://raw.githubusercontent.com/Jon2G/TiktokStreakSaver/main/dist/altstore/source.json`
+`https://raw.githubusercontent.com/MrblackAIO/TikTok-Auto-Streak/main/dist/altstore/source.json`
 
 **Release checklist:** [ios-altstore-release.md](ios-altstore-release.md) — run `./scripts/build-ios-release.sh`, commit `dist/altstore/source.json`, tag, and `gh release create` with `StreakSaver.ipa`.
 

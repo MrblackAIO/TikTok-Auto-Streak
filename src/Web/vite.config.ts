@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 import { fileURLToPath, URL } from 'node:url'
 
 // Base path matches the GitHub Pages project URL:
-// https://jon2g.github.io/TiktokStreakSaver/
+// https://mrblackaio.github.io/TikTok-Auto-Streak/
 export default defineConfig({
   plugins: [vue(), tailwindcss()],
   base: '/TiktokStreakSaver/',

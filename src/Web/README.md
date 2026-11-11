@@ -1,12 +1,11 @@
-# Streak Saver — Web showcase
+# TikTok AutoStreak — Web showcase
 
-Single-page Vue 3 + TypeScript + Tailwind CSS marketing site that lives at
-[https://jon2g.github.io/TiktokStreakSaver/](https://jon2g.github.io/TiktokStreakSaver/).
+Single-page Vue 3 + TypeScript + Tailwind CSS showcase site for TikTok AutoStreak.
 
 The hero CTA links directly to the latest signed APK:
 
 ```
-https://github.com/Jon2G/TiktokStreakSaver/releases/latest/download/StreakSaver.apk
+https://github.com/MrblackAIO/TikTok-Auto-Streak/releases/latest/download/TikTok-AutoStreak.apk
 ```
 
 That stable filename is produced by the Android release workflow
