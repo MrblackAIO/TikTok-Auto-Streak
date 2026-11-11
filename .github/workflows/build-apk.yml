@@ -13,6 +13,12 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'microsoft'
+          java-version: '17'
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -21,13 +27,36 @@ jobs:
       - name: Install MAUI Android Workload
         run: dotnet workload install maui-android
 
+      - name: Setup Signing Keystore
+        shell: pwsh
+        run: |
+          $keystorePath = "src/TiktokStreakSaver/streaksaver.keystore"
+          if (-not (Test-Path $keystorePath)) {
+            Write-Host "Generating self-signed keystore for Android package installation..."
+            & keytool -genkeypair -v -keystore $keystorePath -alias streaksaver -keyalg RSA -keysize 2048 -validity 10000 -storepass autostreak123 -keypass autostreak123 -dname "CN=TikTokAutoStreak, OU=Mobile, O=Mrblack, C=US"
+          }
+
       - name: Build and Package APK
         run: |
           dotnet restore src/TiktokStreakSaver/TiktokStreakSaver.csproj -p:TargetFramework=net9.0-android
-          dotnet publish src/TiktokStreakSaver/TiktokStreakSaver.csproj -f net9.0-android -c Release -p:AndroidPackageFormat=apk --no-restore
+          dotnet publish src/TiktokStreakSaver/TiktokStreakSaver.csproj -f net9.0-android -c Release -p:AndroidPackageFormat=apk -p:AndroidSigningStorePass=autostreak123 -p:AndroidSigningKeyPass=autostreak123 --no-restore
+
+      - name: Standardize APK Filename
+        shell: pwsh
+        run: |
+          $apk = Get-ChildItem -Path src/TiktokStreakSaver/bin/Release/net9.0-android -Filter "*-Signed.apk" -Recurse | Select-Object -First 1
+          if (-not $apk) {
+            $apk = Get-ChildItem -Path src/TiktokStreakSaver/bin/Release/net9.0-android -Filter "*.apk" -Recurse | Select-Object -First 1
+          }
+          if ($apk) {
+            Write-Host "Found APK at $($apk.FullName), copying to TikTok-AutoStreak.apk"
+            Copy-Item -Path $apk.FullName -Destination "src/TiktokStreakSaver/bin/Release/net9.0-android/TikTok-AutoStreak.apk" -Force
+          } else {
+            Write-Host "Warning: No APK found to rename yet"
+          }
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: TikTokAutoStreak-APK
-          path: src/TiktokStreakSaver/bin/Release/net9.0-android/**/*.apk
+          name: TikTok-AutoStreak-APK
+          path: src/TiktokStreakSaver/bin/Release/net9.0-android/*.apk
