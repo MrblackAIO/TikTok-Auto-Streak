@@ -59,7 +59,7 @@ jobs:
         run: dotnet build ${{ env.PROJECT_PATH }} -f net9.0-android -c Debug -p:SkipIosNativeBuild=true -p:TargetFrameworks=net9.0-android
 
       - name: Upload Debug APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: TikTok-AutoStreak-Debug-APK
           path: src/TiktokStreakSaver/bin/Debug/net9.0-android/*.apk

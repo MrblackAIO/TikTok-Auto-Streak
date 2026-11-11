@@ -121,7 +121,7 @@ jobs:
       id: rename_apk
 
     - name: Upload APK Artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: TikTok-AutoStreak-APK
         path: ./artifacts/*.apk
