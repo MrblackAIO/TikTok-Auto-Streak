@@ -1,5 +1,6 @@
 using Microsoft.Maui.Controls.Shapes;
 using TiktokStreakSaver.Services;
+using TiktokStreakSaver.Views;
 
 namespace TiktokStreakSaver.Pages;
 

@@ -3,8 +3,7 @@ using Microsoft.Maui.Graphics;
 namespace TiktokStreakSaver.Views;
 
 /// <summary>
-/// Custom drawable for the circular performance gauge on Analytics & Log.
-/// Renders an obsidian track with a glowing neon Mint Green arc.
+/// Custom drawable for the circular performance gauge on Analytics &amp; Log.
 /// </summary>
 [Microsoft.Maui.Controls.Internals.Preserve(AllMembers = true)]
 public class SuccessRateDrawable : IDrawable
