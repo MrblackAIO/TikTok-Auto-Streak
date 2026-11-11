@@ -35,9 +35,63 @@ namespace TiktokStreakSaver
             
             // Create notification channel on app start
             CreateNotificationChannel();
+            CreateUpdateNotificationChannel();
+
+            // Handle direct update intent from notification tap
+            HandleUpdateIntent(Intent);
             
             // Request notification permission for Android 13+
             RequestNotificationPermission();
+        }
+
+        protected override void OnNewIntent(Intent? intent)
+        {
+            base.OnNewIntent(intent);
+            HandleUpdateIntent(intent);
+        }
+
+        private void HandleUpdateIntent(Intent? intent)
+        {
+            if (intent?.GetBooleanExtra("trigger_update", false) == true)
+            {
+                var version = intent.GetStringExtra("update_version") ?? "";
+                var url = intent.GetStringExtra("update_url");
+
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    var modal = new AboutPopupPage(
+                        "App Update",
+                        version,
+                        "",
+                        isUpdate: true,
+                        apkDownloadUrl: url);
+
+                    if (Microsoft.Maui.Controls.Application.Current?.Windows.Count > 0 &&
+                        Microsoft.Maui.Controls.Application.Current.Windows[0].Page != null)
+                    {
+                        await Microsoft.Maui.Controls.Application.Current.Windows[0].Page!.Navigation.PushModalAsync(modal);
+                    }
+                });
+            }
+        }
+
+        private void CreateUpdateNotificationChannel()
+        {
+            if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
+            {
+                var channelId = "app_updates_channel";
+                var channelName = "App Updates";
+                var channelDescription = "Notifies when a new version of TikTok AutoStreak is released";
+                var importance = NotificationImportance.High;
+
+                var channel = new NotificationChannel(channelId, channelName, importance)
+                {
+                    Description = channelDescription
+                };
+
+                var notificationManager = (NotificationManager?)GetSystemService(NotificationService);
+                notificationManager?.CreateNotificationChannel(channel);
+            }
         }
 
         private void CreateNotificationChannel()

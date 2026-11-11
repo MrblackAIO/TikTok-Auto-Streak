@@ -391,7 +391,6 @@
                                    TextColor="{StaticResource TextPrimary}"
                                    HorizontalOptions="Center"/>
                             <Label x:Name="VersionLabel"
-                                   Text="v2.0.0 (Premium) • Signed Version"
                                    FontFamily="InterRegular" FontSize="12"
                                    TextColor="{StaticResource BrandSubtitle}"
                                    HorizontalOptions="Center"/>

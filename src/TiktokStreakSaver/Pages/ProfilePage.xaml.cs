@@ -97,7 +97,7 @@ public partial class ProfilePage : ContentPage
             _suppressIntervalChanged = false;
         }
 
-        VersionLabel.Text = $"v2.0.0 (Premium) • Signed Version";
+        VersionLabel.Text = $"v{AppInfo.Current.VersionString} (Premium) • Signed Version";
 
 #if IOS
         IosShortcutsSettingsPanel.IsVisible = true;
@@ -398,7 +398,7 @@ public partial class ProfilePage : ContentPage
     {
         string currentVersion = AppInfo.Current.VersionString;
         await Navigation.PushModalAsync(new AboutPopupPage(
-            "TikTok AutoStreak", "2.0.0", string.Empty, false));
+            "TikTok AutoStreak", currentVersion, string.Empty, false));
     }
 
 #if ANDROID

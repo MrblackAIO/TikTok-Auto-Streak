@@ -7,6 +7,15 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [2.0.2] - 2026-11-11
+
+### Fixed
+
+- **Navigation Bar Tap Targets**: Replaced narrow 72px column layouts with evenly divided 80x64 full-cell star columns (`*,*,*,*`) and explicit transparent backdrops, eliminating dead zones and accidental mis-taps between tabs.
+- **Debounced Route Switching**: Added an asynchronous navigation re-entrancy lock (`_isNavigating`) and non-animated route dispatch to prevent MAUI Shell route collisions and incorrect page routing when tapping tabs in rapid succession.
+- **Active Tab Synchronization**: Fixed visual state desynchronization so the navbar indicator strictly matches the current active page, with clean visual restoration if navigation is interrupted.
+- **Tactile Touch Feedback**: Added lightweight non-blocking micro-scale animations (0.88x scale on press) for instant tactile interactivity.
+
 ## [2.2.0] - 2026-10-17
 
 ### Added

@@ -8,6 +8,7 @@ public partial class SplashPage : ContentPage
     public SplashPage()
     {
         InitializeComponent();
+        VersionLabel.Text = $"v{AppInfo.Current.VersionString} (Premium) • Signed Version";
     }
 
     protected override async void OnAppearing()

@@ -861,6 +861,9 @@ public class StreakService : Service
                 }
             }
 
+            // Check for background updates asynchronously without blocking cleanup
+            _ = UpdateNotificationHelper.CheckAndNotifyUpdateAsync(this);
+
             AppLog("SYSTEM", "-", $"Run complete: {(success ? "Success" : message)}");
         }
         finally
