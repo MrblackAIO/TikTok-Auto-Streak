@@ -692,6 +692,11 @@ public class StreakService : Service
             friend.StreakCount = streakCount;
             AppLog("STREAK", label, $"Live streak synchronized: {streakCount} days");
         }
+        else
+        {
+            friend.StreakCount = friend.StreakCount > 0 ? friend.StreakCount + 1 : Math.Max(1, friend.SuccessCount);
+            AppLog("STREAK", label, $"Streak incremented: {friend.StreakCount} days");
+        }
 
         AppLog("SUCCESS", label, "Message sent");
 

@@ -281,25 +281,23 @@ public partial class ProfilePage : ContentPage
                 SessionCardTitle.Text = "TikTok Profile";
                 SessionDot.BackgroundColor = GetThemeColor("Success", "#10B981");
 
-                var nick = _sessionService.GetTikTokNickname();
-                if (string.IsNullOrWhiteSpace(nick))
-                    nick = _sessionService.GetDisplayName();
-                ProfileNicknameLabel.Text = string.IsNullOrWhiteSpace(nick) ? "User" : nick;
-
                 var username = _sessionService.GetTikTokUsername();
                 ProfileUsernameLabel.Text = string.IsNullOrWhiteSpace(username) ? "@tiktok_user" : $"@{username}";
 
+                var nick = _sessionService.GetTikTokNickname();
+                if (string.IsNullOrWhiteSpace(nick) || nick.Equals(username, StringComparison.OrdinalIgnoreCase))
+                {
+                    var disp = _sessionService.GetDisplayName();
+                    if (!string.IsNullOrWhiteSpace(disp) && !disp.Equals(username, StringComparison.OrdinalIgnoreCase))
+                        nick = disp;
+                }
+                ProfileNicknameLabel.Text = string.IsNullOrWhiteSpace(nick) ? "User" : nick;
+
                 var bio = _sessionService.GetTikTokBio();
-                BioLabel.Text = string.IsNullOrWhiteSpace(bio) ? "TikTok Streak Automation Operator 🔥" : bio;
-
-                int followers = _sessionService.GetTikTokFollowers();
-                FollowersCountLabel.Text = FormatMetricCount(followers);
-
-                int following = _sessionService.GetTikTokFollowing();
-                FollowingCountLabel.Text = FormatMetricCount(following);
+                BioLabel.Text = string.IsNullOrWhiteSpace(bio) ? "Add your bio" : bio;
 
                 var lastCheck = _sessionService.GetLastCheckTime();
-                SessionLastCheckLabel.Text = lastCheck.HasValue ? $"Verified {lastCheck.Value:MMM dd, HH:mm}" : "Verified and ready";
+                SessionLastCheckLabel.Text = lastCheck.HasValue ? $"Verified {lastCheck.Value:MMM dd, h:mm tt}" : "Verified and ready";
 
                 LoadProfilePhoto();
             }
@@ -318,13 +316,48 @@ public partial class ProfilePage : ContentPage
         }
     }
 
-    private static string FormatMetricCount(int count)
+    private async void OnEditNameClicked(object? sender, EventArgs e)
     {
-        if (count >= 1_000_000)
-            return $"{(count / 1_000_000.0):0.#}M";
-        if (count >= 1_000)
-            return $"{(count / 1_000.0):0.#}K";
-        return count > 0 ? count.ToString() : "--";
+        var currentName = ProfileNicknameLabel.Text;
+        if (currentName == "User")
+            currentName = "";
+
+        var newName = await DisplayPromptAsync(
+            "Display Name",
+            "Enter your in-app name or TikTok nickname:",
+            initialValue: currentName,
+            maxLength: 50);
+
+        if (newName != null)
+        {
+            var trimmed = newName.Trim();
+            var finalName = string.IsNullOrWhiteSpace(trimmed) ? "User" : trimmed;
+            _sessionService.SetDisplayName(finalName);
+            _sessionService.SetTikTokNickname(finalName);
+            ProfileNicknameLabel.Text = finalName;
+            SessionState.NotifyChanged();
+        }
+    }
+
+    private async void OnEditBioClicked(object? sender, EventArgs e)
+    {
+        var currentBio = _sessionService.GetTikTokBio();
+        if (string.IsNullOrWhiteSpace(currentBio))
+            currentBio = "";
+
+        var newBio = await DisplayPromptAsync(
+            "Edit Bio",
+            "Enter your bio:",
+            initialValue: currentBio,
+            maxLength: 200);
+
+        if (newBio != null)
+        {
+            var trimmed = newBio.Trim();
+            _sessionService.SetTikTokBio(trimmed);
+            BioLabel.Text = string.IsNullOrWhiteSpace(trimmed) ? "Add your bio" : trimmed;
+            SessionState.NotifyChanged();
+        }
     }
 
     private void UpdateLoginButtonState(bool isSessionValid)
@@ -352,6 +385,7 @@ public partial class ProfilePage : ContentPage
     {
         ScheduleOptionsPanel.IsVisible = e.Value;
         _settingsService.SetScheduled(e.Value);
+        _settingsService.SetUseFixedTime(true);
 #if ANDROID
         var context = Platform.CurrentActivity ?? Android.App.Application.Context;
         if (e.Value)
@@ -359,6 +393,7 @@ public partial class ProfilePage : ContentPage
         else
             TiktokStreakSaver.Platforms.Android.StreakScheduler.CancelSchedule(context);
 #endif
+        SessionState.NotifyChanged();
     }
 
     private void OnFixedTimeToggled(object? sender, ToggledEventArgs e)
@@ -373,22 +408,25 @@ public partial class ProfilePage : ContentPage
             TiktokStreakSaver.Platforms.Android.StreakScheduler.ScheduleNextRun(context);
         }
 #endif
+        SessionState.NotifyChanged();
     }
 
     private void OnTimePickerChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         if (e.PropertyName != nameof(TimePicker.Time) || _suppressTimePickerChanged) return;
         var time = ScheduleTimePicker.Time;
+        _settingsService.SetUseFixedTime(true);
         _settingsService.SetFixedTimeHour(time.Hours);
         _settingsService.SetFixedTimeMinute(time.Minutes);
         UpdateRadialTimerDisplay(time);
 #if ANDROID
-        if (_settingsService.IsScheduled() && _settingsService.GetUseFixedTime())
+        if (_settingsService.IsScheduled())
         {
             var context = Platform.CurrentActivity ?? Android.App.Application.Context;
             TiktokStreakSaver.Platforms.Android.StreakScheduler.ScheduleNextRun(context);
         }
 #endif
+        SessionState.NotifyChanged();
     }
 
     private void UpdateRadialTimerDisplay(TimeSpan time)
@@ -486,6 +524,7 @@ public partial class ProfilePage : ContentPage
                 _suppressTimePickerChanged = false;
             }
 
+            _settingsService.SetUseFixedTime(true);
             _settingsService.SetFixedTimeHour(hour24);
             _settingsService.SetFixedTimeMinute(minute);
 
@@ -499,37 +538,82 @@ public partial class ProfilePage : ContentPage
             UpdateAmPmPills(!isPm);
 
 #if ANDROID
-            if (_settingsService.IsScheduled() && _settingsService.GetUseFixedTime())
+            if (_settingsService.IsScheduled())
             {
                 var context = Platform.CurrentActivity ?? Android.App.Application.Context;
                 TiktokStreakSaver.Platforms.Android.StreakScheduler.ScheduleNextRun(context);
             }
 #endif
+            SessionState.NotifyChanged();
         }
     }
 
     private void OnAmTapped(object? sender, TappedEventArgs e)
     {
-        var time = ScheduleTimePicker.Time;
-        if (time.Hours >= 12)
+        _settingsService.SetUseFixedTime(true);
+        int h = int.TryParse(ScheduleHourEntry?.Text, out var parsedH) ? parsedH : 12;
+        int m = int.TryParse(ScheduleMinuteEntry?.Text, out var parsedM) ? parsedM : 0;
+        var h12 = Math.Clamp(h, 1, 12);
+        int hour24 = (h12 % 12); // AM is 0..11
+        int minute = Math.Clamp(m, 0, 59);
+
+        var newTime = new TimeSpan(hour24, minute, 0);
+        _suppressTimePickerChanged = true;
+        try
         {
-            var newTime = new TimeSpan(time.Hours - 12, time.Minutes, 0);
             ScheduleTimePicker.Time = newTime;
-            _settingsService.SetFixedTimeHour(newTime.Hours);
-            UpdateRadialTimerDisplay(newTime);
         }
+        finally
+        {
+            _suppressTimePickerChanged = false;
+        }
+
+        _settingsService.SetFixedTimeHour(hour24);
+        _settingsService.SetFixedTimeMinute(minute);
+        UpdateRadialTimerDisplay(newTime);
+
+#if ANDROID
+        if (_settingsService.IsScheduled())
+        {
+            var context = Platform.CurrentActivity ?? Android.App.Application.Context;
+            TiktokStreakSaver.Platforms.Android.StreakScheduler.ScheduleNextRun(context);
+        }
+#endif
+        SessionState.NotifyChanged();
     }
 
     private void OnPmTapped(object? sender, TappedEventArgs e)
     {
-        var time = ScheduleTimePicker.Time;
-        if (time.Hours < 12)
+        _settingsService.SetUseFixedTime(true);
+        int h = int.TryParse(ScheduleHourEntry?.Text, out var parsedH) ? parsedH : 12;
+        int m = int.TryParse(ScheduleMinuteEntry?.Text, out var parsedM) ? parsedM : 0;
+        var h12 = Math.Clamp(h, 1, 12);
+        int hour24 = (h12 % 12) + 12; // PM is 12..23
+        int minute = Math.Clamp(m, 0, 59);
+
+        var newTime = new TimeSpan(hour24, minute, 0);
+        _suppressTimePickerChanged = true;
+        try
         {
-            var newTime = new TimeSpan(time.Hours + 12, time.Minutes, 0);
             ScheduleTimePicker.Time = newTime;
-            _settingsService.SetFixedTimeHour(newTime.Hours);
-            UpdateRadialTimerDisplay(newTime);
         }
+        finally
+        {
+            _suppressTimePickerChanged = false;
+        }
+
+        _settingsService.SetFixedTimeHour(hour24);
+        _settingsService.SetFixedTimeMinute(minute);
+        UpdateRadialTimerDisplay(newTime);
+
+#if ANDROID
+        if (_settingsService.IsScheduled())
+        {
+            var context = Platform.CurrentActivity ?? Android.App.Application.Context;
+            TiktokStreakSaver.Platforms.Android.StreakScheduler.ScheduleNextRun(context);
+        }
+#endif
+        SessionState.NotifyChanged();
     }
 
     private void OnIntervalHoursChanged(object? sender, ValueChangedEventArgs e)

@@ -60,6 +60,14 @@ public static class TikTokProfileSyncHelper
             if (avatarImg && avatarImg.src) {
                 profile.avatarUrl = avatarImg.src;
             }
+            
+            const titleEl = document.querySelector('[data-e2e=""user-title""], [data-e2e=""user-subtitle""], [class*=""UserTitle""], h1, h2');
+            if (titleEl && titleEl.textContent) {
+                profile.nickname = titleEl.textContent.trim();
+            } else if (profileAnchor.getAttribute('title')) {
+                profile.nickname = profileAnchor.getAttribute('title').trim();
+            }
+
             if (profile.username) {
                 return JSON.stringify(profile);
             }

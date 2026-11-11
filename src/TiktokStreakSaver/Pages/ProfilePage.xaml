@@ -104,34 +104,73 @@
                         <VerticalStackLayout x:Name="LoggedInProfilePanel" Spacing="14" IsVisible="False">
                             <!-- Avatar & Identity -->
                             <VerticalStackLayout Spacing="8" HorizontalOptions="Center">
-                                <Border WidthRequest="72" HeightRequest="72"
-                                        StrokeThickness="2"
-                                        Stroke="{StaticResource CoralRed}"
-                                        StrokeShape="RoundRectangle 36"
-                                        BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
-                                        HorizontalOptions="Center">
-                                    <Grid>
-                                        <Image x:Name="ProfilePhoto"
-                                               Aspect="AspectFill"
-                                               WidthRequest="72" HeightRequest="72"/>
-                                        <Label x:Name="ProfileEmoji"
-                                               Text="🔥"
-                                               FontSize="32"
+                                <!-- 80x80 Avatar with bottom-right camera badge -->
+                                <Grid WidthRequest="80" HeightRequest="80" HorizontalOptions="Center">
+                                    <Border WidthRequest="72" HeightRequest="72"
+                                            StrokeThickness="2"
+                                            Stroke="{StaticResource CoralRed}"
+                                            StrokeShape="RoundRectangle 36"
+                                            BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                                            HorizontalOptions="Center"
+                                            VerticalOptions="Center">
+                                        <Grid>
+                                            <Image x:Name="ProfilePhoto"
+                                                   Aspect="AspectFill"
+                                                   WidthRequest="72" HeightRequest="72"/>
+                                            <Label x:Name="ProfileEmoji"
+                                                   Text="🔥"
+                                                   FontSize="32"
+                                                   HorizontalOptions="Center"
+                                                   VerticalOptions="Center"/>
+                                        </Grid>
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnProfilePhotoTapped"/>
+                                        </Border.GestureRecognizers>
+                                    </Border>
+
+                                    <!-- Camera Badge Overlay -->
+                                    <Border WidthRequest="26" HeightRequest="26"
+                                            StrokeThickness="1.5"
+                                            Stroke="{StaticResource ObsidianBorder}"
+                                            StrokeShape="RoundRectangle 13"
+                                            BackgroundColor="#222834"
+                                            HorizontalOptions="End"
+                                            VerticalOptions="End">
+                                        <Label Text="📷"
+                                               FontSize="11"
                                                HorizontalOptions="Center"
                                                VerticalOptions="Center"/>
-                                    </Grid>
-                                    <Border.GestureRecognizers>
-                                        <TapGestureRecognizer Tapped="OnProfilePhotoTapped"/>
-                                    </Border.GestureRecognizers>
-                                </Border>
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnProfilePhotoTapped"/>
+                                        </Border.GestureRecognizers>
+                                    </Border>
+                                </Grid>
 
-                                <VerticalStackLayout Spacing="2" HorizontalOptions="Center">
-                                    <Label x:Name="ProfileNicknameLabel"
-                                           Text="User"
-                                           FontFamily="InterBold"
-                                           FontSize="18"
-                                           TextColor="{StaticResource TextPrimary}"
-                                           HorizontalTextAlignment="Center"/>
+                                <VerticalStackLayout Spacing="3" HorizontalOptions="Center">
+                                    <!-- Name with Pencil Icon -->
+                                    <Grid ColumnDefinitions="Auto, Auto" ColumnSpacing="8" HorizontalOptions="Center">
+                                        <Label x:Name="ProfileNicknameLabel"
+                                               Text="User"
+                                               FontFamily="InterBold"
+                                               FontSize="18"
+                                               TextColor="{StaticResource TextPrimary}"
+                                               VerticalOptions="Center"
+                                               HorizontalTextAlignment="Center"/>
+                                        <Border Grid.Column="1"
+                                                WidthRequest="26" HeightRequest="26"
+                                                StrokeThickness="1"
+                                                Stroke="{StaticResource ObsidianBorder}"
+                                                StrokeShape="RoundRectangle 13"
+                                                BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                                                VerticalOptions="Center">
+                                            <Label Text="✏️" FontSize="11" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                            <Border.GestureRecognizers>
+                                                <TapGestureRecognizer Tapped="OnEditNameClicked"/>
+                                            </Border.GestureRecognizers>
+                                        </Border>
+                                    </Grid>
+
+                                    <!-- Single @username handle -->
                                     <Label x:Name="ProfileUsernameLabel"
                                            Text="@tiktok_user"
                                            FontFamily="InterMedium"
@@ -141,70 +180,41 @@
                                 </VerticalStackLayout>
                             </VerticalStackLayout>
 
-                            <!-- Follower / Following Stats Bar -->
-                            <Grid ColumnDefinitions="*, *" ColumnSpacing="10">
-                                <!-- Following Capsule -->
-                                <Border StrokeThickness="1"
-                                        Stroke="{StaticResource ObsidianBorder}"
-                                        StrokeShape="RoundRectangle 14"
-                                        BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
-                                        Padding="12,8">
-                                    <VerticalStackLayout Spacing="1" HorizontalOptions="Center">
-                                        <Label x:Name="FollowingCountLabel"
-                                               Text="--"
-                                               FontFamily="InterBold"
-                                               FontSize="15"
-                                               TextColor="{StaticResource TextPrimary}"
-                                               HorizontalTextAlignment="Center"/>
-                                        <Label Text="Following"
-                                               FontFamily="InterRegular"
-                                               FontSize="11"
-                                               TextColor="{StaticResource TextSecondary}"
-                                               HorizontalTextAlignment="Center"/>
-                                    </VerticalStackLayout>
-                                </Border>
-
-                                <!-- Followers Capsule -->
-                                <Border Grid.Column="1"
-                                        StrokeThickness="1"
-                                        Stroke="{StaticResource ObsidianBorder}"
-                                        StrokeShape="RoundRectangle 14"
-                                        BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
-                                        Padding="12,8">
-                                    <VerticalStackLayout Spacing="1" HorizontalOptions="Center">
-                                        <Label x:Name="FollowersCountLabel"
-                                               Text="--"
-                                               FontFamily="InterBold"
-                                               FontSize="15"
-                                               TextColor="{StaticResource TextPrimary}"
-                                               HorizontalTextAlignment="Center"/>
-                                        <Label Text="Followers"
-                                               FontFamily="InterRegular"
-                                               FontSize="11"
-                                               TextColor="{StaticResource TextSecondary}"
-                                               HorizontalTextAlignment="Center"/>
-                                    </VerticalStackLayout>
-                                </Border>
-                            </Grid>
-
-                            <!-- Bio Block -->
+                            <!-- Bio Block (Editable) -->
                             <Border x:Name="BioContainer"
                                     StrokeThickness="1"
                                     Stroke="{StaticResource ObsidianBorder}"
-                                    StrokeShape="RoundRectangle 12"
+                                    StrokeShape="RoundRectangle 14"
                                     BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
-                                    Padding="12,10">
-                                <VerticalStackLayout Spacing="4">
-                                    <Label Text="Bio"
-                                           FontFamily="InterSemiBold"
-                                           FontSize="11"
-                                           TextColor="{StaticResource BrandSubtitle}"/>
+                                    Padding="14,10">
+                                <VerticalStackLayout Spacing="6">
+                                    <Grid ColumnDefinitions="*, Auto">
+                                        <Label Text="Bio"
+                                               FontFamily="InterSemiBold"
+                                               FontSize="11"
+                                               TextColor="{StaticResource BrandSubtitle}"
+                                               VerticalOptions="Center"/>
+                                        <Label Grid.Column="1"
+                                               Text="✏️ Edit"
+                                               FontFamily="InterMedium"
+                                               FontSize="11"
+                                               TextColor="{StaticResource VioletPurple}"
+                                               VerticalOptions="Center">
+                                            <Label.GestureRecognizers>
+                                                <TapGestureRecognizer Tapped="OnEditBioClicked"/>
+                                            </Label.GestureRecognizers>
+                                        </Label>
+                                    </Grid>
                                     <Label x:Name="BioLabel"
-                                           Text="TikTok Streak Automation Operator 🔥"
+                                           Text="Add your bio"
                                            FontFamily="InterRegular"
-                                           FontSize="12"
+                                           FontSize="13"
                                            TextColor="{StaticResource TextSecondary}"
-                                           LineBreakMode="WordWrap"/>
+                                           LineBreakMode="WordWrap">
+                                        <Label.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnEditBioClicked"/>
+                                        </Label.GestureRecognizers>
+                                    </Label>
                                 </VerticalStackLayout>
                             </Border>
 
@@ -504,7 +514,7 @@
                                 </Grid>
                             </Grid>
 
-                            <Label Text="Enter time in HH:MM (e.g. 08:30)"
+                            <Label Text="Enter time in 12-hour format (e.g. 06:30)"
                                    FontFamily="InterRegular" FontSize="11"
                                    TextColor="{StaticResource TextSecondary}"
                                    HorizontalOptions="Center"/>
@@ -512,7 +522,7 @@
 
                         <!-- Hidden TimePicker for platform synchronization -->
                         <TimePicker x:Name="ScheduleTimePicker"
-                                    Format="HH:mm"
+                                    Format="h:mm tt"
                                     IsVisible="False"
                                     PropertyChanged="OnTimePickerChanged"/>
 

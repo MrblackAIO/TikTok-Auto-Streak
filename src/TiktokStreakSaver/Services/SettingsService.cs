@@ -528,7 +528,7 @@ public class SettingsService
     /// When true, scheduling uses a fixed daily clock time (Hour:Minute) instead of
     /// the rolling interval based on last run.
     /// </summary>
-    public bool GetUseFixedTime() => _storage.GetBool(UseFixedTimeKey, false);
+    public bool GetUseFixedTime() => _storage.GetBool(UseFixedTimeKey, true);
 
     public void SetUseFixedTime(bool value) => _storage.SetBool(UseFixedTimeKey, value);
 

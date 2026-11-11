@@ -324,7 +324,7 @@ public partial class DashboardPage : ContentPage
             var timeSince = DateTime.Now - lastRun.Value;
             if (timeSince.TotalMinutes < 60) LastRunLabel.Text = $"{(int)timeSince.TotalMinutes} minutes ago";
             else if (timeSince.TotalHours < 24) LastRunLabel.Text = $"{(int)timeSince.TotalHours} hours ago";
-            else LastRunLabel.Text = lastRun.Value.ToString("MMM dd, HH:mm");
+            else LastRunLabel.Text = lastRun.Value.ToString("MMM dd, h:mm tt");
         }
         else LastRunLabel.Text = "Never";
 
@@ -439,7 +439,7 @@ public partial class DashboardPage : ContentPage
         if (timeUntil.TotalMinutes < 60)
             return $"In {(int)timeUntil.TotalMinutes} min";
 
-        var time = nextRun.ToString("HH:mm");
+        var time = nextRun.ToString("h:mm tt");
         var nextDate = nextRun.Date;
         var today = now.Date;
 
@@ -501,11 +501,20 @@ public partial class DashboardPage : ContentPage
         _messageDraft = MessageEditor.Text ?? _messageDraft;
         PersistMessageText();
 
+        // Synchronize the current device time as the new daily schedule
+        var now = DateTime.Now;
+        _settingsService.SetUseFixedTime(true);
+        _settingsService.SetFixedTimeHour(now.Hour);
+        _settingsService.SetFixedTimeMinute(now.Minute);
+        _settingsService.SetScheduled(true);
+
 #if ANDROID
         bool permissionGranted = await RequestNotificationPermission();
         if (!permissionGranted) return;
 
         var context = Platform.CurrentActivity ?? Android.App.Application.Context;
+        TiktokStreakSaver.Platforms.Android.StreakScheduler.ScheduleNextRun(context);
+
         bool started = TiktokStreakSaver.Platforms.Android.StreakScheduler.RunNow(context);
         if (started)
         {

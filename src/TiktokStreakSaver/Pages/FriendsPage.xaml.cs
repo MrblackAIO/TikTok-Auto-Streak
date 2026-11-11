@@ -274,7 +274,7 @@ public partial class FriendsPage : ContentPage
         var healthText = friend.ConsecutiveFailures > 0
             ? $"{friend.ConsecutiveFailures} failure{(friend.ConsecutiveFailures == 1 ? string.Empty : "s")}"
             : friend.LastMessageSent.HasValue
-                ? $"Last active {friend.LastMessageSent.Value:MMM dd, HH:mm}"
+                ? $"Last active {friend.LastMessageSent.Value:MMM dd, h:mm tt}"
                 : "Active partner";
 
         var healthRow = new HorizontalStackLayout { Spacing = 6 };
@@ -311,12 +311,44 @@ public partial class FriendsPage : ContentPage
         };
         editButton.Clicked += async (s, e) =>
         {
-            var promptTitle = friend.IsGroup ? "Edit Group" : "Edit Friend";
-            var promptMessage = friend.IsGroup
-                ? "Enter the group name (must match the TikTok chat header):"
-                : "Enter new display name:";
-            var newName = await DisplayPromptAsync(promptTitle, promptMessage, initialValue: friend.DisplayName ?? friend.Username);
-            if (newName != null) { friend.DisplayName = newName; _settingsService.UpdateFriend(friend); LoadLists(); }
+            var currentStreak = friend.StreakCount > 0 ? friend.StreakCount : (friend.SuccessCount > 0 ? friend.SuccessCount : 0);
+            
+            var action = await DisplayActionSheet(
+                $"Edit {displayName}",
+                "Cancel",
+                null,
+                "Change Display Name",
+                $"Set Streak Day Count (Current: {currentStreak} days)");
+
+            if (action == "Change Display Name")
+            {
+                var promptTitle = friend.IsGroup ? "Edit Group Name" : "Edit Display Name";
+                var promptMessage = friend.IsGroup
+                    ? "Enter the group name (must match TikTok chat header):"
+                    : "Enter custom display name:";
+                var newName = await DisplayPromptAsync(promptTitle, promptMessage, initialValue: friend.DisplayName ?? friend.Username);
+                if (newName != null)
+                {
+                    friend.DisplayName = newName.Trim();
+                    _settingsService.UpdateFriend(friend);
+                    LoadLists();
+                }
+            }
+            else if (action != null && action.StartsWith("Set Streak Day Count"))
+            {
+                var countStr = await DisplayPromptAsync(
+                    "Streak Day Count",
+                    "Enter the current consecutive streak day count:",
+                    initialValue: currentStreak > 0 ? currentStreak.ToString() : "1",
+                    keyboard: Keyboard.Numeric);
+
+                if (int.TryParse(countStr, out int days) && days >= 0)
+                {
+                    friend.StreakCount = days;
+                    _settingsService.UpdateFriend(friend);
+                    LoadLists();
+                }
+            }
         };
         Grid.SetColumn(editButton, 2);
         grid.Children.Add(editButton);

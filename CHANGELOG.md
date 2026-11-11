@@ -7,7 +7,19 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
-## [2.0.7] - 2026-11-11
+## [2.0.8] - 2026-11-11
+
+### Added
+- **Friends Streak Day Count Input**: Added a prompt sheet to friend "Edit" action allowing users to directly adjust and enter their current consecutive streak day count (`friend.StreakCount`).
+- **Streak Count Auto-Increment**: Guaranteed automatic streak day counter increment (+1) after each successfully sent message, even when TikTok DM headers lack OCR scrape markers.
+- **Editable Profile Name & Bio**: Added interactive pencil icon (`✏️`) beside display name and edit button on Bio with default `"Add your bio"` placeholder.
+- **Camera Overlay Badge**: Added an avatar camera badge overlay (`📷`) at the bottom-right of the user profile photo signaling photo customization.
+- **Immediate 12-Hour Schedule Arming**: Scheduling now defaults to fixed-time 12-hour AM/PM mode. Adjusting hour, minute, or AM/PM automatically arms the Android `AlarmManager` immediately for today or tomorrow and updates Home status.
+- **Run Automation Now Schedule Sync**: Triggering "RUN AUTOMATION NOW" from the Home page captures the current device clock time, sets it as the new daily recurring schedule, and schedules the next automated run for tomorrow at that exact time.
+
+### Changed
+- **12-Hour AM/PM Time Format**: Standardized all user-facing schedules, last run timestamps, and verified session checks to 12-hour format with AM/PM (`h:mm tt`) instead of 24-hour military time.
+- **Profile Layout Polish**: Removed Following and Followers metric capsules, resolved duplicate username display by prioritizing actual TikTok nickname / display name over handle.
 
 ### Added
 - **Instant Custom Notification Sound (`new_notification.mp3`)**: Bundled custom audio directly into Android package raw resources (`res/raw/new_notification.mp3`).
