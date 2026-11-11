@@ -7,6 +7,13 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [2.0.4] - 2026-11-11
+
+### Fixed
+- **Profile Navigation Crash**: Resolved fatal `System.InvalidCastException` thrown during `ProfilePage.OnAppearing` due to an invalid cast of `ObsidianBorder` color resource to `Brush` in `UpdateAmPmPills`.
+- **Safe Dynamic Colors**: Standardized dynamic theme color resolution using `GetThemeColor` with fallback defaults, preventing UI thread unhandled exceptions.
+- **Event Recursion Safeguard**: Prevented potential event loops between native `TimePicker` and the HH:MM input fields using `_suppressTimePickerChanged`.
+
 ## [2.0.3] - 2026-11-11
 
 ### Added

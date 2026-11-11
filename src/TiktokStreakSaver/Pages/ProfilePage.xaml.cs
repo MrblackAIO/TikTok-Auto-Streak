@@ -18,6 +18,7 @@ public partial class ProfilePage : ContentPage
 #endif
     private readonly RadialTimerDrawable _radialTimerDrawable = new RadialTimerDrawable();
     private bool _suppressTimeInputChanged = false;
+    private bool _suppressTimePickerChanged = false;
 
     public ProfilePage()
     {
@@ -46,70 +47,87 @@ public partial class ProfilePage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        SessionState.Changed -= OnSessionStateChanged;
-        SessionState.Changed += OnSessionStateChanged;
-
-        LoadProfilePhoto();
-
-        DisplayNameEntry.Text = _sessionService.GetDisplayName();
-
-        ScheduleSwitch.IsToggled = _settingsService.IsScheduled();
-        SkipUnreachableSwitch.IsToggled = _settingsService.GetSkipUnreachableUsers();
-        _suppressRandomizeToggle = true;
         try
         {
-            RandomizeMessagesSwitch.IsToggled = _settingsService.GetRandomizeNormalMessages();
-        }
-        finally
-        {
-            _suppressRandomizeToggle = false;
-        }
-        SendOnBatteryLowSwitch.IsToggled = _settingsService.GetSendOnBatteryLow();
+            SessionState.Changed -= OnSessionStateChanged;
+            SessionState.Changed += OnSessionStateChanged;
 
-        _suppressChatPriorityChanged = true;
-        ChatPriorityPicker.SelectedIndex = _settingsService.GetChatPriority() switch
-        {
-            SettingsService.ChatPriorityFriendsFirst => 1,
-            SettingsService.ChatPriorityGroupsFirst => 2,
-            _ => 0
-        };
-        _suppressChatPriorityChanged = false;
+            LoadProfilePhoto();
 
-        FixedTimeSwitch.IsToggled = _settingsService.GetUseFixedTime();
-        var scheduleTime = new TimeSpan(
-            _settingsService.GetFixedTimeHour(),
-            _settingsService.GetFixedTimeMinute(), 0);
-        ScheduleTimePicker.Time = scheduleTime;
-        UpdateRadialTimerDisplay(scheduleTime);
-        ScheduleOptionsPanel.IsVisible = ScheduleSwitch.IsToggled;
-        TimePickerRow.IsVisible = FixedTimeSwitch.IsToggled;
-        IntervalPanel.IsVisible = !FixedTimeSwitch.IsToggled;
+            DisplayNameEntry.Text = _sessionService.GetDisplayName();
 
-        _suppressIntervalChanged = true;
-        try
-        {
-            var hours = _settingsService.GetIntervalHours();
-            IntervalHoursStepper.Value = hours;
-            UpdateIntervalLabels();
-        }
-        finally
-        {
-            _suppressIntervalChanged = false;
-        }
+            ScheduleSwitch.IsToggled = _settingsService.IsScheduled();
+            SkipUnreachableSwitch.IsToggled = _settingsService.GetSkipUnreachableUsers();
+            _suppressRandomizeToggle = true;
+            try
+            {
+                RandomizeMessagesSwitch.IsToggled = _settingsService.GetRandomizeNormalMessages();
+            }
+            finally
+            {
+                _suppressRandomizeToggle = false;
+            }
+            SendOnBatteryLowSwitch.IsToggled = _settingsService.GetSendOnBatteryLow();
 
-        VersionLabel.Text = $"v{AppInfo.Current.VersionString} (Premium) • Signed Version";
+            _suppressChatPriorityChanged = true;
+            ChatPriorityPicker.SelectedIndex = _settingsService.GetChatPriority() switch
+            {
+                SettingsService.ChatPriorityFriendsFirst => 1,
+                SettingsService.ChatPriorityGroupsFirst => 2,
+                _ => 0
+            };
+            _suppressChatPriorityChanged = false;
+
+            FixedTimeSwitch.IsToggled = _settingsService.GetUseFixedTime();
+            var scheduleTime = new TimeSpan(
+                _settingsService.GetFixedTimeHour(),
+                _settingsService.GetFixedTimeMinute(), 0);
+
+            _suppressTimePickerChanged = true;
+            try
+            {
+                ScheduleTimePicker.Time = scheduleTime;
+            }
+            finally
+            {
+                _suppressTimePickerChanged = false;
+            }
+
+            UpdateRadialTimerDisplay(scheduleTime);
+            ScheduleOptionsPanel.IsVisible = ScheduleSwitch.IsToggled;
+            TimePickerRow.IsVisible = FixedTimeSwitch.IsToggled;
+            IntervalPanel.IsVisible = !FixedTimeSwitch.IsToggled;
+
+            _suppressIntervalChanged = true;
+            try
+            {
+                var hours = _settingsService.GetIntervalHours();
+                IntervalHoursStepper.Value = hours;
+                UpdateIntervalLabels();
+            }
+            finally
+            {
+                _suppressIntervalChanged = false;
+            }
+
+            VersionLabel.Text = $"v{AppInfo.Current.VersionString} (Premium) • Signed Version";
 
 #if IOS
-        IosShortcutsSettingsPanel.IsVisible = true;
-        AndroidSchedulingPanel.IsVisible = false;
-        CheckUpdatesButton.IsVisible = false;
-        AltStoreUpdatesLabel.IsVisible = true;
+            IosShortcutsSettingsPanel.IsVisible = true;
+            AndroidSchedulingPanel.IsVisible = false;
+            CheckUpdatesButton.IsVisible = false;
+            AltStoreUpdatesLabel.IsVisible = true;
 #else
-        IosShortcutsSettingsPanel.IsVisible = false;
-        AndroidSchedulingPanel.IsVisible = true;
+            IosShortcutsSettingsPanel.IsVisible = false;
+            AndroidSchedulingPanel.IsVisible = true;
 #endif
 
-        await UpdateLoginButtonStateAsync();
+            await UpdateLoginButtonStateAsync();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[ProfilePage] OnAppearing error: {ex}");
+        }
     }
 
     protected override void OnDisappearing()
@@ -186,42 +204,49 @@ public partial class ProfilePage : ContentPage
 
     private async Task ApplyLoginButtonStateAsync(bool isSessionValid)
     {
-        if (isSessionValid)
+        try
         {
-            LoggedOutPanel.IsVisible = false;
-            LoggedInProfilePanel.IsVisible = true;
-            SessionCardTitle.Text = "TikTok Profile";
-            SessionDot.BackgroundColor = GetThemeColor("Success", "#10B981");
+            if (isSessionValid)
+            {
+                LoggedOutPanel.IsVisible = false;
+                LoggedInProfilePanel.IsVisible = true;
+                SessionCardTitle.Text = "TikTok Profile";
+                SessionDot.BackgroundColor = GetThemeColor("Success", "#10B981");
 
-            var nick = _sessionService.GetTikTokNickname();
-            if (string.IsNullOrWhiteSpace(nick))
-                nick = _sessionService.GetDisplayName();
-            ProfileNicknameLabel.Text = string.IsNullOrWhiteSpace(nick) ? "User" : nick;
+                var nick = _sessionService.GetTikTokNickname();
+                if (string.IsNullOrWhiteSpace(nick))
+                    nick = _sessionService.GetDisplayName();
+                ProfileNicknameLabel.Text = string.IsNullOrWhiteSpace(nick) ? "User" : nick;
 
-            var username = _sessionService.GetTikTokUsername();
-            ProfileUsernameLabel.Text = string.IsNullOrWhiteSpace(username) ? "@tiktok_user" : $"@{username}";
+                var username = _sessionService.GetTikTokUsername();
+                ProfileUsernameLabel.Text = string.IsNullOrWhiteSpace(username) ? "@tiktok_user" : $"@{username}";
 
-            var bio = _sessionService.GetTikTokBio();
-            BioLabel.Text = string.IsNullOrWhiteSpace(bio) ? "TikTok Streak Automation Operator 🔥" : bio;
+                var bio = _sessionService.GetTikTokBio();
+                BioLabel.Text = string.IsNullOrWhiteSpace(bio) ? "TikTok Streak Automation Operator 🔥" : bio;
 
-            int followers = _sessionService.GetTikTokFollowers();
-            FollowersCountLabel.Text = FormatMetricCount(followers);
+                int followers = _sessionService.GetTikTokFollowers();
+                FollowersCountLabel.Text = FormatMetricCount(followers);
 
-            int following = _sessionService.GetTikTokFollowing();
-            FollowingCountLabel.Text = FormatMetricCount(following);
+                int following = _sessionService.GetTikTokFollowing();
+                FollowingCountLabel.Text = FormatMetricCount(following);
 
-            var lastCheck = _sessionService.GetLastCheckTime();
-            SessionLastCheckLabel.Text = lastCheck.HasValue ? $"Verified {lastCheck.Value:MMM dd, HH:mm}" : "Verified and ready";
+                var lastCheck = _sessionService.GetLastCheckTime();
+                SessionLastCheckLabel.Text = lastCheck.HasValue ? $"Verified {lastCheck.Value:MMM dd, HH:mm}" : "Verified and ready";
 
-            LoadProfilePhoto();
+                LoadProfilePhoto();
+            }
+            else
+            {
+                LoggedOutPanel.IsVisible = true;
+                LoggedInProfilePanel.IsVisible = false;
+                SessionCardTitle.Text = "Session Settings";
+                SessionDot.BackgroundColor = GetThemeColor("CoralRed", "#FF3B5C");
+                DisplayNameEntry.Text = _sessionService.GetDisplayName();
+            }
         }
-        else
+        catch (Exception ex)
         {
-            LoggedOutPanel.IsVisible = true;
-            LoggedInProfilePanel.IsVisible = false;
-            SessionCardTitle.Text = "Session Settings";
-            SessionDot.BackgroundColor = GetThemeColor("CoralRed", "#FF3B5C");
-            DisplayNameEntry.Text = _sessionService.GetDisplayName();
+            System.Diagnostics.Debug.WriteLine($"[ProfilePage] ApplyLoginButtonStateAsync error: {ex.Message}");
         }
     }
 
@@ -284,7 +309,7 @@ public partial class ProfilePage : ContentPage
 
     private void OnTimePickerChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (e.PropertyName != nameof(TimePicker.Time)) return;
+        if (e.PropertyName != nameof(TimePicker.Time) || _suppressTimePickerChanged) return;
         var time = ScheduleTimePicker.Time;
         _settingsService.SetFixedTimeHour(time.Hours);
         _settingsService.SetFixedTimeMinute(time.Minutes);
@@ -326,30 +351,35 @@ public partial class ProfilePage : ContentPage
 
     private void UpdateAmPmPills(bool isAm)
     {
-        if (Application.Current?.Resources == null) return;
-        var purple = (Color)Application.Current.Resources["VioletPurple"];
-        var border = (Brush)Application.Current.Resources["ObsidianBorder"];
-        var elevated = (Color)Application.Current.Resources["ObsidianSurfaceElevated"];
-        var muted = (Color)Application.Current.Resources["TextSecondary"];
+        if (AmPill == null || PmPill == null || AmPillLabel == null || PmPillLabel == null)
+            return;
+
+        var purple = GetThemeColor("VioletPurple", "#8B5CF6");
+        var borderColor = GetThemeColor("ObsidianBorder", "#1F2430");
+        var elevated = GetThemeColor("ObsidianSurfaceElevated", "#161B24");
+        var muted = GetThemeColor("TextSecondary", "#8E95A5");
+
+        var purpleBrush = new SolidColorBrush(purple);
+        var borderBrush = new SolidColorBrush(borderColor);
 
         if (isAm)
         {
             AmPill.BackgroundColor = Color.FromArgb("#268B5CF6");
-            AmPill.Stroke = new SolidColorBrush(purple);
+            AmPill.Stroke = purpleBrush;
             AmPillLabel.TextColor = purple;
 
             PmPill.BackgroundColor = elevated;
-            PmPill.Stroke = border;
+            PmPill.Stroke = borderBrush;
             PmPillLabel.TextColor = muted;
         }
         else
         {
             PmPill.BackgroundColor = Color.FromArgb("#268B5CF6");
-            PmPill.Stroke = new SolidColorBrush(purple);
+            PmPill.Stroke = purpleBrush;
             PmPillLabel.TextColor = purple;
 
             AmPill.BackgroundColor = elevated;
-            AmPill.Stroke = border;
+            AmPill.Stroke = borderBrush;
             AmPillLabel.TextColor = muted;
         }
     }
@@ -357,6 +387,7 @@ public partial class ProfilePage : ContentPage
     private void OnScheduleTimeInputChanged(object? sender, TextChangedEventArgs e)
     {
         if (_suppressTimeInputChanged) return;
+        if (ScheduleHourEntry == null || ScheduleMinuteEntry == null) return;
 
         if (int.TryParse(ScheduleHourEntry.Text, out var h) &&
             int.TryParse(ScheduleMinuteEntry.Text, out var m))
@@ -377,7 +408,16 @@ public partial class ProfilePage : ContentPage
             int minute = Math.Clamp(m, 0, 59);
             var newTime = new TimeSpan(hour24, minute, 0);
 
-            ScheduleTimePicker.Time = newTime;
+            _suppressTimePickerChanged = true;
+            try
+            {
+                ScheduleTimePicker.Time = newTime;
+            }
+            finally
+            {
+                _suppressTimePickerChanged = false;
+            }
+
             _settingsService.SetFixedTimeHour(hour24);
             _settingsService.SetFixedTimeMinute(minute);
 
