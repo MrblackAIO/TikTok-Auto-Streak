@@ -23,7 +23,8 @@ jobs:
 
       - name: Build and Package APK
         run: |
-          dotnet publish src/TiktokStreakSaver/TiktokStreakSaver.csproj -f net9.0-android -c Release -p:AndroidPackageFormat=apk
+          dotnet restore src/TiktokStreakSaver/TiktokStreakSaver.csproj -p:TargetFramework=net9.0-android
+          dotnet publish src/TiktokStreakSaver/TiktokStreakSaver.csproj -f net9.0-android -c Release -p:AndroidPackageFormat=apk --no-restore
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
