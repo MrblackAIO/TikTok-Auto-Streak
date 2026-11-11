@@ -63,7 +63,7 @@
                    TextColor="#8E95A5"
                    HorizontalTextAlignment="Center"/>
 
-            <Label Text="v2.0.0 (Premium) • Signed Version"
+            <Label x:Name="VersionLabel"
                    FontFamily="InterRegular"
                    FontSize="11"
                    TextColor="#6B7280"

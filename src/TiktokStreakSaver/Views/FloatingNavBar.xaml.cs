@@ -2,17 +2,26 @@ namespace TiktokStreakSaver.Views;
 
 /// <summary>
 /// Custom floating pill navigation bar.
-/// Handles tab switching via Shell routing and manages visual active-state indicators.
+/// Handles tab switching via Shell routing, debounces navigation, and manages visual active-state indicators.
 /// </summary>
 [Microsoft.Maui.Controls.Internals.Preserve(AllMembers = true)]
 public partial class FloatingNavBar : ContentView
 {
+    private static bool _isNavigating;
+    private static readonly Color ActiveBg = Color.FromArgb("#25FF3B5C"); // Soft Coral-Red ambient glow
+    private static readonly Color ActiveColor = Color.FromArgb("#FF3B5C"); // Vivid Coral-Red
+    private static readonly Color InactiveColor = Color.FromArgb("#8E95A5"); // Discreet inactive gray
+
     /// <summary>
     /// Bindable property to set which tab is currently selected.
     /// Values: "Dashboard", "History", "Friends", "Profile"
     /// </summary>
     public static readonly BindableProperty CurrentTabProperty =
-        BindableProperty.Create(nameof(CurrentTab), typeof(string), typeof(FloatingNavBar), "Dashboard",
+        BindableProperty.Create(
+            nameof(CurrentTab),
+            typeof(string),
+            typeof(FloatingNavBar),
+            "Dashboard",
             propertyChanged: OnCurrentTabChanged);
 
     public string CurrentTab
@@ -24,11 +33,19 @@ public partial class FloatingNavBar : ContentView
     public FloatingNavBar()
     {
         InitializeComponent();
+        Loaded += OnNavbarLoaded;
+    }
+
+    private void OnNavbarLoaded(object? sender, EventArgs e)
+    {
+        _isNavigating = false;
+        UpdateVisualState(CurrentTab);
     }
 
     protected override void OnParentSet()
     {
         base.OnParentSet();
+        _isNavigating = false;
         UpdateVisualState(CurrentTab);
     }
 
@@ -38,88 +55,106 @@ public partial class FloatingNavBar : ContentView
             nav.UpdateVisualState(tab);
     }
 
-    private Color GetThemeColor(string key, string fallbackHex)
+    public void UpdateVisualState(string activeTab)
     {
-        if (Application.Current != null && Application.Current.Resources.TryGetValue(key, out var resource) && resource is Color color)
-            return color;
-        return Color.FromArgb(fallbackHex);
-    }
-
-    private void UpdateVisualState(string activeTab)
-    {
-        var activeBg = Color.FromArgb("#25FF3B5C"); // Soft Coral-Red ambient glow
-        var activeText = Color.FromArgb("#FF3B5C");  // Vivid Coral-Red
-        var inactiveText = Color.FromArgb("#8E95A5");// Discreet inactive gray
-
+        // Reset all indicator backgrounds
         DashboardIndicator.BackgroundColor = Colors.Transparent;
         HistoryIndicator.BackgroundColor = Colors.Transparent;
         FriendsIndicator.BackgroundColor = Colors.Transparent;
         ProfileIndicator.BackgroundColor = Colors.Transparent;
 
-        DashboardIcon.Fill = new SolidColorBrush(inactiveText);
-        HistoryIcon.Fill = new SolidColorBrush(inactiveText);
-        FriendsIcon.Fill = new SolidColorBrush(inactiveText);
-        ProfileIcon.Fill = new SolidColorBrush(inactiveText);
+        // Reset all icon fills
+        DashboardIcon.Fill = new SolidColorBrush(InactiveColor);
+        HistoryIcon.Fill = new SolidColorBrush(InactiveColor);
+        FriendsIcon.Fill = new SolidColorBrush(InactiveColor);
+        ProfileIcon.Fill = new SolidColorBrush(InactiveColor);
 
-        DashboardLabel.TextColor = inactiveText;
-        HistoryLabel.TextColor = inactiveText;
-        FriendsLabel.TextColor = inactiveText;
-        ProfileLabel.TextColor = inactiveText;
+        // Reset all label colors
+        DashboardLabel.TextColor = InactiveColor;
+        HistoryLabel.TextColor = InactiveColor;
+        FriendsLabel.TextColor = InactiveColor;
+        ProfileLabel.TextColor = InactiveColor;
 
-        Border activeIndicator;
-        Microsoft.Maui.Controls.Shapes.Path activeIcon;
-        Label activeLabel;
+        // Apply active accent
         switch (activeTab)
         {
             case "History":
-                activeIndicator = HistoryIndicator; activeIcon = HistoryIcon; activeLabel = HistoryLabel; break;
+                HistoryIndicator.BackgroundColor = ActiveBg;
+                HistoryIcon.Fill = new SolidColorBrush(ActiveColor);
+                HistoryLabel.TextColor = ActiveColor;
+                break;
             case "Friends":
-                activeIndicator = FriendsIndicator; activeIcon = FriendsIcon; activeLabel = FriendsLabel; break;
+                FriendsIndicator.BackgroundColor = ActiveBg;
+                FriendsIcon.Fill = new SolidColorBrush(ActiveColor);
+                FriendsLabel.TextColor = ActiveColor;
+                break;
             case "Profile":
-                activeIndicator = ProfileIndicator; activeIcon = ProfileIcon; activeLabel = ProfileLabel; break;
+                ProfileIndicator.BackgroundColor = ActiveBg;
+                ProfileIcon.Fill = new SolidColorBrush(ActiveColor);
+                ProfileLabel.TextColor = ActiveColor;
+                break;
             default:
-                activeIndicator = DashboardIndicator; activeIcon = DashboardIcon; activeLabel = DashboardLabel; break;
+                DashboardIndicator.BackgroundColor = ActiveBg;
+                DashboardIcon.Fill = new SolidColorBrush(ActiveColor);
+                DashboardLabel.TextColor = ActiveColor;
+                break;
         }
-        activeIndicator.BackgroundColor = activeBg;
-        activeIcon.Fill = new SolidColorBrush(activeText);
-        activeLabel.TextColor = activeText;
     }
 
-    private void OnDashboardTapped(object? sender, TappedEventArgs e)
+    private void OnDashboardTapped(object? sender, TappedEventArgs e) =>
+        NavigateTo("Dashboard", "//DashboardPage", DashboardIndicator);
+
+    private void OnHistoryTapped(object? sender, TappedEventArgs e) =>
+        NavigateTo("History", "//HistoryPage", HistoryIndicator);
+
+    private void OnFriendsTapped(object? sender, TappedEventArgs e) =>
+        NavigateTo("Friends", "//FriendsPage", FriendsIndicator);
+
+    private void OnProfileTapped(object? sender, TappedEventArgs e) =>
+        NavigateTo("Profile", "//ProfilePage", ProfileIndicator);
+
+    private async void NavigateTo(string targetTab, string route, View indicator)
     {
-        if (CurrentTab == "Dashboard") return;
-        UpdateVisualState("Dashboard");
-        _ = AnimatePress(DashboardIndicator);
-        _ = Shell.Current.GoToAsync("//DashboardPage", false);
+        if (CurrentTab == targetTab || _isNavigating)
+            return;
+
+        _isNavigating = true;
+        UpdateVisualState(targetTab);
+
+        // Immediate tactile micro-feedback
+        PlayPressAnimation(indicator);
+
+        try
+        {
+            if (Shell.Current != null)
+            {
+                var navTask = Shell.Current.GoToAsync(route, false);
+                await Task.WhenAny(navTask, Task.Delay(2000));
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[FloatingNavBar] Navigation to {route} failed: {ex.Message}");
+        }
+        finally
+        {
+            // Restore visual state back to this page's own CurrentTab in case navigation failed
+            // or when this page is navigated back to later.
+            UpdateVisualState(CurrentTab);
+            _isNavigating = false;
+        }
     }
 
-    private void OnHistoryTapped(object? sender, TappedEventArgs e)
+    private static async void PlayPressAnimation(View indicator)
     {
-        if (CurrentTab == "History") return;
-        UpdateVisualState("History");
-        _ = AnimatePress(HistoryIndicator);
-        _ = Shell.Current.GoToAsync("//HistoryPage", false);
-    }
-
-    private void OnFriendsTapped(object? sender, TappedEventArgs e)
-    {
-        if (CurrentTab == "Friends") return;
-        UpdateVisualState("Friends");
-        _ = AnimatePress(FriendsIndicator);
-        _ = Shell.Current.GoToAsync("//FriendsPage", false);
-    }
-
-    private void OnProfileTapped(object? sender, TappedEventArgs e)
-    {
-        if (CurrentTab == "Profile") return;
-        UpdateVisualState("Profile");
-        _ = AnimatePress(ProfileIndicator);
-        _ = Shell.Current.GoToAsync("//ProfilePage", false);
-    }
-
-    private static async Task AnimatePress(View target)
-    {
-        await target.ScaleTo(0.85, 60, Easing.CubicIn);
-        await target.ScaleTo(1.0, 100, Easing.CubicOut);
+        try
+        {
+            await indicator.ScaleTo(0.88, 45, Easing.CubicIn);
+            await indicator.ScaleTo(1.0, 65, Easing.CubicOut);
+        }
+        catch
+        {
+            indicator.Scale = 1.0;
+        }
     }
 }
