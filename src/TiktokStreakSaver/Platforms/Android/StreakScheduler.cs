@@ -202,18 +202,12 @@ public static class StreakScheduler
 
     /// <summary>
     /// Run the service immediately. Returns false if automation is already running.
+    /// The existing daily schedule is left intact.
     /// </summary>
     public static bool RunNow(Context context)
     {
         if (StreakService.IsRunning)
             return false;
-
-        var settingsService = new SettingsService();
-        if (settingsService.IsScheduled())
-        {
-            CancelSchedule(context);
-            settingsService.SetScheduled(true);
-        }
 
         var serviceIntent = new Intent(context, typeof(StreakService));
 

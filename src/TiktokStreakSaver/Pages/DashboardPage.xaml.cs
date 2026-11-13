@@ -295,6 +295,10 @@ public partial class DashboardPage : ContentPage
             if (remoteVersion == lastRemoteSeen || remoteVersion == currentVersion) return;
             if (Navigation.ModalStack.Any(p => p is AboutPopupPage)) return;
 
+            var context = Platform.CurrentActivity ?? Android.App.Application.Context;
+            TiktokStreakSaver.Platforms.Android.Services.UpdateNotificationHelper.PostUpdateNotification(
+                context, remoteVersion, updateCheck.ApkDownloadUrl);
+
             await MainThread.InvokeOnMainThreadAsync(async () =>
                 await Navigation.PushModalAsync(new AboutPopupPage(
                     "Update Available!", remoteVersion, updateCheck.Changelog, true, updateCheck.ApkDownloadUrl)));
@@ -501,20 +505,11 @@ public partial class DashboardPage : ContentPage
         _messageDraft = MessageEditor.Text ?? _messageDraft;
         PersistMessageText();
 
-        // Synchronize the current device time as the new daily schedule
-        var now = DateTime.Now;
-        _settingsService.SetUseFixedTime(true);
-        _settingsService.SetFixedTimeHour(now.Hour);
-        _settingsService.SetFixedTimeMinute(now.Minute);
-        _settingsService.SetScheduled(true);
-        _settingsService.SetLastRunTime(now);
-
 #if ANDROID
         bool permissionGranted = await RequestNotificationPermission();
         if (!permissionGranted) return;
 
         var context = Platform.CurrentActivity ?? Android.App.Application.Context;
-        TiktokStreakSaver.Platforms.Android.StreakScheduler.ScheduleNextRun(context);
 
         bool started = TiktokStreakSaver.Platforms.Android.StreakScheduler.RunNow(context);
         if (started)

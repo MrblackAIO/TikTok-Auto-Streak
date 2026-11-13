@@ -80,21 +80,7 @@ namespace TiktokStreakSaver
 
         private void CreateUpdateNotificationChannel()
         {
-            if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
-            {
-                var channelId = "app_updates_channel";
-                var channelName = "App Updates";
-                var channelDescription = "Notifies when a new version of TikTok AutoStreak is released";
-                var importance = NotificationImportance.High;
-
-                var channel = new NotificationChannel(channelId, channelName, importance)
-                {
-                    Description = channelDescription
-                };
-
-                var notificationManager = (NotificationManager?)GetSystemService(NotificationService);
-                notificationManager?.CreateNotificationChannel(channel);
-            }
+            TiktokStreakSaver.Platforms.Android.Services.UpdateNotificationHelper.CreateUpdateNotificationChannel(this);
         }
 
         private void CreateNotificationChannel()

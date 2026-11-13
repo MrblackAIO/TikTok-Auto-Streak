@@ -46,6 +46,7 @@ public class StreakService : Service
     // ── Service lifecycle flags ──
     private bool _isCancelRequested = false;
     private bool _automationStarted = false;
+    private bool _isCompleted = false;
 
     // ── Run-level mutex: prevents concurrent automation sessions ──
     private static volatile bool _isRunning = false;
@@ -176,6 +177,20 @@ public class StreakService : Service
         {
             _isRunning = false;
         }
+
+        // Re-arm AlarmManager if destroyed prematurely while scheduling is enabled
+        try
+        {
+            if (!_isCompleted && (_settingsService?.IsScheduled() ?? new SettingsService().IsScheduled()))
+            {
+                StreakScheduler.ScheduleNextRun(this);
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"StreakService OnDestroy reschedule error: {ex.Message}");
+        }
+
         ReleaseWakeLock();
         CleanupWebView();
         base.OnDestroy();
@@ -748,6 +763,7 @@ public class StreakService : Service
     {
         try
         {
+            _isCompleted = true;
             if (_runResult != null && _settingsService != null)
             {
                 _runResult.Success = false;
@@ -798,6 +814,7 @@ public class StreakService : Service
     {
         try
         {
+            _isCompleted = true;
             // Update run result
             if (_runResult != null && _settingsService != null)
             {

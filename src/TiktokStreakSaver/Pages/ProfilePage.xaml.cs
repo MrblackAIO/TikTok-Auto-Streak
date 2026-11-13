@@ -744,6 +744,11 @@ public partial class ProfilePage : ContentPage
 
             if (info.HasUpdate)
             {
+#if ANDROID
+                var context = Platform.CurrentActivity ?? Android.App.Application.Context;
+                TiktokStreakSaver.Platforms.Android.Services.UpdateNotificationHelper.PostUpdateNotification(
+                    context, remoteVersion, info.ApkDownloadUrl);
+#endif
                 await Navigation.PushModalAsync(new AboutPopupPage(
                     "Update Available!", remoteVersion, info.Changelog, true, info.ApkDownloadUrl));
             }
