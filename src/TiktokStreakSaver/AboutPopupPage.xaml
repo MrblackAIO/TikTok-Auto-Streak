@@ -19,7 +19,7 @@
                 <Border.Shadow>
                     <Shadow Brush="#80FF3B5C" Offset="0,0" Radius="16" Opacity="0.4"/>
                 </Border.Shadow>
-                <Image Source="autostreaklogo.svg"
+                <Image Source="autostreaklogo.png"
                        WidthRequest="46"
                        HeightRequest="46"
                        Aspect="AspectFit"
