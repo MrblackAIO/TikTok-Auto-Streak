@@ -15,11 +15,11 @@
                              HorizontalOptions="Center"
                              VerticalOptions="Center">
 
-            <!-- Vector Flame Logo (AutoStreakLogo.svg) -->
+            <!-- Vector Flame Logo (AutoStreakLogo.png) -->
             <Image x:Name="LogoImage"
-                   Source="autostreaklogo.svg"
+                   Source="autostreaklogo.png"
                    WidthRequest="180"
-                   HeightRequest="195"
+                   HeightRequest="180"
                    Aspect="AspectFit"
                    HorizontalOptions="Center"/>
 
