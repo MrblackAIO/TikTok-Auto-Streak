@@ -14,7 +14,7 @@
 		<ApplicationTitle>TikTok AutoStreak</ApplicationTitle>
 
 		<!-- App Identifier -->
-		<ApplicationId>com.jon2g.tiktokstreaksaver</ApplicationId>
+		<ApplicationId>com.mrblackaio.tiktokautostreak</ApplicationId>
 
 		<!-- Versions -->
 		<ApplicationDisplayVersion>$(AppDisplayVersion)</ApplicationDisplayVersion>

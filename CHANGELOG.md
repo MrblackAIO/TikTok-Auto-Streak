@@ -7,7 +7,20 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
-## [2.0.12] - 2026-11-11
+## [2.0.14] - 2026-11-15
+
+### Fixed
+- **Post-Update Schedule Recovery**: Resolved the bug where scheduled alarms failed to trigger after updating the APK. Added `ACTION_MY_PACKAGE_REPLACED` in `BootReceiver` so Android OS automatically re-arms the `AlarmManager` schedule the moment an update finishes installing.
+- **App Startup Schedule Re-Sync**: `MainActivity` and `DashboardPage` now verify and re-arm the OS alarm on startup if scheduling is enabled, preventing "ghost" schedule labels in the UI.
+- **Alarm Chain Resilience**: Protected `AlarmReceiver` with a `try/catch` and fallback rescheduling logic so that foreground service startup errors on Android 12+ do not terminate the recurring daily schedule.
+
+### Added
+- **Allow Background Auto-Start Prompt**: Added a dedicated `BtnAutoStart` button inside `PermissionsPanel` on the Dashboard matching existing permission styles.
+- **Generic Brand-Agnostic Settings Integration**: Uses standard Android 9+ `ActivityManager.IsBackgroundRestricted` detection and launches native `App Info` (`Settings.ActionApplicationDetailsSettings`), working reliably across all phone models (TECNO, Xiaomi, Samsung, Google Pixel, OnePlus, Vivo, Oppo) without fragile OEM-specific intents.
+
+### Changed
+- **Official Package ID Migration**: Migrated Android `ApplicationId`, FileProvider, and iOS identifiers to `com.mrblackaio.tiktokautostreak`.
+- **System-Wide Rebranding**: Completely removed legacy `Jon2G` references across constants, bridge files, project configurations, and documentation in favor of `Mrblack` / `MrblackAIO`.
 
 ### Fixed
 - **Chat Automation Speed & Reliability**: Fixed the regression where messaging failed and looped through 50 scrolls. Grounded chat selection in upstream logic and removed the broken `isInsideChatList` selector which falsely disqualified TikTok's `ConversationHeader`.

@@ -1,7 +1,7 @@
 # Generate with: brew install xcodegen && cd src/ios && xcodegen generate
 name: StreakNative
 options:
-  bundleIdPrefix: com.jon2g.tiktokstreaksaver
+  bundleIdPrefix: com.mrblackaio.tiktokautostreak
   deploymentTarget:
     iOS: "17.0"
 settings:
@@ -23,7 +23,7 @@ targets:
       - path: StreakEngine/StreakEngine/Resources
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.jon2g.tiktokstreaksaver.StreakEngine
+        PRODUCT_BUNDLE_IDENTIFIER: com.mrblackaio.tiktokautostreak.StreakEngine
         DEFINES_MODULE: YES
         BUILD_LIBRARY_FOR_DISTRIBUTION: YES
         SKIP_INSTALL: NO
@@ -42,7 +42,7 @@ targets:
     settings:
       base:
         MACH_O_TYPE: staticlib
-        PRODUCT_BUNDLE_IDENTIFIER: com.jon2g.tiktokstreaksaver.StreakAppIntents
+        PRODUCT_BUNDLE_IDENTIFIER: com.mrblackaio.tiktokautostreak.StreakAppIntents
         DEFINES_MODULE: YES
         BUILD_LIBRARY_FOR_DISTRIBUTION: YES
         SKIP_INSTALL: NO
@@ -64,14 +64,14 @@ targets:
       path: StreakSaverExtension/StreakSaverExtension/Entitlements.plist
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.jon2g.tiktokstreaksaver.StreakSaverExtension
+        PRODUCT_BUNDLE_IDENTIFIER: com.mrblackaio.tiktokautostreak.StreakSaverExtension
     info:
       path: StreakSaverExtension/StreakSaverExtension/Info.plist
       properties:
         CFBundleDisplayName: Streak Saver
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
-  # Minimal app used only to register com.jon2g.tiktokstreaksaver with Xcode (MAUI publish needs its profile).
+  # Minimal app used only to register com.mrblackaio.tiktokautostreak with Xcode (MAUI publish needs its profile).
   StreakSaverHost:
     type: application
     platform: iOS
@@ -84,7 +84,7 @@ targets:
       path: StreakSaverHost/Entitlements.plist
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.jon2g.tiktokstreaksaver
+        PRODUCT_BUNDLE_IDENTIFIER: com.mrblackaio.tiktokautostreak
     info:
       path: StreakSaverHost/Info.plist
 schemes:

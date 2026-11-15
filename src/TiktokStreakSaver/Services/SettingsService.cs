@@ -31,6 +31,7 @@ public class SettingsService
     private const string LastRunFailureReasonKey = "last_run_failure_reason";
     private const string BatteryAnticipationDateKey = "battery_anticipation_date";
     private const string SendOnBatteryLowKey = "send_on_battery_low";
+    private const string AutoStartConfiguredKey = "auto_start_configured";
 
     /// <summary>
     /// Maximum hourly retries per calendar day, in addition to the original scheduled run.
@@ -640,6 +641,10 @@ public class SettingsService
     public bool GetSendOnBatteryLow() => _storage.GetBool(SendOnBatteryLowKey, true);
 
     public void SetSendOnBatteryLow(bool value) => _storage.SetBool(SendOnBatteryLowKey, value);
+
+    public bool GetAutoStartConfigured() => _storage.GetBool(AutoStartConfiguredKey, false);
+
+    public void SetAutoStartConfigured(bool value) => _storage.SetBool(AutoStartConfiguredKey, value);
 
     #endregion
 

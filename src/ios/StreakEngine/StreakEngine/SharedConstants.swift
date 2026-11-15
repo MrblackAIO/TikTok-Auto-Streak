@@ -1,7 +1,7 @@
 import Foundation
 
 public enum SharedConstants {
-    public static let appGroupId = "group.com.jon2g.tiktokstreaksaver"
+    public static let appGroupId = "group.com.mrblackaio.tiktokautostreak"
     public static let cookiesFileName = "cookies.json"
     public static let friendsListFileName = "friends_list.json"
     public static let authRequiredKey = "auth_required"

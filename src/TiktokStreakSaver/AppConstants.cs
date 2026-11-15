@@ -6,12 +6,12 @@ namespace TiktokStreakSaver;
 [Microsoft.Maui.Controls.Internals.Preserve(AllMembers = true)]
 public static class AppConstants
 {
-    public const string PackageName = "com.jon2g.tiktokstreaksaver";
+    public const string PackageName = "com.mrblackaio.tiktokautostreak";
 
     public const string ActionStreakAlarm = PackageName + ".ACTION_STREAK_ALARM";
 
     /// <summary>App Group for shared settings, cookies, and extension state.</summary>
-    public const string AppGroupId = "group.com.jon2g.tiktokstreaksaver";
+    public const string AppGroupId = "group.com.mrblackaio.tiktokautostreak";
 
     public const string SharedCookiesFileName = "cookies.json";
 

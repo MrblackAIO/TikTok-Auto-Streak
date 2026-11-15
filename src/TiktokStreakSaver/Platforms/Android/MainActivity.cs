@@ -45,6 +45,9 @@ namespace TiktokStreakSaver
             
             // Request notification permission for Android 13+
             RequestNotificationPermission();
+
+            // Ensure scheduled alarm is armed if active
+            TiktokStreakSaver.Platforms.Android.StreakScheduler.EnsureScheduled(this);
         }
 
         protected override void OnNewIntent(Intent? intent)

@@ -4,7 +4,7 @@
 # Prerequisites:
 #   - macOS, full Xcode, Apple ID signed in (Xcode → Settings → Accounts)
 #   - At least one "Apple Development" certificate in Keychain (create via Xcode if missing)
-#   - App Group enabled for com.jon2g.tiktokstreaksaver (+ extension) in developer.apple.com
+#   - App Group enabled for com.mrblackaio.tiktokautostreak (+ extension) in developer.apple.com
 #
 # Usage:
 #   export DEVELOPMENT_TEAM=XXXXXXXXXX

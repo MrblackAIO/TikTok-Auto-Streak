@@ -82,6 +82,11 @@ public partial class DashboardPage : ContentPage
         LoadSettings();
         UpdateStatus();
 
+#if ANDROID
+        var androidContext = Platform.CurrentActivity ?? Android.App.Application.Context;
+        TiktokStreakSaver.Platforms.Android.StreakScheduler.EnsureScheduled(androidContext);
+#endif
+
         await EvaluatePermissionsAsync();
 
         if (_statusTimer == null)
@@ -617,6 +622,7 @@ public partial class DashboardPage : ContentPage
             BtnNotification.IsVisible = false;
             BtnExactAlarm.IsVisible = false;
             BtnBatteryOpt.IsVisible = false;
+            BtnAutoStart.IsVisible = false;
         }
         else
         {
@@ -627,6 +633,8 @@ public partial class DashboardPage : ContentPage
         var context = Platform.CurrentActivity ?? Android.App.Application.Context;
         bool exactAlarmGranted = TiktokStreakSaver.Platforms.Android.StreakScheduler.CanScheduleExactAlarms(context);
         bool batteryOptGranted = TiktokStreakSaver.Platforms.Android.StreakScheduler.IsIgnoringBatteryOptimizations(context);
+        bool isBgRestricted = TiktokStreakSaver.Platforms.Android.StreakScheduler.IsBackgroundRestricted(context);
+        bool needsAutoStartPrompt = isBgRestricted || !_settingsService.GetAutoStartConfigured();
         bool notificationGranted = true;
         if (Android.OS.Build.VERSION.SdkInt >= Android.OS.BuildVersionCodes.Tiramisu)
         {
@@ -635,8 +643,9 @@ public partial class DashboardPage : ContentPage
         }
         BtnExactAlarm.IsVisible = !exactAlarmGranted;
         BtnBatteryOpt.IsVisible = !batteryOptGranted;
+        BtnAutoStart.IsVisible = needsAutoStartPrompt;
         BtnNotification.IsVisible = !notificationGranted;
-        PermissionsPanel.IsVisible = !exactAlarmGranted || !batteryOptGranted || !notificationGranted;
+        PermissionsPanel.IsVisible = !exactAlarmGranted || !batteryOptGranted || !notificationGranted || needsAutoStartPrompt;
 #else
         await Task.CompletedTask;
         PermissionsPanel.IsVisible = false;
@@ -656,6 +665,28 @@ public partial class DashboardPage : ContentPage
 #if ANDROID
         var context = Platform.CurrentActivity ?? Android.App.Application.Context;
         TiktokStreakSaver.Platforms.Android.StreakScheduler.RequestBatteryOptimizationExemption(context);
+#endif
+    }
+
+    private async void OnRequestAutoStartClicked(object? sender, EventArgs e)
+    {
+#if ANDROID
+        bool openSettings = await DisplayAlert(
+            "Allow Background Auto-Start",
+            "To ensure scheduled streaks run automatically when the app is closed or after an update:\n\n1. Open App Info.\n2. Enable 'Auto-start' (or 'Background permissions') if shown.\n3. Open 'Battery' / 'App battery usage' and allow unrestricted background activity.",
+            "Open App Info",
+            "Already Enabled");
+
+        _settingsService.SetAutoStartConfigured(true);
+        await EvaluatePermissionsAsync();
+
+        if (openSettings)
+        {
+            var context = Platform.CurrentActivity ?? Android.App.Application.Context;
+            TiktokStreakSaver.Platforms.Android.StreakScheduler.OpenAppBackgroundSettings(context);
+        }
+#else
+        await Task.CompletedTask;
 #endif
     }
 

@@ -2,7 +2,7 @@
 # Exit 1 if no provisioning profile exists for the main MAUI bundle ID.
 set -euo pipefail
 
-BUNDLE_ID="${1:-com.jon2g.tiktokstreaksaver}"
+BUNDLE_ID="${1:-com.mrblackaio.tiktokautostreak}"
 TEAM_ID="${DEVELOPMENT_TEAM:-}"
 
 search_dirs() {

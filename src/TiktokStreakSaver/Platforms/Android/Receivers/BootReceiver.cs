@@ -8,7 +8,7 @@ namespace TiktokStreakSaver.Platforms.Android.Receivers;
 
 [Microsoft.Maui.Controls.Internals.Preserve(AllMembers = true)]
 [BroadcastReceiver(Name = AppConstants.PackageName + ".Receivers.BootReceiver", Enabled = true, Exported = true)]
-[IntentFilter(new[] { Intent.ActionBootCompleted, "android.intent.action.QUICKBOOT_POWERON" })]
+[IntentFilter(new[] { Intent.ActionBootCompleted, "android.intent.action.QUICKBOOT_POWERON", Intent.ActionMyPackageReplaced })]
 public class BootReceiver : BroadcastReceiver
 {
     public override void OnReceive(Context? context, Intent? intent)
@@ -16,7 +16,8 @@ public class BootReceiver : BroadcastReceiver
         if (context == null || intent == null) return;
 
         if (intent.Action == Intent.ActionBootCompleted || 
-            intent.Action == "android.intent.action.QUICKBOOT_POWERON")
+            intent.Action == "android.intent.action.QUICKBOOT_POWERON" ||
+            intent.Action == Intent.ActionMyPackageReplaced)
         {
             var settingsService = new SettingsService();
             

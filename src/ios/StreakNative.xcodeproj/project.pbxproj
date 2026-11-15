@@ -408,7 +408,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.jon2g.tiktokstreaksaver.StreakEngine;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mrblackaio.tiktokautostreak.StreakEngine;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = NO;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -433,7 +433,7 @@
 					"@executable_path/Frameworks",
 				);
 				MACH_O_TYPE = staticlib;
-				PRODUCT_BUNDLE_IDENTIFIER = com.jon2g.tiktokstreaksaver.StreakAppIntents;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mrblackaio.tiktokautostreak.StreakAppIntents;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = NO;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -452,7 +452,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.jon2g.tiktokstreaksaver;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mrblackaio.tiktokautostreak;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -469,7 +469,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.jon2g.tiktokstreaksaver;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mrblackaio.tiktokautostreak;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -616,7 +616,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.jon2g.tiktokstreaksaver.StreakEngine;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mrblackaio.tiktokautostreak.StreakEngine;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = NO;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -634,7 +634,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.jon2g.tiktokstreaksaver.StreakSaverExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mrblackaio.tiktokautostreak.StreakSaverExtension;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -650,7 +650,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.jon2g.tiktokstreaksaver.StreakSaverExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mrblackaio.tiktokautostreak.StreakSaverExtension;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -673,7 +673,7 @@
 					"@executable_path/Frameworks",
 				);
 				MACH_O_TYPE = staticlib;
-				PRODUCT_BUNDLE_IDENTIFIER = com.jon2g.tiktokstreaksaver.StreakAppIntents;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mrblackaio.tiktokautostreak.StreakAppIntents;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = NO;
 				TARGETED_DEVICE_FAMILY = "1,2";

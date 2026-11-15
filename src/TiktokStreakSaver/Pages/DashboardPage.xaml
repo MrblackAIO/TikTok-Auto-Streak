@@ -266,6 +266,12 @@
                             TextColor="{StaticResource TextPrimary}"
                             CornerRadius="12" HeightRequest="44"
                             Clicked="OnRequestBatteryOptimizationClicked"/>
+                    <Button x:Name="BtnAutoStart"
+                            Text="Allow Background Auto-Start"
+                            BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                            TextColor="{StaticResource TextPrimary}"
+                            CornerRadius="12" HeightRequest="44"
+                            Clicked="OnRequestAutoStartClicked"/>
                     <Button x:Name="BtnNotification"
                             Text="Allow Status Notifications"
                             BackgroundColor="{StaticResource ObsidianSurfaceElevated}"

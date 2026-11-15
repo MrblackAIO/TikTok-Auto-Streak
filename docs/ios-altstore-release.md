@@ -30,7 +30,7 @@ You **cannot** revoke or manage certificates on [developer.apple.com](https://de
 
 #### Paid Apple Developer Program
 
-Register App IDs with **App Groups** (`group.com.jon2g.tiktokstreaksaver`) for the main app and `com.jon2g.tiktokstreaksaver.StreakSaverExtension`.
+Register App IDs with **App Groups** (`group.com.mrblackaio.tiktokautostreak`) for the main app and `com.mrblackaio.tiktokautostreak.StreakSaverExtension`.
 
 4. Note your **Team ID** (10 characters): **Xcode → Settings → Accounts** → your team → **Team ID** (Personal Team works too).
 

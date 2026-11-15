@@ -324,6 +324,71 @@ public static class StreakScheduler
         }
         return true;
     }
+
+    /// <summary>
+    /// Returns true if Android 9+ (API 28+) explicitly restricts background activity for this app.
+    /// </summary>
+    public static bool IsBackgroundRestricted(Context context)
+    {
+        if (Build.VERSION.SdkInt >= BuildVersionCodes.P)
+        {
+            var activityManager = (ActivityManager?)context.GetSystemService(Context.ActivityService);
+            if (activityManager?.IsBackgroundRestricted == true)
+                return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Open the system App Info page where the user can enable Auto-Start
+    /// and unrestricted background activity on any Android device.
+    /// </summary>
+    public static void OpenAppBackgroundSettings(Context context)
+    {
+        try
+        {
+            var intent = new Intent(Settings.ActionApplicationDetailsSettings);
+            var packageName = context.PackageName;
+            if (!string.IsNullOrEmpty(packageName))
+                intent.SetData(global::Android.Net.Uri.Parse($"package:{packageName}"));
+            intent.SetFlags(ActivityFlags.NewTask);
+            context.StartActivity(intent);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"OpenAppBackgroundSettings error: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Ensures the alarm is armed if scheduling is enabled in preferences.
+    /// </summary>
+    public static void EnsureScheduled(Context context)
+    {
+        var settingsService = new SettingsService();
+        if (settingsService.IsScheduled())
+        {
+            ScheduleNextRun(context);
+        }
+    }
+
+    /// <summary>
+    /// Checks whether an alarm PendingIntent is currently active in the OS AlarmManager.
+    /// </summary>
+    public static bool IsAlarmArmed(Context context)
+    {
+        var intent = new Intent(context, typeof(AlarmReceiver));
+        intent.SetAction(AlarmReceiver.ActionStreakAlarm);
+
+        var pendingIntent = PendingIntent.GetBroadcast(
+            context,
+            AlarmRequestCode,
+            intent,
+            PendingIntentFlags.NoCreate | PendingIntentFlags.Immutable
+        );
+
+        return pendingIntent != null;
+    }
 }
 
 

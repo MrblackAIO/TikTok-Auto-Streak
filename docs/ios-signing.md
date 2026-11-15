@@ -41,10 +41,10 @@ Configure repository secrets for CI:
 |--------|---------|
 | `IOS_DISTRIBUTION_CERTIFICATE_BASE64` | Base64 `.p12` distribution certificate |
 | `IOS_DISTRIBUTION_CERTIFICATE_PASSWORD` | P12 password |
-| `IOS_PROVISIONING_PROFILE_BASE64` | Base64 `.mobileprovision` for `com.jon2g.tiktokstreaksaver` |
-| `IOS_EXTENSION_PROVISIONING_PROFILE_BASE64` | Profile for `com.jon2g.tiktokstreaksaver.StreakSaverExtension` |
+| `IOS_PROVISIONING_PROFILE_BASE64` | Base64 `.mobileprovision` for `com.mrblackaio.tiktokautostreak` |
+| `IOS_EXTENSION_PROVISIONING_PROFILE_BASE64` | Profile for `com.mrblackaio.tiktokautostreak.StreakSaverExtension` |
 
-Entitlements must include App Group `group.com.jon2g.tiktokstreaksaver` on **both** the main app and the widget extension.
+Entitlements must include App Group `group.com.mrblackaio.tiktokautostreak` on **both** the main app and the widget extension.
 
 ## AltStore source
 

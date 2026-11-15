@@ -1,6 +1,6 @@
 {
   "name": "Streak Saver",
-  "identifier": "com.jon2g.tiktokstreaksaver.altstore",
+  "identifier": "com.mrblackaio.tiktokautostreak.altstore",
   "sourceURL": "https://raw.githubusercontent.com/MrblackAIO/TikTok-Auto-Streak/main/dist/altstore/source.json",
   "subtitle": "TikTok streak automation (iOS)",
   "description": "Open-source TikTok streak saver distributed for AltStore sideloading.",
@@ -9,7 +9,7 @@
   "apps": [
     {
       "name": "Streak Saver",
-      "bundleIdentifier": "com.jon2g.tiktokstreaksaver",
+      "bundleIdentifier": "com.mrblackaio.tiktokautostreak",
       "developerName": "Mrblack",
       "subtitle": "Keep your TikTok streaks alive",
       "localizedDescription": "Automatically send TikTok messages to maintain streaks. Uses Shortcuts for daily runs on iOS.",

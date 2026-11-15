@@ -49,7 +49,7 @@ export DEVELOPMENT_TEAM=XXXXXXXXXX
 
 `scripts/build-ios-native.sh` is a thin wrapper around `src/ios/build.sh`.
 
-The build also compiles **StreakSaverHost** (`com.jon2g.tiktokstreaksaver`) so Xcode creates the main-app provisioning profile required by `dotnet publish`. Profiles are synced to `~/Library/MobileDevice/Provisioning Profiles` for MSBuild.
+The build also compiles **StreakSaverHost** (`com.mrblackaio.tiktokautostreak`) so Xcode creates the main-app provisioning profile required by `dotnet publish`. Profiles are synced to `~/Library/MobileDevice/Provisioning Profiles` for MSBuild.
 
 After a successful build, `tiktok_automation.js` is copied from the MAUI project into the framework bundle so it stays in sync with Android.
 
@@ -100,7 +100,7 @@ Native artifacts are built automatically on macOS unless `SkipIosNativeBuild=tru
 
 Both the MAUI app and `StreakEngine` use:
 
-- App Group: `group.com.jon2g.tiktokstreaksaver`
+- App Group: `group.com.mrblackaio.tiktokautostreak`
 - Shared cookies file: `cookies.json` in the group container
 - Shared settings: `NSUserDefaults` suite with the same keys as Android `Preferences`
 
@@ -108,7 +108,7 @@ Both the MAUI app and `StreakEngine` use:
 
 Apple requires **`AppShortcutsProvider` in the main app executable**, not only in the widget extension. This repo ships `StreakAppIntents` as a **static archive force-loaded** into the MAUI binary (`Kind=Static`, `ForceLoad=true`) plus copies **`Metadata.appintents`** into the main `.app` bundle during `dotnet build`.
 
-If Shortcuts logs `Couldn't find AppShortcutsProvider`, `LNContextErrorDomain Code=2001`, or `Failed to load a definition for com.jon2g.tiktokstreaksaver.<TeamID>`:
+If Shortcuts logs `Couldn't find AppShortcutsProvider`, `LNContextErrorDomain Code=2001`, or `Failed to load a definition for com.mrblackaio.tiktokautostreak.<TeamID>`:
 
 1. Rebuild native artifacts: `export DEVELOPMENT_TEAM=… && ./src/ios/build.sh`
 2. Rebuild/reinstall the MAUI app on device

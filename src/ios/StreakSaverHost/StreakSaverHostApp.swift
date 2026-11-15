@@ -1,7 +1,7 @@
 import UIKit
 
 /// Minimal host app so Xcode creates the main-app provisioning profile
-/// (com.jon2g.tiktokstreaksaver) used by the MAUI publish step.
+/// (com.mrblackaio.tiktokautostreak) used by the MAUI publish step.
 @main
 final class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(

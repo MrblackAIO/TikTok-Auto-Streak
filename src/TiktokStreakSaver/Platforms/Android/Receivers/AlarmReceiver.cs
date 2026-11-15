@@ -18,12 +18,21 @@ public class AlarmReceiver : BroadcastReceiver
 
         if (intent.Action == ActionStreakAlarm)
         {
-            var serviceIntent = new Intent(context, typeof(StreakService));
+            try
+            {
+                var serviceIntent = new Intent(context, typeof(StreakService));
 
-            if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
-                context.StartForegroundService(serviceIntent);
-            else
-                context.StartService(serviceIntent);
+                if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
+                    context.StartForegroundService(serviceIntent);
+                else
+                    context.StartService(serviceIntent);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"AlarmReceiver failed to start service: {ex.Message}");
+                // Reschedule so the daily alarm chain does not die permanently
+                StreakScheduler.ScheduleNextRun(context);
+            }
         }
     }
 }

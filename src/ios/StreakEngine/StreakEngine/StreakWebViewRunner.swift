@@ -7,7 +7,7 @@ import WebKit
 @objc public final class StreakWebViewRunner: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
     public static let shared = StreakWebViewRunner()
 
-    private static let logger = Logger(subsystem: "com.jon2g.tiktokstreaksaver", category: "StreakWebViewRunner")
+    private static let logger = Logger(subsystem: "com.mrblackaio.tiktokautostreak", category: "StreakWebViewRunner")
     private static let webViewSize = CGSize(width: 390, height: 844)
     private static let friendAutomationTimeout: TimeInterval = 90
 
