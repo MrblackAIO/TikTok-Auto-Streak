@@ -36,6 +36,17 @@ public partial class DashboardPage : ContentPage
         OverviewProgressGraphicsView.Drawable = _normalProgressDrawable;
     }
 
+    private void OnControlDockSizeChanged(object? sender, EventArgs e)
+    {
+        if (ControlDockBorder == null || BottomScrollSpacer == null)
+            return;
+
+        // FloatingNavBar (64) + bottom margin (16) + ControlDock margin (96) + buffer (20) = 116dp below dock top.
+        var dockHeight = ControlDockBorder.Height;
+        if (dockHeight > 0)
+            BottomScrollSpacer.HeightRequest = Math.Max(220, dockHeight + 116);
+    }
+
     private void OnSessionStateChanged(object? sender, EventArgs e)
     {
         MainThread.BeginInvokeOnMainThread(async () =>

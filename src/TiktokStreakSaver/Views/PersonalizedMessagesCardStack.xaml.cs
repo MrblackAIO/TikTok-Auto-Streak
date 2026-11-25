@@ -11,6 +11,9 @@ namespace TiktokStreakSaver.Views;
 [Microsoft.Maui.Controls.Internals.Preserve(AllMembers = true)]
 public partial class PersonalizedMessagesCardStack : ContentView
 {
+    private const double PeekLayer1RestOpacity = 0.94;
+    private const double PeekLayer2RestOpacity = 0.72;
+
     private enum RecipientFilter
     {
         All,
@@ -22,6 +25,7 @@ public partial class PersonalizedMessagesCardStack : ContentView
     private readonly SettingsService _settingsService = new();
     private readonly Dictionary<string, Editor> _activeEditors = new(StringComparer.Ordinal);
     private List<FriendConfig> _allRecipients = new();
+    private string _lastRecipientSignature = string.Empty;
     private RecipientFilter _activeFilter = RecipientFilter.All;
     private bool _isExpanded;
     private bool _isAnimating;
@@ -86,14 +90,19 @@ public partial class PersonalizedMessagesCardStack : ContentView
             deduped.Add(entry);
         }
 
+        var nextSignature = string.Join("|", deduped.Select(r => $"{r.Id}:{r.DisplayName}:{r.Username}:{r.IsGroup}"));
+        bool listChanged = !string.Equals(nextSignature, _lastRecipientSignature, StringComparison.Ordinal);
+        _lastRecipientSignature = nextSignature;
         _allRecipients = deduped;
+
         UpdateHeaderBadge();
         BuildFilterChips();
 
         SearchBoxBorder.IsVisible = _allRecipients.Count > 3;
         FilterChipsScroll.IsVisible = _allRecipients.Count > 0;
 
-        if (_isExpanded)
+        bool hasFocusedEditor = _activeEditors.Values.Any(ed => ed.IsFocused);
+        if (_isExpanded && (listChanged || !hasFocusedEditor) && !_isAnimating)
             RebuildRecipientCards(animateUnfold: false);
 
         Opacity = isRunning ? 0.65 : 1.0;
@@ -109,7 +118,7 @@ public partial class PersonalizedMessagesCardStack : ContentView
         foreach (var editor in _activeEditors.Values)
             editor.IsEnabled = !isRunning;
 
-        if (_isExpanded)
+        if (_isExpanded && !_isAnimating)
             RebuildRecipientCards(animateUnfold: false);
     }
 
@@ -174,45 +183,53 @@ public partial class PersonalizedMessagesCardStack : ContentView
             ExpandedPanel.IsVisible = true;
             ExpandedPanel.Opacity = 1;
 
-            if (reducedMotion)
+            if (!reducedMotion)
             {
-                ChevronIcon.Rotation = 180;
-                StackPeekLayer1.IsVisible = false;
-                StackPeekLayer2.IsVisible = false;
-                return;
-            }
+                // Yield a frame so Android attaches native handlers and measures card bounds before animating.
+                await Task.Yield();
+                await Task.Delay(16, ct);
 
-            // Disintegrate/separate the stacked peek layers as cards unfold
-            _ = Task.WhenAll(
-                ChevronIcon.RotateTo(180, 220, Easing.CubicOut),
-                StackPeekLayer1.TranslateTo(0, 10, 180, Easing.CubicOut),
-                StackPeekLayer1.FadeTo(0, 160, Easing.CubicOut),
-                StackPeekLayer2.TranslateTo(0, 16, 180, Easing.CubicOut),
-                StackPeekLayer2.FadeTo(0, 160, Easing.CubicOut));
+                var headerAnim = Task.WhenAll(
+                    ChevronIcon.RotateTo(180, 200, Easing.CubicOut),
+                    StackPeekLayer1.TranslateTo(0, 6, 160, Easing.CubicOut),
+                    StackPeekLayer1.FadeTo(0, 140, Easing.CubicOut),
+                    StackPeekLayer2.TranslateTo(0, 10, 160, Easing.CubicOut),
+                    StackPeekLayer2.FadeTo(0, 140, Easing.CubicOut));
 
-            var cards = CardsStackContainer.Children.OfType<View>().ToList();
-            var animatedCount = Math.Min(cards.Count, 8);
-            var animTasks = new List<Task>(animatedCount);
+                var cards = CardsStackContainer.Children.OfType<View>().ToList();
+                var animatedCount = Math.Min(cards.Count, 6);
+                var animTasks = new List<Task>(animatedCount + 1) { headerAnim };
 
-            for (int i = 0; i < animatedCount; i++)
-            {
-                var card = cards[i];
-                var delayMs = i * 28;
-                animTasks.Add(AnimateCardUnfoldAsync(card, delayMs, ct));
-            }
+                for (int i = 0; i < animatedCount; i++)
+                {
+                    animTasks.Add(AnimateCardUnfoldAsync(cards[i], i * 25, ct));
+                }
 
-            if (animTasks.Count > 0)
                 await Task.WhenAll(animTasks);
-
-            if (!ct.IsCancellationRequested)
-            {
-                StackPeekLayer1.IsVisible = false;
-                StackPeekLayer2.IsVisible = false;
             }
         }
         catch (OperationCanceledException) { }
         finally
         {
+            // Guarantee clean, aligned resting state with zero lingering transforms or rotation.
+            foreach (var card in CardsStackContainer.Children.OfType<View>())
+            {
+                card.Opacity = 1.0;
+                card.TranslationX = 0;
+                card.TranslationY = 0;
+                card.Scale = 1.0;
+                card.Rotation = 0;
+            }
+
+            if (_isExpanded)
+            {
+                ChevronIcon.Rotation = 180;
+                StackPeekLayer1.IsVisible = false;
+                StackPeekLayer2.IsVisible = false;
+                StackPeekLayer1.TranslationY = 0;
+                StackPeekLayer2.TranslationY = 0;
+            }
+
             _isAnimating = false;
         }
     }
@@ -226,10 +243,9 @@ public partial class PersonalizedMessagesCardStack : ContentView
             return;
 
         await Task.WhenAll(
-            card.FadeTo(1.0, 220, Easing.CubicOut),
-            card.TranslateTo(0, 0, 240, Easing.CubicOut),
-            card.ScaleTo(1.0, 220, Easing.CubicOut),
-            card.RotateTo(0, 220, Easing.CubicOut));
+            card.FadeTo(1.0, 200, Easing.CubicOut),
+            card.TranslateTo(0, 0, 210, Easing.CubicOut),
+            card.ScaleTo(1.0, 200, Easing.CubicOut));
     }
 
     private async Task CollapseWithAnimationAsync()
@@ -245,22 +261,18 @@ public partial class PersonalizedMessagesCardStack : ContentView
             var reducedMotion = IsReducedMotionEnabled();
             if (!reducedMotion)
             {
-                var cards = CardsStackContainer.Children.OfType<View>().Take(8).ToList();
+                var cards = CardsStackContainer.Children.OfType<View>().Take(6).ToList();
                 var collapseTasks = new List<Task>(cards.Count + 1);
                 foreach (var card in cards)
                 {
                     collapseTasks.Add(Task.WhenAll(
-                        card.FadeTo(0, 150, Easing.CubicIn),
-                        card.TranslateTo(0, -10, 150, Easing.CubicIn),
-                        card.ScaleTo(0.95, 150, Easing.CubicIn)));
+                        card.FadeTo(0, 140, Easing.CubicIn),
+                        card.TranslateTo(0, -8, 140, Easing.CubicIn),
+                        card.ScaleTo(0.97, 140, Easing.CubicIn)));
                 }
 
-                collapseTasks.Add(ChevronIcon.RotateTo(0, 200, Easing.CubicInOut));
+                collapseTasks.Add(ChevronIcon.RotateTo(0, 180, Easing.CubicInOut));
                 await Task.WhenAll(collapseTasks);
-            }
-            else
-            {
-                ChevronIcon.Rotation = 0;
             }
 
             ExpandedPanel.IsVisible = false;
@@ -269,28 +281,28 @@ public partial class PersonalizedMessagesCardStack : ContentView
 
             StackPeekLayer1.IsVisible = true;
             StackPeekLayer2.IsVisible = true;
-            if (reducedMotion)
+            if (!reducedMotion)
             {
-                StackPeekLayer1.TranslationY = 0;
-                StackPeekLayer1.Opacity = 0.72;
-                StackPeekLayer2.TranslationY = 0;
-                StackPeekLayer2.Opacity = 0.45;
-            }
-            else
-            {
-                StackPeekLayer1.TranslationY = 8;
+                StackPeekLayer1.TranslationY = 6;
                 StackPeekLayer1.Opacity = 0;
-                StackPeekLayer2.TranslationY = 12;
+                StackPeekLayer2.TranslationY = 10;
                 StackPeekLayer2.Opacity = 0;
                 await Task.WhenAll(
-                    StackPeekLayer1.TranslateTo(0, 0, 160, Easing.CubicOut),
-                    StackPeekLayer1.FadeTo(0.72, 160, Easing.CubicOut),
-                    StackPeekLayer2.TranslateTo(0, 0, 180, Easing.CubicOut),
-                    StackPeekLayer2.FadeTo(0.45, 180, Easing.CubicOut));
+                    StackPeekLayer1.TranslateTo(0, 0, 150, Easing.CubicOut),
+                    StackPeekLayer1.FadeTo(PeekLayer1RestOpacity, 150, Easing.CubicOut),
+                    StackPeekLayer2.TranslateTo(0, 0, 170, Easing.CubicOut),
+                    StackPeekLayer2.FadeTo(PeekLayer2RestOpacity, 170, Easing.CubicOut));
             }
         }
         finally
         {
+            ChevronIcon.Rotation = 0;
+            StackPeekLayer1.IsVisible = true;
+            StackPeekLayer2.IsVisible = true;
+            StackPeekLayer1.TranslationY = 0;
+            StackPeekLayer1.Opacity = PeekLayer1RestOpacity;
+            StackPeekLayer2.TranslationY = 0;
+            StackPeekLayer2.Opacity = PeekLayer2RestOpacity;
             _isAnimating = false;
         }
     }
@@ -400,13 +412,13 @@ public partial class PersonalizedMessagesCardStack : ContentView
             customMap.TryGetValue(recipient.Id, out var savedMessage);
             var card = CreateRecipientCard(recipient, savedMessage ?? string.Empty, defaultPlaceholder);
 
-            if (animateUnfold && i < 8)
+            if (animateUnfold && i < 6)
             {
                 card.Opacity = 0;
-                card.TranslationY = -16;
-                card.TranslationX = i % 2 == 0 ? -10 : 10;
-                card.Scale = 0.93;
-                card.Rotation = i % 2 == 0 ? -1.8 : 1.8;
+                card.TranslationY = -10;
+                card.TranslationX = 0;
+                card.Scale = 0.97;
+                card.Rotation = 0;
             }
 
             CardsStackContainer.Children.Add(card);
@@ -420,10 +432,10 @@ public partial class PersonalizedMessagesCardStack : ContentView
             return $"Default: {SettingsService.DefaultMessage}";
 
         var singleLine = defaultText.Replace('\r', ' ').Replace('\n', ' ').Trim();
-        if (singleLine.Length > 42)
-            singleLine = singleLine[..42] + "…";
+        if (singleLine.Length > 72)
+            singleLine = singleLine[..72] + "…";
 
-        return $"Using default: {singleLine}";
+        return $"Default: {singleLine}";
     }
 
     private View CreateRecipientCard(FriendConfig recipient, string initialCustomMessage, string defaultPlaceholder)
@@ -433,33 +445,33 @@ public partial class PersonalizedMessagesCardStack : ContentView
 
         var cardBorder = new Border
         {
+            HorizontalOptions = LayoutOptions.Fill,
             StrokeThickness = hasCustom ? 1.4 : 1,
             Stroke = new SolidColorBrush(hasCustom ? palette.Accent.WithAlpha(0.65f) : palette.Border),
             StrokeShape = new RoundRectangle { CornerRadius = 16 },
             BackgroundColor = palette.SecondaryBackground,
-            Padding = new Thickness(12, 10),
+            Padding = new Thickness(14, 12),
             Shadow = new Shadow
             {
                 Brush = new SolidColorBrush(palette.ShadowColor),
-                Offset = new Point(0, 3),
-                Radius = 10,
-                Opacity = 0.5f
+                Offset = new Point(0, 2),
+                Radius = 8,
+                Opacity = 0.45f
             }
         };
 
-        var rootStack = new VerticalStackLayout { Spacing = 8 };
+        var rootStack = new VerticalStackLayout { Spacing = 10 };
 
-        // Top Row: Avatar, Name/Handle, Status Badge, Reset Button
+        // ── Top Section: Avatar | Name + Identifier | Status + Reset ──
         var headerGrid = new Grid
         {
             ColumnDefinitions = new ColumnDefinitionCollection
             {
                 new ColumnDefinition { Width = GridLength.Auto },
                 new ColumnDefinition { Width = GridLength.Star },
-                new ColumnDefinition { Width = GridLength.Auto },
                 new ColumnDefinition { Width = GridLength.Auto }
             },
-            ColumnSpacing = 8,
+            ColumnSpacing = 10,
             VerticalOptions = LayoutOptions.Center
         };
 
@@ -470,11 +482,11 @@ public partial class PersonalizedMessagesCardStack : ContentView
 
         var avatar = new Border
         {
-            WidthRequest = 34,
-            HeightRequest = 34,
+            WidthRequest = 38,
+            HeightRequest = 38,
             StrokeThickness = 1,
             Stroke = new SolidColorBrush(avatarColor.WithAlpha(0.6f)),
-            StrokeShape = new RoundRectangle { CornerRadius = 17 },
+            StrokeShape = new RoundRectangle { CornerRadius = 19 },
             BackgroundColor = avatarColor.WithAlpha(0.18f),
             VerticalOptions = LayoutOptions.Center
         };
@@ -482,7 +494,7 @@ public partial class PersonalizedMessagesCardStack : ContentView
         {
             Text = recipient.IsGroup ? "👥" : initial,
             FontFamily = "InterBold",
-            FontSize = 13,
+            FontSize = 14,
             TextColor = palette.PrimaryText,
             HorizontalOptions = LayoutOptions.Center,
             VerticalOptions = LayoutOptions.Center
@@ -490,12 +502,12 @@ public partial class PersonalizedMessagesCardStack : ContentView
         Grid.SetColumn(avatar, 0);
         headerGrid.Children.Add(avatar);
 
-        var nameStack = new VerticalStackLayout { Spacing = 1, VerticalOptions = LayoutOptions.Center };
+        var nameStack = new VerticalStackLayout { Spacing = 2, VerticalOptions = LayoutOptions.Center };
         nameStack.Children.Add(new Label
         {
             Text = displayName,
             FontFamily = "InterSemiBold",
-            FontSize = 13,
+            FontSize = 14,
             TextColor = palette.PrimaryText,
             LineBreakMode = LineBreakMode.TailTruncation
         });
@@ -503,12 +515,18 @@ public partial class PersonalizedMessagesCardStack : ContentView
         {
             Text = recipient.IsGroup ? "Group Chat" : $"@{recipient.Username}",
             FontFamily = "InterRegular",
-            FontSize = 11,
+            FontSize = 11.5,
             TextColor = recipient.IsGroup ? palette.Secondary : palette.SecondaryText,
             LineBreakMode = LineBreakMode.TailTruncation
         });
         Grid.SetColumn(nameStack, 1);
         headerGrid.Children.Add(nameStack);
+
+        var rightCluster = new HorizontalStackLayout
+        {
+            Spacing = 6,
+            VerticalOptions = LayoutOptions.Center
+        };
 
         var statusLabel = new Label
         {
@@ -523,40 +541,44 @@ public partial class PersonalizedMessagesCardStack : ContentView
             Stroke = new SolidColorBrush(hasCustom ? palette.Success.WithAlpha(0.45f) : palette.Border),
             StrokeShape = new RoundRectangle { CornerRadius = 8 },
             BackgroundColor = hasCustom ? palette.SuccessTint : palette.CardBackground,
-            Padding = new Thickness(7, 3),
+            Padding = new Thickness(8, 3),
             VerticalOptions = LayoutOptions.Center,
             Content = statusLabel
         };
-        Grid.SetColumn(statusBadge, 2);
-        headerGrid.Children.Add(statusBadge);
+        rightCluster.Children.Add(statusBadge);
 
         var resetButton = new Button
         {
             Text = "Reset",
-            BackgroundColor = Colors.Transparent,
+            BackgroundColor = palette.ErrorTint,
             TextColor = palette.Error,
             FontFamily = "InterSemiBold",
-            FontSize = 11,
-            Padding = new Thickness(6, 2),
-            MinimumHeightRequest = 28,
+            FontSize = 10.5,
+            CornerRadius = 8,
+            Padding = new Thickness(8, 2),
+            MinimumHeightRequest = 26,
             MinimumWidthRequest = 32,
-            HeightRequest = 28,
+            HeightRequest = 26,
             IsVisible = hasCustom,
             IsEnabled = !_isDisabledByRun,
             VerticalOptions = LayoutOptions.Center
         };
-        Grid.SetColumn(resetButton, 3);
-        headerGrid.Children.Add(resetButton);
+        rightCluster.Children.Add(resetButton);
+
+        Grid.SetColumn(rightCluster, 2);
+        headerGrid.Children.Add(rightCluster);
 
         rootStack.Children.Add(headerGrid);
 
-        // Message Editor Container
+        // ── Bottom Section: Inset Distinct Message Editor ──
         var editorBorder = new Border
         {
+            HorizontalOptions = LayoutOptions.Fill,
             StrokeThickness = 1,
             Stroke = new SolidColorBrush(palette.Border),
             StrokeShape = new RoundRectangle { CornerRadius = 12 },
-            BackgroundColor = palette.CardBackground
+            BackgroundColor = palette.MainBackground,
+            Padding = new Thickness(10, 6)
         };
 
         var editor = new Editor
@@ -568,8 +590,10 @@ public partial class PersonalizedMessagesCardStack : ContentView
             BackgroundColor = Colors.Transparent,
             FontFamily = "InterRegular",
             FontSize = 13,
-            HeightRequest = 58,
-            Margin = new Thickness(10, 4),
+            AutoSize = EditorAutoSizeOption.TextChanges,
+            MinimumHeightRequest = 64,
+            MaximumHeightRequest = 140,
+            Margin = new Thickness(0),
             IsEnabled = !_isDisabledByRun
         };
         _activeEditors[recipient.Id] = editor;
@@ -607,20 +631,16 @@ public partial class PersonalizedMessagesCardStack : ContentView
             BuildFilterChips();
         };
 
-        editor.Focused += async (_, _) =>
+        editor.Focused += (_, _) =>
         {
             SyncCardState(editor.Text, isFocused: true);
-            if (!IsReducedMotionEnabled())
-                await cardBorder.ScaleTo(1.01, 90, Easing.CubicOut);
         };
 
-        editor.Unfocused += async (_, _) =>
+        editor.Unfocused += (_, _) =>
         {
             _settingsService.SetCustomMessageForRecipient(recipient.Id, editor.Text);
             SyncCardState(editor.Text, isFocused: false);
             UpdateHeaderBadge();
-            if (!IsReducedMotionEnabled())
-                await cardBorder.ScaleTo(1.0, 90, Easing.CubicOut);
         };
 
         resetButton.Clicked += (_, _) =>
