@@ -8,9 +8,7 @@ namespace TiktokStreakSaver.Views;
 public partial class FloatingNavBar : ContentView
 {
     private static bool _isNavigating;
-    private static readonly Color ActiveBg = Color.FromArgb("#25FF3B5C"); // Soft Coral-Red ambient glow
-    private static readonly Color ActiveColor = Color.FromArgb("#FF3B5C"); // Vivid Coral-Red
-    private static readonly Color InactiveColor = Color.FromArgb("#8E95A5"); // Discreet inactive gray
+    private bool _subscribedTheme;
 
     /// <summary>
     /// Bindable property to set which tab is currently selected.
@@ -34,12 +32,32 @@ public partial class FloatingNavBar : ContentView
     {
         InitializeComponent();
         Loaded += OnNavbarLoaded;
+        Unloaded += OnNavbarUnloaded;
     }
 
     private void OnNavbarLoaded(object? sender, EventArgs e)
     {
         _isNavigating = false;
+        if (!_subscribedTheme)
+        {
+            Services.ThemeService.Current.ThemeChanged += OnThemeChanged;
+            _subscribedTheme = true;
+        }
         UpdateVisualState(CurrentTab);
+    }
+
+    private void OnNavbarUnloaded(object? sender, EventArgs e)
+    {
+        if (_subscribedTheme)
+        {
+            Services.ThemeService.Current.ThemeChanged -= OnThemeChanged;
+            _subscribedTheme = false;
+        }
+    }
+
+    private void OnThemeChanged(object? sender, EventArgs e)
+    {
+        MainThread.BeginInvokeOnMainThread(() => UpdateVisualState(CurrentTab));
     }
 
     protected override void OnParentSet()
@@ -57,6 +75,11 @@ public partial class FloatingNavBar : ContentView
 
     public void UpdateVisualState(string activeTab)
     {
+        var palette = Services.ThemeService.Current.CurrentPalette;
+        var activeColor = palette.Primary;
+        var activeBg = palette.PrimaryTint;
+        var inactiveColor = palette.SecondaryText;
+
         // Reset all indicator backgrounds
         DashboardIndicator.BackgroundColor = Colors.Transparent;
         HistoryIndicator.BackgroundColor = Colors.Transparent;
@@ -64,39 +87,39 @@ public partial class FloatingNavBar : ContentView
         ProfileIndicator.BackgroundColor = Colors.Transparent;
 
         // Reset all icon fills
-        DashboardIcon.Fill = new SolidColorBrush(InactiveColor);
-        HistoryIcon.Fill = new SolidColorBrush(InactiveColor);
-        FriendsIcon.Fill = new SolidColorBrush(InactiveColor);
-        ProfileIcon.Fill = new SolidColorBrush(InactiveColor);
+        DashboardIcon.Fill = new SolidColorBrush(inactiveColor);
+        HistoryIcon.Fill = new SolidColorBrush(inactiveColor);
+        FriendsIcon.Fill = new SolidColorBrush(inactiveColor);
+        ProfileIcon.Fill = new SolidColorBrush(inactiveColor);
 
         // Reset all label colors
-        DashboardLabel.TextColor = InactiveColor;
-        HistoryLabel.TextColor = InactiveColor;
-        FriendsLabel.TextColor = InactiveColor;
-        ProfileLabel.TextColor = InactiveColor;
+        DashboardLabel.TextColor = inactiveColor;
+        HistoryLabel.TextColor = inactiveColor;
+        FriendsLabel.TextColor = inactiveColor;
+        ProfileLabel.TextColor = inactiveColor;
 
         // Apply active accent
         switch (activeTab)
         {
             case "History":
-                HistoryIndicator.BackgroundColor = ActiveBg;
-                HistoryIcon.Fill = new SolidColorBrush(ActiveColor);
-                HistoryLabel.TextColor = ActiveColor;
+                HistoryIndicator.BackgroundColor = activeBg;
+                HistoryIcon.Fill = new SolidColorBrush(activeColor);
+                HistoryLabel.TextColor = activeColor;
                 break;
             case "Friends":
-                FriendsIndicator.BackgroundColor = ActiveBg;
-                FriendsIcon.Fill = new SolidColorBrush(ActiveColor);
-                FriendsLabel.TextColor = ActiveColor;
+                FriendsIndicator.BackgroundColor = activeBg;
+                FriendsIcon.Fill = new SolidColorBrush(activeColor);
+                FriendsLabel.TextColor = activeColor;
                 break;
             case "Profile":
-                ProfileIndicator.BackgroundColor = ActiveBg;
-                ProfileIcon.Fill = new SolidColorBrush(ActiveColor);
-                ProfileLabel.TextColor = ActiveColor;
+                ProfileIndicator.BackgroundColor = activeBg;
+                ProfileIcon.Fill = new SolidColorBrush(activeColor);
+                ProfileLabel.TextColor = activeColor;
                 break;
             default:
-                DashboardIndicator.BackgroundColor = ActiveBg;
-                DashboardIcon.Fill = new SolidColorBrush(ActiveColor);
-                DashboardLabel.TextColor = ActiveColor;
+                DashboardIndicator.BackgroundColor = activeBg;
+                DashboardIcon.Fill = new SolidColorBrush(activeColor);
+                DashboardLabel.TextColor = activeColor;
                 break;
         }
     }

@@ -19,20 +19,8 @@ namespace TiktokStreakSaver
 
             if (Window != null)
             {
-                var darkColor = Android.Graphics.Color.ParseColor("#0A0D12");
-#pragma warning disable CA1422
-                Window.SetStatusBarColor(darkColor);
-                Window.SetNavigationBarColor(darkColor);
-#pragma warning restore CA1422
-
                 AndroidX.Core.View.WindowCompat.SetDecorFitsSystemWindows(Window, false);
-
-                var controller = AndroidX.Core.View.WindowCompat.GetInsetsController(Window, Window.DecorView);
-                if (controller != null)
-                {
-                    controller.AppearanceLightStatusBars = false;
-                    controller.AppearanceLightNavigationBars = false;
-                }
+                Services.ThemeService.Current.ApplyPlatformSystemBars();
             }
             
             // Create notification channel on app start
@@ -48,6 +36,12 @@ namespace TiktokStreakSaver
 
             // Ensure scheduled alarm is armed if active
             TiktokStreakSaver.Platforms.Android.StreakScheduler.EnsureScheduled(this);
+        }
+
+        protected override void OnResume()
+        {
+            base.OnResume();
+            Services.ThemeService.Current.ApplyPlatformSystemBars();
         }
 
         protected override void OnNewIntent(Intent? intent)

@@ -7,6 +7,15 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [2.0.15] - 2026-11-26
+
+### Fixed
+- **Timezone & History Timestamp Accuracy**: Fixed UTC/local deserialization mismatch in `AppJsonSerialization` and introduced centralized `AppTime` with automatic fallback to **PHT (`Asia/Manila`, UTC+8)** when the device timezone cannot be distinguished, ensuring History logs, Dashboard `Sent Today`/`Last Run`, and daily cooldown checks align with local clock time.
+
+### Added
+- **Global Theme Customization System**: Added `ThemeService`, `ThemeCatalog`, `ColorContrastHelper`, and `ThemeSettingsPage` accessible from `ProfilePage` with Dark / Light / Follow System modes, 11 coordinated built-in presets (`Obsidian`, `TikTok Neon`, `AMOLED Black`, `Midnight Blue`, `Ocean`, `Emerald`, `Dracula`, `Nord`, `Sunset`, `Rose`, `Minimal Light`), quick accent picker, 12-token color customization with WCAG contrast validation, live preview, persistent storage, and dynamic Android system bar styling.
+- **Personalized Messages per Friend / Group**: Added `PersonalizedMessagesCardStack` on the Dashboard (`Automation Text`) with animated card-stack unfolding/collapsing, search and filter chips, per-recipient override editors and reset actions keyed by `FriendConfig.Id`, and conditional visibility when Custom Message Randomizer is OFF across Android (`StreakService`) and iOS (`StreakEngine`).
+
 ## [2.0.14] - 2026-11-15
 
 ### Fixed

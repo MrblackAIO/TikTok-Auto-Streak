@@ -32,12 +32,24 @@ public partial class FriendsPage : ContentPage
         return Color.FromArgb(fallbackHex);
     }
 
+    private void OnThemeChanged(object? sender, EventArgs e)
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            UpdateModeTabStyles();
+            LoadLists();
+        });
+    }
+
     protected override async void OnAppearing()
     {
         base.OnAppearing();
         SessionState.Changed -= OnSessionStateChanged;
         SessionState.Changed += OnSessionStateChanged;
+        ThemeService.Current.ThemeChanged -= OnThemeChanged;
+        ThemeService.Current.ThemeChanged += OnThemeChanged;
 
+        UpdateModeTabStyles();
         LoadLists();
         await RefreshLoginBannerAsync();
 
@@ -55,6 +67,7 @@ public partial class FriendsPage : ContentPage
     {
         base.OnDisappearing();
         SessionState.Changed -= OnSessionStateChanged;
+        ThemeService.Current.ThemeChanged -= OnThemeChanged;
         if (_statusTimer != null)
         {
             _statusTimer.Stop();
@@ -166,18 +179,19 @@ public partial class FriendsPage : ContentPage
         FriendsStatsCard.IsVisible = allItems.Count > 0;
         TotalFriendsLabel.Text = allItems.Count.ToString();
         EnabledFriendsLabel.Text = allItems.Count(f => f.IsEnabled).ToString();
-        var today = DateTime.Now.Date;
+        var today = AppTime.Today;
         SentTodayLabel.Text = allItems.Count(f => f.LastMessageSent.HasValue && f.LastMessageSent.Value.Date == today).ToString();
     }
 
     private View CreateEntryView(FriendConfig friend)
     {
+        var palette = ThemeService.Current.CurrentPalette;
         var border = new Border
         {
             StrokeShape = new RoundRectangle { CornerRadius = 16 },
-            Stroke = new SolidColorBrush(Color.FromArgb("#1F2430")),
+            Stroke = new SolidColorBrush(palette.Border),
             StrokeThickness = 1,
-            BackgroundColor = Color.FromArgb("#13171F"),
+            BackgroundColor = palette.CardBackground,
             Padding = new Thickness(12, 10),
             Margin = new Thickness(0, 3),
             Opacity = 0,
@@ -203,8 +217,8 @@ public partial class FriendsPage : ContentPage
         // Avatar Badge
         var displayName = string.IsNullOrEmpty(friend.DisplayName) ? friend.Username : friend.DisplayName;
         var initial = string.IsNullOrEmpty(displayName) ? "?" : displayName.Substring(0, 1).ToUpperInvariant();
-        var avatarColors = new[] { "#8B5CF6", "#06B6D4", "#FF3B5C", "#10B981" };
-        var avatarColor = Color.FromArgb(avatarColors[Math.Abs(displayName.GetHashCode()) % avatarColors.Length]);
+        var avatarColors = new[] { palette.Accent, palette.Secondary, palette.Primary, palette.Success };
+        var avatarColor = avatarColors[Math.Abs(displayName.GetHashCode()) % avatarColors.Length];
 
         var avatarBorder = new Border
         {
@@ -220,7 +234,7 @@ public partial class FriendsPage : ContentPage
         avatarBorder.Content = new Label
         {
             Text = friend.IsGroup ? "👥" : initial,
-            TextColor = Color.FromArgb("#FFFFFF"),
+            TextColor = palette.PrimaryText,
             FontSize = 16,
             FontFamily = "InterBold",
             HorizontalOptions = LayoutOptions.Center,
@@ -236,7 +250,7 @@ public partial class FriendsPage : ContentPage
             Text = displayName,
             FontSize = 15,
             FontFamily = "InterBold",
-            TextColor = Color.FromArgb("#FFFFFF")
+            TextColor = palette.PrimaryText
         });
 
         string streakText;
@@ -261,15 +275,15 @@ public partial class FriendsPage : ContentPage
             Text = streakText,
             FontSize = 12,
             FontFamily = "InterMedium",
-            TextColor = Color.FromArgb("#FF3B5C")
+            TextColor = palette.Primary
         });
 
         var healthColor = friend.ConsecutiveFailures switch
         {
-            >= 3 => Color.FromArgb("#FF3B5C"),
-            > 0 => Color.FromArgb("#F59E0B"),
-            _ when friend.LastMessageSent.HasValue => Color.FromArgb("#10B981"),
-            _ => Color.FromArgb("#8E95A5")
+            >= 3 => palette.Error,
+            > 0 => palette.Warning,
+            _ when friend.LastMessageSent.HasValue => palette.Success,
+            _ => palette.SecondaryText
         };
         var healthText = friend.ConsecutiveFailures > 0
             ? $"{friend.ConsecutiveFailures} failure{(friend.ConsecutiveFailures == 1 ? string.Empty : "s")}"
@@ -290,7 +304,7 @@ public partial class FriendsPage : ContentPage
             Text = healthText,
             FontSize = 11,
             FontFamily = "InterRegular",
-            TextColor = Color.FromArgb("#8E95A5"),
+            TextColor = palette.SecondaryText,
             VerticalOptions = LayoutOptions.Center
         });
         infoStack.Children.Add(healthRow);
@@ -305,7 +319,7 @@ public partial class FriendsPage : ContentPage
             Padding = new Thickness(6, 2),
             HeightRequest = 36,
             VerticalOptions = LayoutOptions.Center,
-            TextColor = Color.FromArgb("#8E95A5"),
+            TextColor = palette.SecondaryText,
             IsEnabled = !_lastIsRunning,
             Opacity = _lastIsRunning ? 0.6 : 1.0
         };
@@ -361,7 +375,7 @@ public partial class FriendsPage : ContentPage
             Padding = new Thickness(6, 2),
             HeightRequest = 36,
             VerticalOptions = LayoutOptions.Center,
-            TextColor = Color.FromArgb("#FF3B5C"),
+            TextColor = palette.Error,
             IsEnabled = !_lastIsRunning,
             Opacity = _lastIsRunning ? 0.6 : 1.0
         };
@@ -380,10 +394,15 @@ public partial class FriendsPage : ContentPage
             VerticalOptions = LayoutOptions.Center,
             IsEnabled = !_lastIsRunning,
             Opacity = _lastIsRunning ? 0.6 : 1.0,
-            ThumbColor = Color.FromArgb("#FFFFFF"),
-            OnColor = Color.FromArgb("#10B981") // Mint Green neon toggle
+            ThumbColor = friend.IsEnabled ? Colors.White : palette.SwitchOffThumb,
+            OnColor = palette.Success
         };
-        toggleSwitch.Toggled += (s, e) => { friend.IsEnabled = e.Value; _settingsService.UpdateFriend(friend); };
+        toggleSwitch.Toggled += (s, e) =>
+        {
+            toggleSwitch.ThumbColor = e.Value ? Colors.White : ThemeService.Current.CurrentPalette.SwitchOffThumb;
+            friend.IsEnabled = e.Value;
+            _settingsService.UpdateFriend(friend);
+        };
         Grid.SetColumn(toggleSwitch, 4);
         grid.Children.Add(toggleSwitch);
 
@@ -401,15 +420,30 @@ public partial class FriendsPage : ContentPage
 
     // ─── Mode switching ──────────────────────────────────────────────────────
 
+    private void UpdateModeTabStyles()
+    {
+        var palette = ThemeService.Current.CurrentPalette;
+        if (_isGroupMode)
+        {
+            GroupsModeTabBorder.BackgroundColor = palette.CardBackground;
+            GroupsModeTabLabel.TextColor = palette.PrimaryText;
+            FriendsModeTabBorder.BackgroundColor = Colors.Transparent;
+            FriendsModeTabLabel.TextColor = palette.SecondaryText;
+        }
+        else
+        {
+            FriendsModeTabBorder.BackgroundColor = palette.CardBackground;
+            FriendsModeTabLabel.TextColor = palette.PrimaryText;
+            GroupsModeTabBorder.BackgroundColor = Colors.Transparent;
+            GroupsModeTabLabel.TextColor = palette.SecondaryText;
+        }
+    }
+
     private void OnFriendsModeTapped(object? sender, TappedEventArgs e)
     {
         if (!_isGroupMode) return;
         _isGroupMode = false;
-
-        FriendsModeTabBorder.BackgroundColor = Color.FromArgb("#161B24");
-        FriendsModeTabLabel.TextColor = Color.FromArgb("#FFFFFF");
-        GroupsModeTabBorder.BackgroundColor = Colors.Transparent;
-        GroupsModeTabLabel.TextColor = Color.FromArgb("#8E95A5");
+        UpdateModeTabStyles();
 
         FriendsModeContainer.IsVisible = true;
         GroupsModeContainer.IsVisible = false;
@@ -419,11 +453,7 @@ public partial class FriendsPage : ContentPage
     {
         if (_isGroupMode) return;
         _isGroupMode = true;
-
-        GroupsModeTabBorder.BackgroundColor = Color.FromArgb("#161B24");
-        GroupsModeTabLabel.TextColor = Color.FromArgb("#FFFFFF");
-        FriendsModeTabBorder.BackgroundColor = Colors.Transparent;
-        FriendsModeTabLabel.TextColor = Color.FromArgb("#8E95A5");
+        UpdateModeTabStyles();
 
         FriendsModeContainer.IsVisible = false;
         GroupsModeContainer.IsVisible = true;
@@ -666,7 +696,7 @@ public partial class FriendsPage : ContentPage
             if (entries.Count == 0) { await DisplayAlert("Export", "Your list is empty.", "OK"); return; }
             var options = new System.Text.Json.JsonSerializerOptions { WriteIndented = true };
             var json = System.Text.Json.JsonSerializer.Serialize(entries, options);
-            var fileName = $"streak_friends_{DateTime.Now:yyyyMMdd_HHmm}.json";
+            var fileName = $"streak_friends_{AppTime.Now:yyyyMMdd_HHmm}.json";
             var filePath = System.IO.Path.Combine(FileSystem.CacheDirectory, fileName);
             await System.IO.File.WriteAllTextAsync(filePath, json);
             await Share.Default.RequestAsync(new ShareFileRequest { Title = "Export Friend List", File = new ShareFile(filePath, "application/json") });

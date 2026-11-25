@@ -37,7 +37,7 @@ public class SessionService
     public bool TrySetSessionValid(bool valid, out string? error)
     {
         error = null;
-        var ticks = DateTime.Now.Ticks;
+        var ticks = AppTime.Now.Ticks;
         _storage.SetBool(SessionValidKey, valid);
         _storage.SetLong(SessionLastCheckKey, ticks);
 

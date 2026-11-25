@@ -63,12 +63,23 @@ public partial class DashboardPage : ContentPage
         return Color.FromArgb(fallbackHex);
     }
 
+    private void OnThemeChanged(object? sender, EventArgs e)
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            _normalProgressDrawable.IsDarkTheme = !ThemeService.Current.CurrentPalette.IsLight;
+            OverviewProgressGraphicsView.Invalidate();
+        });
+    }
+
     protected override async void OnAppearing()
     {
         base.OnAppearing();
         _isAppInForeground = true;
         SessionState.Changed -= OnSessionStateChanged;
         SessionState.Changed += OnSessionStateChanged;
+        ThemeService.Current.ThemeChanged -= OnThemeChanged;
+        ThemeService.Current.ThemeChanged += OnThemeChanged;
 
 #if IOS
         PullToRefreshHintLabel.IsVisible = false;
@@ -107,9 +118,11 @@ public partial class DashboardPage : ContentPage
             MessageEditor.Unfocus();
 
         PersistMessageText();
+        PersonalizedMessagesStack.PersistPendingEdits();
         base.OnDisappearing();
         _isAppInForeground = false;
         SessionState.Changed -= OnSessionStateChanged;
+        ThemeService.Current.ThemeChanged -= OnThemeChanged;
         if (_statusTimer != null)
         {
             _statusTimer.Stop();
@@ -230,6 +243,9 @@ public partial class DashboardPage : ContentPage
         RandomizeModeHint.IsVisible = isRandomized;
         MessageEditor.IsEnabled = !isRunning && !isRandomized;
         MessageEditor.Opacity = isRunning ? 0.6 : 1.0;
+        PersonalizedMessagesStack.IsVisible = !isRandomized;
+        PersonalizedMessagesStack.IsEnabled = !isRunning && !isRandomized;
+        PersonalizedMessagesStack.SetRunningState(isRunning);
     }
 
     private static string NormalizeVersion(string raw)
@@ -322,6 +338,7 @@ public partial class DashboardPage : ContentPage
         }
 
         ApplyMessageEditorMode(GetIsRunInProgress());
+        PersonalizedMessagesStack.Refresh(GetIsRunInProgress());
     }
 
     private void UpdateStatus()
@@ -330,7 +347,7 @@ public partial class DashboardPage : ContentPage
         var lastRun = _settingsService.GetLastRunTime();
         if (lastRun.HasValue)
         {
-            var timeSince = DateTime.Now - lastRun.Value;
+            var timeSince = AppTime.Now - lastRun.Value;
             if (timeSince.TotalMinutes < 60) LastRunLabel.Text = $"{(int)timeSince.TotalMinutes} minutes ago";
             else if (timeSince.TotalHours < 24) LastRunLabel.Text = $"{(int)timeSince.TotalHours} hours ago";
             else LastRunLabel.Text = lastRun.Value.ToString("MMM dd, h:mm tt");
@@ -359,8 +376,9 @@ public partial class DashboardPage : ContentPage
         var history = _settingsService.GetRunHistory();
         var currentEnabledFriends = _settingsService.GetEnabledFriends();
         var enabledIds = currentEnabledFriends.Select(friend => friend.Id).ToHashSet(StringComparer.Ordinal);
+        var today = AppTime.Today;
         var todayRuns = history
-            .Where(result => result.RunTime.Date == DateTime.Today)
+            .Where(result => result.RunTime.Date == today)
             .OrderByDescending(result => result.RunTime)
             .ToList();
         var todayResults = todayRuns
@@ -396,7 +414,7 @@ public partial class DashboardPage : ContentPage
         OverviewProgressLabel.Text = progressText;
         _normalProgressDrawable.Progress = progressFraction;
         _normalProgressDrawable.RatioText = progressText;
-        _normalProgressDrawable.IsDarkTheme = Application.Current?.RequestedTheme == AppTheme.Dark;
+        _normalProgressDrawable.IsDarkTheme = !ThemeService.Current.CurrentPalette.IsLight;
         OverviewProgressGraphicsView.Invalidate();
 
 #if ANDROID
@@ -415,8 +433,9 @@ public partial class DashboardPage : ContentPage
             .ToHashSet(StringComparer.Ordinal);
         var latestByFriend = new Dictionary<string, FriendMessageResult>(StringComparer.Ordinal);
 
+        var today = AppTime.Today;
         foreach (var result in history
-                     .Where(result => result.RunTime.Date == DateTime.Today)
+                     .Where(result => result.RunTime.Date == today)
                      .OrderByDescending(result => result.RunTime)
                      .SelectMany(result => result.FriendResults))
         {
@@ -438,7 +457,7 @@ public partial class DashboardPage : ContentPage
     /// </summary>
     private static string FormatNextRun(DateTime nextRun)
     {
-        var now = DateTime.Now;
+        var now = AppTime.Now;
         var timeUntil = nextRun - now;
 
         if (timeUntil.TotalSeconds < 30)
@@ -467,18 +486,21 @@ public partial class DashboardPage : ContentPage
 
         _messageDraft = e.NewTextValue ?? string.Empty;
         _settingsService.SetMessageText(_messageDraft);
+        PersonalizedMessagesStack.UpdateDefaultMessagePreview();
     }
 
     private void OnMessageUnfocused(object? sender, FocusEventArgs e)
     {
         _messageDraft = MessageEditor.Text ?? _messageDraft;
         PersistMessageText();
+        PersonalizedMessagesStack.PersistPendingEdits();
     }
 
     private void OnMessageCompleted(object? sender, EventArgs e)
     {
         _messageDraft = MessageEditor.Text ?? _messageDraft;
         PersistMessageText();
+        PersonalizedMessagesStack.PersistPendingEdits();
     }
 
     private async void OnMasterRunClicked(object? sender, EventArgs e)
@@ -509,6 +531,7 @@ public partial class DashboardPage : ContentPage
 
         _messageDraft = MessageEditor.Text ?? _messageDraft;
         PersistMessageText();
+        PersonalizedMessagesStack.PersistPendingEdits();
 
 #if ANDROID
         bool permissionGranted = await RequestNotificationPermission();
@@ -571,6 +594,7 @@ public partial class DashboardPage : ContentPage
 
         _messageDraft = MessageEditor.Text ?? _messageDraft;
         PersistMessageText();
+        PersonalizedMessagesStack.PersistPendingEdits();
 
         var context = Platform.CurrentActivity ?? Android.App.Application.Context;
         bool started = TiktokStreakSaver.Platforms.Android.StreakScheduler.RunFailedTargets(context, failedIds);

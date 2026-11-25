@@ -29,7 +29,7 @@ public static class StreakScheduler
         if (settingsService.GetUseFixedTime())
         {
             // Fixed daily mode: today's target time, or tomorrow if it's already past.
-            var now = DateTime.Now;
+            var now = AppTime.Now;
             var hour = settingsService.GetFixedTimeHour();
             var minute = settingsService.GetFixedTimeMinute();
             nextRunTime = now.Date.AddHours(hour).AddMinutes(minute);
@@ -45,15 +45,15 @@ public static class StreakScheduler
             {
                 nextRunTime = lastRun.Value.AddHours(intervalHours);
                 // If the calculated time is in the past, schedule for now + small delay
-                if (nextRunTime < DateTime.Now)
+                if (nextRunTime < AppTime.Now)
                 {
-                    nextRunTime = DateTime.Now.AddMinutes(1);
+                    nextRunTime = AppTime.Now.AddMinutes(1);
                 }
             }
             else
             {
                 // First run - schedule for interval from now
-                nextRunTime = DateTime.Now.AddHours(intervalHours);
+                nextRunTime = AppTime.Now.AddHours(intervalHours);
             }
         }
 
@@ -66,7 +66,7 @@ public static class StreakScheduler
     /// </summary>
     public static void ScheduleRetryInOneHour(Context context)
     {
-        ScheduleAt(context, DateTime.Now.AddHours(1));
+        ScheduleAt(context, AppTime.Now.AddHours(1));
         new SettingsService().SetScheduled(true);
     }
 
@@ -124,8 +124,8 @@ public static class StreakScheduler
 
         if (pendingIntent == null) return;
 
-        // Convert to milliseconds since epoch
-        var triggerAtMillis = new DateTimeOffset(triggerTime).ToUnixTimeMilliseconds();
+        // Convert to milliseconds since epoch anchored in the effective app timezone (device or PHT fallback).
+        var triggerAtMillis = AppTime.ToAppDateTimeOffset(triggerTime).ToUnixTimeMilliseconds();
 
         // Use exact alarm for precise timing. Some Android 12+ / HyperOS builds throw
         // SecurityException from SetExact* even after CanScheduleExactAlarms() is true.

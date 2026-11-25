@@ -4,7 +4,7 @@
              x:Class="TiktokStreakSaver.Pages.IosLimitationsPage"
              Title="Why iOS is different"
              Shell.NavBarIsVisible="True"
-             BackgroundColor="{AppThemeBinding Light={StaticResource PageBackgroundLight}, Dark={StaticResource OffBlack}}">
+             BackgroundColor="{DynamicResource ObsidianBlack}">
 
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="16">
@@ -12,16 +12,16 @@
             <Border StrokeThickness="1"
                     StrokeShape="RoundRectangle 16"
                     Padding="14,12"
-                    Stroke="{AppThemeBinding Light=#FCD34D, Dark=#92400E}"
-                    BackgroundColor="{AppThemeBinding Light=#FFFBEB, Dark=#451A03}">
+                    Stroke="{DynamicResource WarningBannerBorderBrush}"
+                    BackgroundColor="{DynamicResource WarningBannerBackground}">
                 <VerticalStackLayout Spacing="8">
                     <Label Text="Experimental — not production-ready"
                            FontFamily="InterSemiBold"
                            FontSize="15"
-                           TextColor="{AppThemeBinding Light=#92400E, Dark=#FCD34D}" />
+                           TextColor="{DynamicResource WarningBannerTitle}" />
                     <Label LineBreakMode="WordWrap"
                            FontSize="13"
-                           TextColor="{AppThemeBinding Light=#78350F, Dark=#FDE68A}"
+                           TextColor="{DynamicResource TextSecondary}"
                            Text="TikTok AutoStreak on iPhone cannot match Android reliability. Do not rely on iOS for daily streak protection. Use Android for automatic messaging while your phone is locked or the app is closed." />
                 </VerticalStackLayout>
             </Border>
@@ -48,43 +48,43 @@
 
             <Button Text="App Intents — openAppWhenRun"
                     Clicked="OnOpenAppWhenRunDoc"
-                    BackgroundColor="{AppThemeBinding Light={StaticResource PrimarySubtle}, Dark={StaticResource Gray800}}"
-                    TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                    BackgroundColor="{DynamicResource PrimarySubtle}"
+                    TextColor="{DynamicResource Primary}"
                     FontFamily="InterSemiBold"
                     CornerRadius="14"
                     HeightRequest="44" />
             <Button Text="App Intents — foreground / background modes"
                     Clicked="OnSupportedModesDoc"
-                    BackgroundColor="{AppThemeBinding Light={StaticResource PrimarySubtle}, Dark={StaticResource Gray800}}"
-                    TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                    BackgroundColor="{DynamicResource PrimarySubtle}"
+                    TextColor="{DynamicResource Primary}"
                     FontFamily="InterSemiBold"
                     CornerRadius="14"
                     HeightRequest="44" />
             <Button Text="Background tasks (limits)"
                     Clicked="OnBackgroundTasksDoc"
-                    BackgroundColor="{AppThemeBinding Light={StaticResource PrimarySubtle}, Dark={StaticResource Gray800}}"
-                    TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                    BackgroundColor="{DynamicResource PrimarySubtle}"
+                    TextColor="{DynamicResource Primary}"
                     FontFamily="InterSemiBold"
                     CornerRadius="14"
                     HeightRequest="44" />
             <Button Text="WKWebView (WebKit)"
                     Clicked="OnWkWebViewDoc"
-                    BackgroundColor="{AppThemeBinding Light={StaticResource PrimarySubtle}, Dark={StaticResource Gray800}}"
-                    TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                    BackgroundColor="{DynamicResource PrimarySubtle}"
+                    TextColor="{DynamicResource Primary}"
                     FontFamily="InterSemiBold"
                     CornerRadius="14"
                     HeightRequest="44" />
             <Button Text="Shortcuts user guide"
                     Clicked="OnShortcutsGuideDoc"
-                    BackgroundColor="{AppThemeBinding Light={StaticResource PrimarySubtle}, Dark={StaticResource Gray800}}"
-                    TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                    BackgroundColor="{DynamicResource PrimarySubtle}"
+                    TextColor="{DynamicResource Primary}"
                     FontFamily="InterSemiBold"
                     CornerRadius="14"
                     HeightRequest="44" />
             <Button Text="Full explanation on GitHub"
                     Clicked="OnFullDoc"
                     BackgroundColor="Transparent"
-                    TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                    TextColor="{DynamicResource Primary}"
                     FontFamily="InterSemiBold"
                     CornerRadius="14"
                     HeightRequest="44" />

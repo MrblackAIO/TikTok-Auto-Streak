@@ -1,6 +1,6 @@
 <Project>
 <PropertyGroup>
-  <AppDisplayVersion>2.0.14</AppDisplayVersion>
-  <AppBuildVersion>20014</AppBuildVersion>
+  <AppDisplayVersion>2.0.15</AppDisplayVersion>
+  <AppBuildVersion>20015</AppBuildVersion>
 </PropertyGroup>
 </Project>

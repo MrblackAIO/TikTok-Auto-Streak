@@ -1,0 +1,383 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TiktokStreakSaver.Pages.ThemeSettingsPage"
+             Title="Appearance &amp; Theme"
+             Shell.NavBarIsVisible="False"
+             Shell.TabBarIsVisible="False"
+             NavigationPage.HasNavigationBar="False"
+             BackgroundColor="{DynamicResource ObsidianBlack}">
+
+    <Grid RowDefinitions="Auto, *, Auto">
+
+        <!-- ═══ Header ═══ -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto, *, Auto" Padding="16,14,16,10" ColumnSpacing="12">
+            <Button Text="←"
+                    Style="{StaticResource TextButton}"
+                    FontSize="20"
+                    WidthRequest="40" HeightRequest="40"
+                    Clicked="OnBackClicked"/>
+            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="1">
+                <Label Text="Appearance &amp; Theme"
+                       Style="{StaticResource SectionLabel}"
+                       FontSize="18"/>
+                <Label Text="Live preview before applying"
+                       Style="{StaticResource ControlSubLabel}"/>
+            </VerticalStackLayout>
+            <Button Grid.Column="2"
+                    Text="Reset"
+                    Style="{StaticResource TextButton}"
+                    FontSize="12"
+                    TextColor="{DynamicResource Error}"
+                    Clicked="OnResetClicked"/>
+        </Grid>
+
+        <!-- ═══ Scrollable Editor ═══ -->
+        <ScrollView Grid.Row="1" VerticalScrollBarVisibility="Never">
+            <VerticalStackLayout Padding="18,4,18,24" Spacing="16">
+
+                <!-- 1. Live Preview Canvas -->
+                <Border x:Name="PreviewOuterCanvas"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 20"
+                        Padding="14">
+                    <VerticalStackLayout Spacing="10">
+                        <Grid ColumnDefinitions="*, Auto">
+                            <VerticalStackLayout Spacing="1">
+                                <Label x:Name="PreviewHeadingLabel"
+                                       Text="LIVE PREVIEW"
+                                       FontFamily="InterBold"
+                                       FontSize="10"
+                                       CharacterSpacing="1.4"/>
+                                <Label x:Name="PreviewPresetTitle"
+                                       Text="Obsidian • Dark"
+                                       FontFamily="InterSemiBold"
+                                       FontSize="15"/>
+                            </VerticalStackLayout>
+                            <Border x:Name="PreviewContrastBadge"
+                                    Grid.Column="1"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 10"
+                                    Padding="8,4"
+                                    VerticalOptions="Center">
+                                <Label x:Name="PreviewContrastLabel"
+                                       Text="AAA 16.5:1"
+                                       FontFamily="InterSemiBold"
+                                       FontSize="10"/>
+                            </Border>
+                        </Grid>
+
+                        <!-- Miniature Card Inside Preview -->
+                        <Border x:Name="PreviewCard"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 16"
+                                Padding="12">
+                            <VerticalStackLayout Spacing="10">
+                                <Grid ColumnDefinitions="*, Auto" ColumnSpacing="8">
+                                    <VerticalStackLayout Spacing="2">
+                                        <Label x:Name="PreviewCardTitle"
+                                               Text="Streak Automation"
+                                               FontFamily="InterSemiBold"
+                                               FontSize="14"/>
+                                        <Label x:Name="PreviewCardSub"
+                                               Text="3 friends ready • Next at 9:00 PM"
+                                               FontFamily="InterRegular"
+                                               FontSize="11"/>
+                                    </VerticalStackLayout>
+                                    <Border x:Name="PreviewAccentChip"
+                                            Grid.Column="1"
+                                            StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 10"
+                                            Padding="10,4"
+                                            VerticalOptions="Center">
+                                        <Label x:Name="PreviewAccentChipText"
+                                               Text="Active"
+                                               FontFamily="InterSemiBold"
+                                               FontSize="11"/>
+                                    </Border>
+                                </Grid>
+
+                                <!-- Status Indicators Row -->
+                                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="6">
+                                    <Border x:Name="PreviewSuccessBox" StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="8,6">
+                                        <Label x:Name="PreviewSuccessText" Text="● Success" FontFamily="InterMedium" FontSize="10" HorizontalTextAlignment="Center"/>
+                                    </Border>
+                                    <Border x:Name="PreviewWarningBox" Grid.Column="1" StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="8,6">
+                                        <Label x:Name="PreviewWarningText" Text="▲ Warning" FontFamily="InterMedium" FontSize="10" HorizontalTextAlignment="Center"/>
+                                    </Border>
+                                    <Border x:Name="PreviewErrorBox" Grid.Column="2" StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="8,6">
+                                        <Label x:Name="PreviewErrorText" Text="✕ Error" FontFamily="InterMedium" FontSize="10" HorizontalTextAlignment="Center"/>
+                                    </Border>
+                                </Grid>
+
+                                <!-- Buttons Row -->
+                                <Grid ColumnDefinitions="*, *" ColumnSpacing="8">
+                                    <Border x:Name="PreviewPrimaryBtn"
+                                            StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 12"
+                                            HeightRequest="34">
+                                        <Label x:Name="PreviewPrimaryBtnText"
+                                               Text="Primary CTA"
+                                               FontFamily="InterBold"
+                                               FontSize="12"
+                                               HorizontalOptions="Center"
+                                               VerticalOptions="Center"/>
+                                    </Border>
+                                    <Border x:Name="PreviewSecondaryBtn"
+                                            Grid.Column="1"
+                                            StrokeThickness="1"
+                                            StrokeShape="RoundRectangle 12"
+                                            HeightRequest="34">
+                                        <Label x:Name="PreviewSecondaryBtnText"
+                                               Text="Secondary"
+                                               FontFamily="InterSemiBold"
+                                               FontSize="12"
+                                               HorizontalOptions="Center"
+                                               VerticalOptions="Center"/>
+                                    </Border>
+                                </Grid>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- Contrast Warning + Auto-Fix -->
+                        <Grid x:Name="ContrastFixBanner"
+                              IsVisible="False"
+                              ColumnDefinitions="*, Auto"
+                              ColumnSpacing="10">
+                            <Label x:Name="ContrastWarningText"
+                                   Text="Low text contrast detected on card or background."
+                                   FontFamily="InterMedium"
+                                   FontSize="11"
+                                   VerticalOptions="Center"
+                                   LineBreakMode="WordWrap"/>
+                            <Button Grid.Column="1"
+                                    Text="Auto-fix"
+                                    FontSize="11"
+                                    HeightRequest="32"
+                                    Padding="10,0"
+                                    CornerRadius="10"
+                                    Clicked="OnAutoFixContrastClicked"/>
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- 2. Theme Mode Selector -->
+                <Border Style="{StaticResource SectionCard}" Padding="16">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Theme Mode" Style="{StaticResource SectionLabel}"/>
+                        <Border Stroke="{DynamicResource ObsidianBorderBrush}"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 16"
+                                BackgroundColor="{DynamicResource ObsidianSurfaceElevated}"
+                                Padding="3">
+                            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="4" HeightRequest="38">
+                                <Border x:Name="ModeDarkPill" StrokeThickness="0" StrokeShape="RoundRectangle 13">
+                                    <Label x:Name="ModeDarkLabel" Text="Dark" FontFamily="InterSemiBold" FontSize="12" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnModeDarkTapped"/>
+                                    </Border.GestureRecognizers>
+                                </Border>
+                                <Border x:Name="ModeLightPill" Grid.Column="1" StrokeThickness="0" StrokeShape="RoundRectangle 13">
+                                    <Label x:Name="ModeLightLabel" Text="Light" FontFamily="InterSemiBold" FontSize="12" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnModeLightTapped"/>
+                                    </Border.GestureRecognizers>
+                                </Border>
+                                <Border x:Name="ModeSystemPill" Grid.Column="2" StrokeThickness="0" StrokeShape="RoundRectangle 13">
+                                    <Label x:Name="ModeSystemLabel" Text="Follow System" FontFamily="InterSemiBold" FontSize="12" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnModeSystemTapped"/>
+                                    </Border.GestureRecognizers>
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- 3. Built-in Theme Presets -->
+                <Border Style="{StaticResource SectionCard}" Padding="16">
+                    <VerticalStackLayout Spacing="12">
+                        <Grid ColumnDefinitions="*, Auto">
+                            <Label Text="Built-in Presets" Style="{StaticResource SectionLabel}"/>
+                            <Label Text="11 themes" Style="{StaticResource DataLabel}" VerticalOptions="Center"/>
+                        </Grid>
+                        <FlexLayout x:Name="PresetsContainer"
+                                    Wrap="Wrap"
+                                    Direction="Row"
+                                    JustifyContent="SpaceBetween"
+                                    AlignItems="Stretch"/>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- 4. Custom Accent Color Picker -->
+                <Border Style="{StaticResource SectionCard}" Padding="16">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Quick Accent Color" Style="{StaticResource SectionLabel}"/>
+                        <Label Text="Tap a swatch or enter a hex color to customize the primary accent." Style="{StaticResource ControlSubLabel}"/>
+                        <HorizontalStackLayout x:Name="AccentSwatchesRow" Spacing="10"/>
+                        <Grid ColumnDefinitions="*, Auto" ColumnSpacing="8">
+                            <Border Stroke="{DynamicResource ObsidianBorderBrush}"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 12"
+                                    BackgroundColor="{DynamicResource ObsidianSurfaceElevated}">
+                                <Entry x:Name="QuickAccentHexEntry"
+                                       Placeholder="#FF3B5C"
+                                       MaxLength="9"
+                                       Margin="10,0"
+                                       FontFamily="monospace"
+                                       FontSize="13"
+                                       Completed="OnQuickAccentHexApplied"/>
+                            </Border>
+                            <Button Grid.Column="1"
+                                    Text="Set Accent"
+                                    FontSize="12"
+                                    CornerRadius="12"
+                                    HeightRequest="44"
+                                    Clicked="OnQuickAccentHexApplied"/>
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- 5. Advanced Color Customization -->
+                <Border Style="{StaticResource SectionCard}" Padding="16">
+                    <VerticalStackLayout Spacing="12">
+                        <Grid ColumnDefinitions="*, Auto" ColumnSpacing="10">
+                            <VerticalStackLayout Spacing="2">
+                                <Label Text="Advanced Color Tokens" Style="{StaticResource SectionLabel}"/>
+                                <Label Text="Customize any surface, text, border, or status color" Style="{StaticResource ControlSubLabel}"/>
+                            </VerticalStackLayout>
+                            <Button x:Name="ToggleAdvancedButton"
+                                    Grid.Column="1"
+                                    Text="Show"
+                                    Style="{StaticResource TextButton}"
+                                    TextColor="{DynamicResource Primary}"
+                                    Clicked="OnToggleAdvancedClicked"/>
+                        </Grid>
+
+                        <Grid ColumnDefinitions="*, Auto" ColumnSpacing="12">
+                            <VerticalStackLayout VerticalOptions="Center" Spacing="1">
+                                <Label Text="Auto-Validate Text Contrast" Style="{StaticResource ControlTitleLabel}" FontSize="13"/>
+                                <Label Text="Keep foreground text readable on custom backgrounds" Style="{StaticResource ControlSubLabel}"/>
+                            </VerticalStackLayout>
+                            <Switch x:Name="AutoContrastSwitch"
+                                    Grid.Column="1"
+                                    IsToggled="True"
+                                    Toggled="OnAutoContrastToggled"/>
+                        </Grid>
+
+                        <VerticalStackLayout x:Name="AdvancedTokensContainer"
+                                             IsVisible="False"
+                                             Spacing="8"/>
+                    </VerticalStackLayout>
+                </Border>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- ═══ Inline Color Picker Overlay Modal ═══ -->
+        <Grid x:Name="ColorPickerOverlay"
+              Grid.RowSpan="3"
+              IsVisible="False"
+              BackgroundColor="{DynamicResource OverlayDark}"
+              Padding="20">
+            <Border VerticalOptions="Center"
+                    Style="{StaticResource SectionCard}"
+                    Padding="18">
+                <VerticalStackLayout Spacing="12">
+                    <Grid ColumnDefinitions="*, Auto">
+                        <Label x:Name="PickerTokenTitleLabel"
+                               Text="Edit Color"
+                               Style="{StaticResource SectionLabel}"/>
+                        <Border x:Name="PickerSwatchPreview"
+                                Grid.Column="1"
+                                WidthRequest="36" HeightRequest="36"
+                                StrokeThickness="1"
+                                Stroke="{DynamicResource ObsidianBorderBrush}"
+                                StrokeShape="RoundRectangle 10"/>
+                    </Grid>
+
+                    <Border Stroke="{DynamicResource ObsidianBorderBrush}"
+                            StrokeThickness="1"
+                            StrokeShape="RoundRectangle 12"
+                            BackgroundColor="{DynamicResource ObsidianSurfaceElevated}">
+                        <Entry x:Name="PickerHexEntry"
+                               Placeholder="#FF3B5C"
+                               MaxLength="9"
+                               Margin="12,0"
+                               FontFamily="monospace"
+                               FontSize="14"
+                               TextChanged="OnPickerHexTextChanged"/>
+                    </Border>
+
+                    <VerticalStackLayout Spacing="6">
+                        <Grid ColumnDefinitions="24, *, 36" ColumnSpacing="8">
+                            <Label Text="R" FontFamily="InterBold" VerticalOptions="Center" TextColor="{DynamicResource Error}"/>
+                            <Slider x:Name="SliderRed" Grid.Column="1" Minimum="0" Maximum="255" ValueChanged="OnRgbSliderChanged"/>
+                            <Label x:Name="LabelRedVal" Grid.Column="2" Text="255" FontSize="12" HorizontalTextAlignment="End" VerticalOptions="Center"/>
+                        </Grid>
+                        <Grid ColumnDefinitions="24, *, 36" ColumnSpacing="8">
+                            <Label Text="G" FontFamily="InterBold" VerticalOptions="Center" TextColor="{DynamicResource Success}"/>
+                            <Slider x:Name="SliderGreen" Grid.Column="1" Minimum="0" Maximum="255" ValueChanged="OnRgbSliderChanged"/>
+                            <Label x:Name="LabelGreenVal" Grid.Column="2" Text="59" FontSize="12" HorizontalTextAlignment="End" VerticalOptions="Center"/>
+                        </Grid>
+                        <Grid ColumnDefinitions="24, *, 36" ColumnSpacing="8">
+                            <Label Text="B" FontFamily="InterBold" VerticalOptions="Center" TextColor="{DynamicResource Secondary}"/>
+                            <Slider x:Name="SliderBlue" Grid.Column="1" Minimum="0" Maximum="255" ValueChanged="OnRgbSliderChanged"/>
+                            <Label x:Name="LabelBlueVal" Grid.Column="2" Text="92" FontSize="12" HorizontalTextAlignment="End" VerticalOptions="Center"/>
+                        </Grid>
+                    </VerticalStackLayout>
+
+                    <HorizontalStackLayout x:Name="PickerQuickSwatchesRow" Spacing="8" HorizontalOptions="Center"/>
+
+                    <Grid ColumnDefinitions="*, *, *" ColumnSpacing="8" Margin="0,4,0,0">
+                        <Button Text="Clear"
+                                Style="{StaticResource TextButton}"
+                                BackgroundColor="{DynamicResource ObsidianSurfaceElevated}"
+                                TextColor="{DynamicResource Error}"
+                                CornerRadius="12"
+                                HeightRequest="42"
+                                Clicked="OnPickerClearTokenClicked"/>
+                        <Button Grid.Column="1"
+                                Text="Cancel"
+                                Style="{StaticResource TextButton}"
+                                BackgroundColor="{DynamicResource ObsidianSurfaceElevated}"
+                                TextColor="{DynamicResource TextSecondary}"
+                                CornerRadius="12"
+                                HeightRequest="42"
+                                Clicked="OnPickerCancelClicked"/>
+                        <Button Grid.Column="2"
+                                Text="Done"
+                                BackgroundColor="{DynamicResource Primary}"
+                                TextColor="{DynamicResource OnPrimary}"
+                                FontFamily="InterSemiBold"
+                                CornerRadius="12"
+                                HeightRequest="42"
+                                Clicked="OnPickerConfirmClicked"/>
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+
+        <!-- ═══ Sticky Bottom Apply Bar ═══ -->
+        <Border Grid.Row="2" Style="{StaticResource BottomActionBorder}" Padding="18,14,18,22">
+            <Grid ColumnDefinitions="*, *" ColumnSpacing="12">
+                <Button Text="Cancel"
+                        Style="{StaticResource TextButton}"
+                        BackgroundColor="{DynamicResource ObsidianSurface}"
+                        TextColor="{DynamicResource TextSecondary}"
+                        CornerRadius="14"
+                        HeightRequest="46"
+                        Clicked="OnBackClicked"/>
+                <Button x:Name="ApplyThemeButton"
+                        Grid.Column="1"
+                        Text="Apply Theme"
+                        BackgroundColor="{DynamicResource Primary}"
+                        TextColor="{DynamicResource OnPrimary}"
+                        FontFamily="InterBold"
+                        CornerRadius="14"
+                        HeightRequest="46"
+                        Clicked="OnApplyThemeClicked"/>
+            </Grid>
+        </Border>
+    </Grid>
+</ContentPage>

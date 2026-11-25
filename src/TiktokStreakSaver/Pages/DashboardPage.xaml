@@ -7,7 +7,7 @@
              Shell.NavBarIsVisible="False"
              Shell.TabBarIsVisible="False"
              NavigationPage.HasNavigationBar="False"
-             BackgroundColor="{StaticResource ObsidianBlack}">
+             BackgroundColor="{DynamicResource ObsidianBlack}">
 
     <Grid>
 
@@ -26,7 +26,7 @@
                                    FontFamily="InterSemiBold"
                                    FontSize="11"
                                    CharacterSpacing="1.5"
-                                   TextColor="{StaticResource BrandSubtitle}"
+                                   TextColor="{DynamicResource BrandSubtitle}"
                                    HorizontalOptions="Start"/>
                         </VerticalStackLayout>
 
@@ -34,9 +34,9 @@
                             <Border x:Name="ProfileAvatarBorder"
                                     WidthRequest="44" HeightRequest="44"
                                     StrokeThickness="1"
-                                    Stroke="{StaticResource ObsidianBorder}"
+                                    Stroke="{DynamicResource ObsidianBorderBrush}"
                                     StrokeShape="RoundRectangle 22"
-                                    BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                                    BackgroundColor="{DynamicResource ObsidianSurfaceElevated}"
                                     HorizontalOptions="Center" VerticalOptions="Center">
                                 <Image x:Name="ProfileAvatarImage"
                                        IsVisible="False"
@@ -68,69 +68,69 @@
                                     
                                     <!-- Sent Today Metric Card -->
                                     <Border Grid.Column="0"
-                                            Stroke="{StaticResource ObsidianBorder}"
+                                            Stroke="{DynamicResource ObsidianBorderBrush}"
                                             StrokeThickness="1"
                                             StrokeShape="RoundRectangle 16"
-                                            BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                                            BackgroundColor="{DynamicResource ObsidianSurfaceElevated}"
                                             Padding="12,10">
                                         <VerticalStackLayout Spacing="2" HorizontalOptions="Center">
                                             <Label Text="Sent Today"
                                                    FontFamily="InterRegular" FontSize="11"
-                                                   TextColor="{StaticResource TextSecondary}"
+                                                   TextColor="{DynamicResource TextSecondary}"
                                                    HorizontalTextAlignment="Center"/>
                                             <Label x:Name="OverviewSentLabel" Text="0"
                                                    FontFamily="InterBold" FontSize="18"
-                                                   TextColor="{StaticResource TextPrimary}"
+                                                   TextColor="{DynamicResource TextPrimary}"
                                                    HorizontalTextAlignment="Center"/>
                                             <Label Text="active"
                                                    FontFamily="InterMedium" FontSize="10"
-                                                   TextColor="{StaticResource MintGreen}"
+                                                   TextColor="{DynamicResource MintGreen}"
                                                    HorizontalTextAlignment="Center"/>
                                         </VerticalStackLayout>
                                     </Border>
 
                                     <!-- Upcoming Metric Card -->
                                     <Border Grid.Column="1"
-                                            Stroke="{StaticResource ObsidianBorder}"
+                                            Stroke="{DynamicResource ObsidianBorderBrush}"
                                             StrokeThickness="1"
                                             StrokeShape="RoundRectangle 16"
-                                            BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                                            BackgroundColor="{DynamicResource ObsidianSurfaceElevated}"
                                             Padding="12,10">
                                         <VerticalStackLayout Spacing="2" HorizontalOptions="Center">
                                             <Label Text="Upcoming"
                                                    FontFamily="InterRegular" FontSize="11"
-                                                   TextColor="{StaticResource TextSecondary}"
+                                                   TextColor="{DynamicResource TextSecondary}"
                                                    HorizontalTextAlignment="Center"/>
                                             <Label x:Name="OverviewRemainingLabel" Text="--"
                                                    FontFamily="InterBold" FontSize="18"
-                                                   TextColor="{StaticResource TextPrimary}"
+                                                   TextColor="{DynamicResource TextPrimary}"
                                                    HorizontalTextAlignment="Center"/>
                                             <Label Text="days"
                                                    FontFamily="InterMedium" FontSize="10"
-                                                   TextColor="{StaticResource TextSecondary}"
+                                                   TextColor="{DynamicResource TextSecondary}"
                                                    HorizontalTextAlignment="Center"/>
                                         </VerticalStackLayout>
                                     </Border>
 
                                     <!-- Success Rate Metric Card -->
                                     <Border Grid.Column="2"
-                                            Stroke="{StaticResource ObsidianBorder}"
+                                            Stroke="{DynamicResource ObsidianBorderBrush}"
                                             StrokeThickness="1"
                                             StrokeShape="RoundRectangle 16"
-                                            BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                                            BackgroundColor="{DynamicResource ObsidianSurfaceElevated}"
                                             Padding="12,10">
                                         <VerticalStackLayout Spacing="2" HorizontalOptions="Center">
                                             <Label Text="Success Rate"
                                                    FontFamily="InterRegular" FontSize="11"
-                                                   TextColor="{StaticResource TextSecondary}"
+                                                   TextColor="{DynamicResource TextSecondary}"
                                                    HorizontalTextAlignment="Center"/>
                                             <Label x:Name="OverviewSuccessLabel" Text="--"
                                                    FontFamily="InterBold" FontSize="18"
-                                                   TextColor="{StaticResource MintGreen}"
+                                                   TextColor="{DynamicResource MintGreen}"
                                                    HorizontalTextAlignment="Center"/>
                                             <Label Text="safe"
                                                    FontFamily="InterMedium" FontSize="10"
-                                                   TextColor="{StaticResource MintGreen}"
+                                                   TextColor="{DynamicResource MintGreen}"
                                                    HorizontalTextAlignment="Center"/>
                                         </VerticalStackLayout>
                                     </Border>
@@ -142,13 +142,13 @@
                                         <Label x:Name="NextRunTitleLabel" Text="Next Scheduled Run" Style="{StaticResource DataLabel}"/>
                                         <Label x:Name="NextRunLabel" Text="Not scheduled"
                                                FontFamily="InterSemiBold" FontSize="14"
-                                               TextColor="{StaticResource CoralRed}"/>
+                                               TextColor="{DynamicResource CoralRed}"/>
                                     </VerticalStackLayout>
                                     <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center" HorizontalOptions="End">
                                         <Label Text="Last Run" Style="{StaticResource DataLabel}" HorizontalTextAlignment="End"/>
                                         <Label x:Name="LastRunLabel" Text="Never"
                                                FontFamily="InterMedium" FontSize="14"
-                                               TextColor="{StaticResource TextPrimary}"
+                                               TextColor="{DynamicResource TextPrimary}"
                                                HorizontalTextAlignment="End"/>
                                     </VerticalStackLayout>
                                 </Grid>
@@ -162,13 +162,13 @@
                                     <Label Text="Automation Text" Style="{StaticResource SectionLabel}"/>
                                     <Border Grid.Column="1"
                                             StrokeThickness="1"
-                                            Stroke="{StaticResource ObsidianBorder}"
+                                            Stroke="{DynamicResource ObsidianBorderBrush}"
                                             StrokeShape="RoundRectangle 8"
-                                            BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                                            BackgroundColor="{DynamicResource ObsidianSurfaceElevated}"
                                             Padding="8,3">
                                         <Label Text="Editor"
                                                FontFamily="InterSemiBold" FontSize="11"
-                                               TextColor="{StaticResource VioletPurple}"/>
+                                               TextColor="{DynamicResource VioletPurple}"/>
                                     </Border>
                                 </Grid>
 
@@ -184,22 +184,26 @@
                                            Style="{StaticResource DataLabel}"
                                            LineBreakMode="WordWrap"/>
                                     <Border x:Name="MessageEditorBorder"
-                                            Stroke="{StaticResource ObsidianBorder}"
+                                            Stroke="{DynamicResource ObsidianBorderBrush}"
                                             StrokeThickness="1"
                                             StrokeShape="RoundRectangle 16"
-                                            BackgroundColor="{StaticResource ObsidianSurfaceElevated}">
+                                            BackgroundColor="{DynamicResource ObsidianSurfaceElevated}">
                                         <Editor x:Name="MessageEditor"
                                                 Placeholder="Let's keep the streak ablaze! 🔥"
                                                 HeightRequest="72"
                                                 Margin="12,8"
                                                 BackgroundColor="Transparent"
-                                                TextColor="{StaticResource TextPrimary}"
+                                                TextColor="{DynamicResource TextPrimary}"
+                                                PlaceholderColor="{DynamicResource TextSecondary}"
                                                 FontFamily="InterRegular"
                                                 FontSize="14"
                                                 TextChanged="OnMessageChanged"
                                                 Unfocused="OnMessageUnfocused"
                                                 Completed="OnMessageCompleted"/>
                                     </Border>
+
+                                    <views:PersonalizedMessagesCardStack x:Name="PersonalizedMessagesStack"
+                                                                         Margin="0,8,0,0"/>
                                 </VerticalStackLayout>
                             </VerticalStackLayout>
                         </Border>
@@ -216,7 +220,7 @@
                                            FontFamily="monospace"
                                            FontSize="11"
                                            LineBreakMode="WordWrap"
-                                           TextColor="{StaticResource TextSecondary}"/>
+                                           TextColor="{DynamicResource TextSecondary}"/>
                                 </ScrollView>
                             </VerticalStackLayout>
                         </Border>
@@ -226,7 +230,7 @@
                            Text="Pull down to check for updates"
                            FontFamily="InterRegular"
                            FontSize="12"
-                           TextColor="{StaticResource TextSecondary}"
+                           TextColor="{DynamicResource TextSecondary}"
                            HorizontalOptions="Center"
                            Margin="0,8,0,0"/>
 
@@ -240,13 +244,13 @@
         <Border x:Name="ControlDockBorder"
                 VerticalOptions="End"
                 StrokeThickness="1"
-                Stroke="{StaticResource ObsidianBorder}"
+                Stroke="{DynamicResource ObsidianBorderBrush}"
                 StrokeShape="RoundRectangle 24"
                 Padding="20,16"
                 Margin="20,0,20,96"
-                BackgroundColor="#EB13171F">
+                BackgroundColor="{DynamicResource ControlDockBackground}">
             <Border.Shadow>
-                <Shadow Brush="#90000000" Offset="0,4" Radius="20" Opacity="1"/>
+                <Shadow Brush="{DynamicResource ThemeShadowColorBrush}" Offset="0,4" Radius="20" Opacity="1"/>
             </Border.Shadow>
 
             <VerticalStackLayout Spacing="12">
@@ -256,26 +260,26 @@
                            LineBreakMode="WordWrap"/>
                     <Button x:Name="BtnExactAlarm"
                             Text="Allow Exact Scheduling"
-                            BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
-                            TextColor="{StaticResource TextPrimary}"
+                            BackgroundColor="{DynamicResource ObsidianSurfaceElevated}"
+                            TextColor="{DynamicResource TextPrimary}"
                             CornerRadius="12" HeightRequest="44"
                             Clicked="OnRequestExactAlarmClicked"/>
                     <Button x:Name="BtnBatteryOpt"
                             Text="Disable Battery Restrictions"
-                            BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
-                            TextColor="{StaticResource TextPrimary}"
+                            BackgroundColor="{DynamicResource ObsidianSurfaceElevated}"
+                            TextColor="{DynamicResource TextPrimary}"
                             CornerRadius="12" HeightRequest="44"
                             Clicked="OnRequestBatteryOptimizationClicked"/>
                     <Button x:Name="BtnAutoStart"
                             Text="Allow Background Auto-Start"
-                            BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
-                            TextColor="{StaticResource TextPrimary}"
+                            BackgroundColor="{DynamicResource ObsidianSurfaceElevated}"
+                            TextColor="{DynamicResource TextPrimary}"
                             CornerRadius="12" HeightRequest="44"
                             Clicked="OnRequestAutoStartClicked"/>
                     <Button x:Name="BtnNotification"
                             Text="Allow Status Notifications"
-                            BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
-                            TextColor="{StaticResource TextPrimary}"
+                            BackgroundColor="{DynamicResource ObsidianSurfaceElevated}"
+                            TextColor="{DynamicResource TextPrimary}"
                             CornerRadius="12" HeightRequest="44"
                             Clicked="OnRequestNotificationClicked"/>
                 </VerticalStackLayout>
@@ -285,8 +289,8 @@
                       RowSpacing="8">
                     <Button x:Name="MasterRunButton"
                             Text="RUN AUTOMATION NOW"
-                            BackgroundColor="{StaticResource CoralRed}"
-                            TextColor="{StaticResource White}"
+                            BackgroundColor="{DynamicResource Primary}"
+                            TextColor="{DynamicResource OnPrimary}"
                             FontFamily="InterBold"
                             FontSize="15"
                             CornerRadius="18"
@@ -296,8 +300,8 @@
                             Grid.Row="1"
                             Text="Retry Failed"
                             IsVisible="False"
-                            BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
-                            TextColor="{StaticResource TextPrimary}"
+                            BackgroundColor="{DynamicResource ObsidianSurfaceElevated}"
+                            TextColor="{DynamicResource TextPrimary}"
                             FontFamily="InterSemiBold"
                             CornerRadius="14"
                             HeightRequest="46"
@@ -307,8 +311,8 @@
                 <Button x:Name="StopServiceButton"
                         Text="Stop Processing"
                         IsVisible="False"
-                        BackgroundColor="{StaticResource CoralRed}"
-                        TextColor="White"
+                        BackgroundColor="{DynamicResource Error}"
+                        TextColor="{DynamicResource OnError}"
                         FontFamily="InterSemiBold"
                         CornerRadius="18"
                         HeightRequest="52"

@@ -13,14 +13,15 @@ public class RadialTimerDrawable : IDrawable
     public string TimeText { get; set; } = "12:00";
     public string PeriodText { get; set; } = "PM";
 
-    private static readonly Color TrackColor = Color.FromArgb("#161B24");
-    private static readonly Color ArcColor = Color.FromArgb("#8B5CF6"); // Violet-Blue
-    private static readonly Color GlowColor = Color.FromArgb("#508B5CF6");
-    private static readonly Color TextWhite = Color.FromArgb("#FFFFFF");
-    private static readonly Color TextMuted = Color.FromArgb("#8E95A5");
-
     public void Draw(ICanvas canvas, RectF dirtyRect)
     {
+        var palette = Services.ThemeService.Current.CurrentPalette;
+        var trackColor = palette.SecondaryBackground;
+        var arcColor = palette.Accent;
+        var glowColor = palette.Accent.WithAlpha(0.32f);
+        var textPrimary = palette.PrimaryText;
+        var textMuted = palette.SecondaryText;
+
         var cx = dirtyRect.Width / 2f;
         var cy = dirtyRect.Height / 2f;
         var radius = Math.Min(cx, cy) - 12f;
@@ -29,7 +30,7 @@ public class RadialTimerDrawable : IDrawable
         var stroke = 8f;
 
         // Background track circle
-        canvas.StrokeColor = TrackColor;
+        canvas.StrokeColor = trackColor;
         canvas.StrokeSize = stroke;
         canvas.StrokeLineCap = LineCap.Round;
         canvas.DrawCircle(cx, cy, radius);
@@ -38,8 +39,8 @@ public class RadialTimerDrawable : IDrawable
         var safeProgress = Math.Clamp(Progress, 0.02f, 1f);
         var sweepAngle = safeProgress * 360f;
 
-        canvas.SetShadow(new SizeF(0, 0), 12, GlowColor);
-        canvas.StrokeColor = ArcColor;
+        canvas.SetShadow(new SizeF(0, 0), 12, glowColor);
+        canvas.StrokeColor = arcColor;
         canvas.StrokeSize = stroke;
         canvas.StrokeLineCap = LineCap.Round;
 
@@ -53,14 +54,14 @@ public class RadialTimerDrawable : IDrawable
         canvas.SetShadow(SizeF.Zero, 0, Colors.Transparent);
 
         // Period Indicator (e.g. "PM" or "AM")
-        canvas.FontColor = TextMuted;
+        canvas.FontColor = textMuted;
         canvas.FontSize = 11f;
         canvas.Font = Microsoft.Maui.Graphics.Font.Default;
         canvas.DrawString(PeriodText, 0, cy - 28f, dirtyRect.Width, 18f,
             HorizontalAlignment.Center, VerticalAlignment.Center);
 
         // Digital Time Display (e.g. "12:00")
-        canvas.FontColor = TextWhite;
+        canvas.FontColor = textPrimary;
         canvas.FontSize = 26f;
         canvas.Font = Microsoft.Maui.Graphics.Font.Default;
         canvas.DrawString(TimeText, 0, cy - 8f, dirtyRect.Width, 32f,

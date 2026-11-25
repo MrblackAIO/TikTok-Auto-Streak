@@ -4,9 +4,9 @@
              x:Class="TiktokStreakSaver.Views.TutorialMediaView"
              x:Name="Root">
     <Border StrokeThickness="1"
-            Stroke="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray700}}"
+            Stroke="{DynamicResource ObsidianBorderBrush}"
             StrokeShape="RoundRectangle 16"
-            BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray900}}"
+            BackgroundColor="{DynamicResource ObsidianSurfaceElevated}"
             Padding="0">
         <Grid>
             <Image x:Name="MediaImage"
@@ -30,12 +30,12 @@
                        FontFamily="InterSemiBold"
                        FontSize="14"
                        HorizontalTextAlignment="Center"
-                       TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}" />
+                       TextColor="{DynamicResource TextPrimary}" />
                 <Label x:Name="PlaceholderHintLabel"
                        FontSize="12"
                        HorizontalTextAlignment="Center"
                        LineBreakMode="WordWrap"
-                       TextColor="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray400}}" />
+                       TextColor="{DynamicResource TextSecondary}" />
             </VerticalStackLayout>
         </Grid>
     </Border>

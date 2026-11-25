@@ -4,7 +4,7 @@
              x:Class="TiktokStreakSaver.Pages.SplashPage"
              Shell.NavBarIsVisible="False"
              NavigationPage.HasNavigationBar="False"
-             BackgroundColor="#12151D">
+             BackgroundColor="{DynamicResource ObsidianBlack}">
 
     <Grid x:Name="MainContentGrid" RowDefinitions="*, Auto, *">
 
@@ -30,7 +30,7 @@
                                  Spacing="2"
                                  HorizontalOptions="Center">
                 <Label Text="TIKTOK"
-                       TextColor="#FFFFFF"
+                       TextColor="{DynamicResource TextPrimary}"
                        FontFamily="InterRegular"
                        FontSize="22"
                        CharacterSpacing="3.5"
@@ -40,9 +40,9 @@
                        CharacterSpacing="2.0">
                     <Label.FormattedText>
                         <FormattedString>
-                            <Span Text="AUTO" TextColor="#2DEFF9" FontFamily="InterBold" FontSize="32"/>
-                            <Span Text="ST" TextColor="#FFFFFF" FontFamily="InterBold" FontSize="32"/>
-                            <Span Text="REAK" TextColor="#FF3B5C" FontFamily="InterBold" FontSize="32"/>
+                            <Span Text="AUTO" TextColor="{DynamicResource Secondary}" FontFamily="InterBold" FontSize="32"/>
+                            <Span Text="ST" TextColor="{DynamicResource TextPrimary}" FontFamily="InterBold" FontSize="32"/>
+                            <Span Text="REAK" TextColor="{DynamicResource Primary}" FontFamily="InterBold" FontSize="32"/>
                         </FormattedString>
                     </Label.FormattedText>
                 </Label>
@@ -60,13 +60,13 @@
                    FontFamily="InterBold"
                    FontSize="13"
                    CharacterSpacing="2.5"
-                   TextColor="#8E95A5"
+                   TextColor="{DynamicResource TextSecondary}"
                    HorizontalTextAlignment="Center"/>
 
             <Label x:Name="VersionLabel"
                    FontFamily="InterRegular"
                    FontSize="11"
-                   TextColor="#6B7280"
+                   TextColor="{DynamicResource BrandSubtitle}"
                    HorizontalTextAlignment="Center"/>
 
             <BoxView HeightRequest="8" BackgroundColor="Transparent"/>
@@ -76,7 +76,7 @@
                     HeightRequest="3"
                     StrokeThickness="0"
                     StrokeShape="RoundRectangle 1.5"
-                    BackgroundColor="#374151"
+                    BackgroundColor="{DynamicResource ObsidianBorder}"
                     HorizontalOptions="Center"/>
         </VerticalStackLayout>
 

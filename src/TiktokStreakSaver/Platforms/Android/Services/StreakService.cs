@@ -81,7 +81,7 @@ public class StreakService : Service
 
     private static void AppLog(string phase, string username, string message)
     {
-        var entry = $"[{DateTime.Now:HH:mm:ss}] [{phase}] [{username}] {message}";
+        var entry = $"[{AppTime.Now:HH:mm:ss}] [{phase}] [{username}] {message}";
         lock (LogLock)
             _logs.Add(entry);
         System.Diagnostics.Debug.WriteLine(entry);
@@ -319,7 +319,7 @@ public class StreakService : Service
                     .ToList();
                 AppLog("SYSTEM", "-", $"Targeted retry requested for {_targetFriendIds!.Count} IDs; {allEnabled.Count} enabled targets matched");
             }
-            var today = DateTime.Now.Date;
+            var today = AppTime.Today;
 
             foreach (var friend in allEnabled)
             {
@@ -540,7 +540,17 @@ public class StreakService : Service
         }
         else
         {
-            message = _settingsService?.GetMessageText() ?? SettingsService.DefaultMessage;
+            var customOverride = _settingsService?.GetCustomMessageForRecipient(friend.Id);
+            if (!string.IsNullOrWhiteSpace(customOverride))
+            {
+                message = customOverride;
+                AppLog("MESSAGE", friend.IsGroup ? $"Group: {friend.DisplayName}" : $"@{friend.Username}",
+                    "Using personalized custom message");
+            }
+            else
+            {
+                message = _settingsService?.GetMessageText() ?? SettingsService.DefaultMessage;
+            }
         }
 
         var displayLabel = friend.IsGroup ? friend.DisplayName : $"@{friend.Username}";
@@ -701,7 +711,7 @@ public class StreakService : Service
 
         friend.SuccessCount++;
         friend.ConsecutiveFailures = 0;
-        friend.LastMessageSent = DateTime.Now;
+        friend.LastMessageSent = AppTime.Now;
 
         if (streakCount > 0)
         {
@@ -769,7 +779,7 @@ public class StreakService : Service
                 _runResult.Success = false;
                 _runResult.ErrorMessage = "Skipped: no Wi‑Fi or mobile data";
                 _settingsService.AddRunResult(_runResult);
-                _settingsService.SetLastRunTime(DateTime.Now);
+                _settingsService.SetLastRunTime(AppTime.Now);
             }
 
             var attempt = StreakScheduler.TryScheduleRetryOrGiveUp(this, SettingsService.FailureReasonNoNetwork);
@@ -821,7 +831,7 @@ public class StreakService : Service
                 _runResult.Success = success;
                 _runResult.ErrorMessage = success ? null : message;
                 _settingsService.AddRunResult(_runResult);
-                _settingsService.SetLastRunTime(DateTime.Now);
+                _settingsService.SetLastRunTime(AppTime.Now);
             }
 
             // Show completion notification
@@ -988,7 +998,7 @@ public class StreakService : Service
         [Export("log")]
         public void Log(string message)
         {
-            var entry = $"[{DateTime.Now:HH:mm:ss}] {message}";
+            var entry = $"[{AppTime.Now:HH:mm:ss}] {message}";
             lock (LogLock)
                 StreakService._logs.Add(entry);
             global::Android.Util.Log.Debug("StreakJS", message);

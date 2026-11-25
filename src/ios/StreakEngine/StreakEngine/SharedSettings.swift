@@ -239,6 +239,31 @@ public final class SharedSettings {
         return msg.isEmpty ? SharedConstants.defaultMessage : msg
     }
 
+    public func getCustomFriendMessages() -> [String: String] {
+        let fileUrl = containerURL.appendingPathComponent(SharedConstants.customFriendMessagesFileName)
+        if let data = try? Data(contentsOf: fileUrl),
+           let map = try? JSONDecoder().decode([String: String].self, from: data) {
+            return map
+        }
+
+        let json = getString(SharedConstants.customFriendMessagesKey)
+        guard !json.isEmpty,
+              let data = json.data(using: .utf8),
+              let map = try? JSONDecoder().decode([String: String].self, from: data) else {
+            return [:]
+        }
+        return map
+    }
+
+    public func resolveMessage(for friend: FriendConfig) -> String {
+        let map = getCustomFriendMessages()
+        if let custom = map[friend.id],
+           !custom.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return custom
+        }
+        return getMessageText()
+    }
+
     public func getRandomizeMessages() -> Bool {
         let fileUrl = containerURL.appendingPathComponent(SharedConstants.randomizeMessagesFlagFileName)
         if let data = try? Data(contentsOf: fileUrl),

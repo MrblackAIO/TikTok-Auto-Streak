@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="TiktokStreakSaver.Pages.IosOnboardingPage"
              Title="Setup"
-             BackgroundColor="{AppThemeBinding Light={StaticResource PageBackgroundLight}, Dark={StaticResource OffBlack}}">
+             BackgroundColor="{DynamicResource ObsidianBlack}">
     <ScrollView>
         <VerticalStackLayout Padding="24" Spacing="16">
             <Label x:Name="StepTitleLabel" Style="{StaticResource PageTitleLabel}" />
@@ -12,7 +12,7 @@
             <Button x:Name="PrimaryButton" Clicked="OnPrimaryClicked" />
             <Button x:Name="SecondaryButton" Text="Skip for now" Clicked="OnSkipClicked"
                     IsVisible="False" BackgroundColor="Transparent"
-                    TextColor="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray400}}" />
+                    TextColor="{DynamicResource TextSecondary}" />
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

@@ -61,17 +61,18 @@ public partial class AboutPopupPage : ContentPage
 
     private void LoadChangelogHtml(string markdown)
     {
-        bool isDark = Application.Current?.RequestedTheme == AppTheme.Dark;
+        var p = ThemeService.Current.CurrentPalette;
 
-        // ── Color palette ──────────────────────────────────────────────────
-        string bg        = isDark ? "#121212" : "#F2F2F2";
-        string fg        = isDark ? "#FFFFFF" : "#000000";
-        string fgMuted   = isDark ? "#92979E" : "#666666";
-        string accent    = isDark ? "#FF6B7F" : "#FE2C55";
-        string cardBg    = isDark ? "#282828" : "#FFFFFF";
-        string divider   = isDark ? "#3F3F3F" : "#E1E8ED";
-        string utilBg    = isDark ? "#1E1E1E" : "#F4F4F4";
-        string bulletCol = isDark ? "#3F3F3F" : "#E1E8ED";
+        // ── Color palette driven by active ThemeService ────────────────────
+        string bg        = ColorContrastHelper.ToHex(p.CardBackground);
+        string fg        = ColorContrastHelper.ToHex(p.PrimaryText);
+        string fgMuted   = ColorContrastHelper.ToHex(p.SecondaryText);
+        string accent    = ColorContrastHelper.ToHex(p.Primary);
+        string cardBg    = ColorContrastHelper.ToHex(p.CardBackground);
+        string divider   = ColorContrastHelper.ToHex(p.Border);
+        string utilBg    = ColorContrastHelper.ToHex(p.SecondaryBackground);
+        string bulletCol = ColorContrastHelper.ToHex(p.Border);
+        string onAccent  = ColorContrastHelper.ToHex(p.OnPrimary);
 
         string bodyHtml = ConvertMarkdownToStructuredHtml(markdown);
 
@@ -147,7 +148,7 @@ body{{
   width:18px;height:18px;
   border-radius:50%;
   background:{accent};
-  color:#fff;
+  color:{onAccent};
   font-size:11px;font-weight:700;
   display:flex;align-items:center;justify-content:center;
 }}
@@ -507,7 +508,7 @@ blockquote{{
         InstallButton.Text = "Install";
         ProgressLabel.IsVisible = true;
         ProgressLabel.Text = "Download failed. Please try again.";
-        ProgressLabel.TextColor = Color.FromArgb("#D94A4A");
+        ProgressLabel.TextColor = ThemeService.Current.CurrentPalette.Error;
 
         SwitchToFallbackMode();
     }
@@ -587,7 +588,7 @@ blockquote{{
                 ProgressLabel.IsVisible = true;
                 ProgressLabel.Text = "Install failed. If you see a 'conflicting package' error, " +
                                      "uninstall this app first, then reinstall from GitHub.";
-                ProgressLabel.TextColor = Color.FromArgb("#D94A4A");
+                ProgressLabel.TextColor = ThemeService.Current.CurrentPalette.Error;
                 _isDownloading = false;
                 InstallButton.IsEnabled = true;
                 LaterButton.IsEnabled = true;
