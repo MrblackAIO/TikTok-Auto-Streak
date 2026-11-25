@@ -234,7 +234,7 @@
                            HorizontalOptions="Center"
                            Margin="0,8,0,0"/>
 
-                    <BoxView HeightRequest="200" BackgroundColor="Transparent"/>
+                    <BoxView x:Name="BottomScrollSpacer" HeightRequest="220" BackgroundColor="Transparent"/>
 
                 </VerticalStackLayout>
             </ScrollView>
@@ -243,6 +243,7 @@
         <!-- ═══ Control Dock Overlay ═══ -->
         <Border x:Name="ControlDockBorder"
                 VerticalOptions="End"
+                SizeChanged="OnControlDockSizeChanged"
                 StrokeThickness="1"
                 Stroke="{DynamicResource ObsidianBorderBrush}"
                 StrokeShape="RoundRectangle 24"

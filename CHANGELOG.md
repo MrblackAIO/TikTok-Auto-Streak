@@ -7,6 +7,11 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [2.0.16] - 2026-11-26
+
+### Fixed
+- **Personalized Messages Card-Stack & Dropdown UI**: Refined the collapsed layered card-stack peek offsets (`7dp`/`14dp` with elevated contrast borders) without negative-margin clipping, fixed the expanded dropdown to render an aligned, upright vertical list of 2-section recipient cards with zero lingering rotation/offset transforms, added `AutoSize` multi-line message editors, preserved focused editor state during background refreshes, and dynamically adjusted Dashboard bottom scroll clearance (`BottomScrollSpacer`) above `ControlDockBorder` and `FloatingNavBar`.
+
 ## [2.0.15] - 2026-11-26
 
 ### Fixed
