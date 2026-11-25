@@ -349,15 +349,16 @@ public partial class ThemeSettingsPage : ContentPage
             Grid.SetColumn(textStack, 1);
             grid.Children.Add(textStack);
 
-            grid.Children.Add(new Label
+            var hexLabel = new Label
             {
                 Text = hex,
                 FontFamily = "monospace",
                 FontSize = 11,
                 TextColor = activePalette.SecondaryText,
                 VerticalOptions = LayoutOptions.Center
-            });
-            Grid.SetColumn(grid.Children[^1], 2);
+            };
+            Grid.SetColumn(hexLabel, 2);
+            grid.Children.Add(hexLabel);
 
             row.Content = grid;
             var captured = desc;

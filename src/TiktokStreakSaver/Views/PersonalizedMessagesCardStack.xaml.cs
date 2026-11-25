@@ -246,10 +246,14 @@ public partial class PersonalizedMessagesCardStack : ContentView
             if (!reducedMotion)
             {
                 var cards = CardsStackContainer.Children.OfType<View>().Take(8).ToList();
-                var collapseTasks = cards.Select(card => Task.WhenAll(
-                    card.FadeTo(0, 150, Easing.CubicIn),
-                    card.TranslateTo(0, -10, 150, Easing.CubicIn),
-                    card.ScaleTo(0.95, 150, Easing.CubicIn))).ToList();
+                var collapseTasks = new List<Task>(cards.Count + 1);
+                foreach (var card in cards)
+                {
+                    collapseTasks.Add(Task.WhenAll(
+                        card.FadeTo(0, 150, Easing.CubicIn),
+                        card.TranslateTo(0, -10, 150, Easing.CubicIn),
+                        card.ScaleTo(0.95, 150, Easing.CubicIn)));
+                }
 
                 collapseTasks.Add(ChevronIcon.RotateTo(0, 200, Easing.CubicInOut));
                 await Task.WhenAll(collapseTasks);
