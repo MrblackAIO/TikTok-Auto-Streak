@@ -2,22 +2,21 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="TiktokStreakSaver.AboutPopupPage"
-             BackgroundColor="{StaticResource ObsidianBlack}"
+             BackgroundColor="{DynamicResource ObsidianBlack}"
              Shell.PresentationMode="ModalAnimated">
 
     <Grid RowDefinitions="Auto, *, Auto" Padding="20,16,20,12" RowSpacing="14">
         
         <!-- Header & Flame Glyph Logo -->
         <VerticalStackLayout Grid.Row="0" Spacing="8" HorizontalOptions="Center" Margin="0, 4, 0, 0">
-            <!-- Minimalist Flame Glyph Logo (Screen 6) -->
             <Border WidthRequest="68" HeightRequest="68"
                     StrokeThickness="1"
-                    Stroke="{StaticResource ObsidianBorder}"
+                    Stroke="{DynamicResource ObsidianBorderBrush}"
                     StrokeShape="RoundRectangle 22"
-                    BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                    BackgroundColor="{DynamicResource ObsidianSurfaceElevated}"
                     HorizontalOptions="Center">
                 <Border.Shadow>
-                    <Shadow Brush="#80FF3B5C" Offset="0,0" Radius="16" Opacity="0.4"/>
+                    <Shadow Brush="{DynamicResource PrimaryBrush}" Offset="0,0" Radius="16" Opacity="0.4"/>
                 </Border.Shadow>
                 <Image Source="autostreaklogo.png"
                        WidthRequest="46"
@@ -36,20 +35,20 @@
                    FontFamily="InterBold"
                    FontSize="13"
                    CharacterSpacing="2.2"
-                   TextColor="{StaticResource TextPrimary}"
+                   TextColor="{DynamicResource TextPrimary}"
                    HorizontalOptions="Center"
                    HorizontalTextAlignment="Center"/>
             <Label x:Name="VersionLabel" 
                    FontFamily="InterSemiBold"
                    FontSize="12"
-                   TextColor="{StaticResource BrandSubtitle}"
+                   TextColor="{DynamicResource BrandSubtitle}"
                    HorizontalOptions="Center"
                    HorizontalTextAlignment="Center"/>
             <Label x:Name="SubHeaderLabel" 
                    Text="Stealth Obsidian Streak Automation" 
                    FontFamily="InterRegular"
                    FontSize="12"
-                   TextColor="{StaticResource TextSecondary}"
+                   TextColor="{DynamicResource TextSecondary}"
                    HorizontalOptions="Center"
                    HorizontalTextAlignment="Center"/>
         </VerticalStackLayout>
@@ -66,32 +65,32 @@
                         <Grid ColumnDefinitions="Auto, *" ColumnSpacing="12" Margin="0,2">
                             <Label Text="🕒" FontSize="16" VerticalOptions="Start"/>
                             <VerticalStackLayout Grid.Column="1" Spacing="2">
-                                <Label Text="Daily Schedule" FontFamily="InterSemiBold" FontSize="13" TextColor="{StaticResource TextPrimary}"/>
-                                <Label Text="Runs quietly in the background at your chosen target hour." FontFamily="InterRegular" FontSize="11" TextColor="{StaticResource TextSecondary}"/>
+                                <Label Text="Daily Schedule" FontFamily="InterSemiBold" FontSize="13" TextColor="{DynamicResource TextPrimary}"/>
+                                <Label Text="Runs quietly in the background at your chosen target hour." FontFamily="InterRegular" FontSize="11" TextColor="{DynamicResource TextSecondary}"/>
                             </VerticalStackLayout>
                         </Grid>
 
                         <Grid ColumnDefinitions="Auto, *" ColumnSpacing="12" Margin="0,2">
                             <Label Text="🔋" FontSize="16" VerticalOptions="Start"/>
                             <VerticalStackLayout Grid.Column="1" Spacing="2">
-                                <Label Text="Smart Battery Guard" FontFamily="InterSemiBold" FontSize="13" TextColor="{StaticResource TextPrimary}"/>
-                                <Label Text="Automatically sends streaks early before low-battery triggers." FontFamily="InterRegular" FontSize="11" TextColor="{StaticResource TextSecondary}"/>
+                                <Label Text="Smart Battery Guard" FontFamily="InterSemiBold" FontSize="13" TextColor="{DynamicResource TextPrimary}"/>
+                                <Label Text="Automatically sends streaks early before low-battery triggers." FontFamily="InterRegular" FontSize="11" TextColor="{DynamicResource TextSecondary}"/>
                             </VerticalStackLayout>
                         </Grid>
 
                         <Grid ColumnDefinitions="Auto, *" ColumnSpacing="12" Margin="0,2">
                             <Label Text="⚡" FontSize="16" VerticalOptions="Start"/>
                             <VerticalStackLayout Grid.Column="1" Spacing="2">
-                                <Label Text="Auto-Retry Engine" FontFamily="InterSemiBold" FontSize="13" TextColor="{StaticResource TextPrimary}"/>
-                                <Label Text="Retries automatically if Wi-Fi or mobile data is temporarily disconnected." FontFamily="InterRegular" FontSize="11" TextColor="{StaticResource TextSecondary}"/>
+                                <Label Text="Auto-Retry Engine" FontFamily="InterSemiBold" FontSize="13" TextColor="{DynamicResource TextPrimary}"/>
+                                <Label Text="Retries automatically if Wi-Fi or mobile data is temporarily disconnected." FontFamily="InterRegular" FontSize="11" TextColor="{DynamicResource TextSecondary}"/>
                             </VerticalStackLayout>
                         </Grid>
 
                         <Grid ColumnDefinitions="Auto, *" ColumnSpacing="12" Margin="0,2">
                             <Label Text="🛡️" FontSize="16" VerticalOptions="Start"/>
                             <VerticalStackLayout Grid.Column="1" Spacing="2">
-                                <Label Text="Streak Anti-Drop Protection" FontFamily="InterSemiBold" FontSize="13" TextColor="{StaticResource TextPrimary}"/>
-                                <Label Text="Uses safe human-like intervals and customizable messages." FontFamily="InterRegular" FontSize="11" TextColor="{StaticResource TextSecondary}"/>
+                                <Label Text="Streak Anti-Drop Protection" FontFamily="InterSemiBold" FontSize="13" TextColor="{DynamicResource TextPrimary}"/>
+                                <Label Text="Uses safe human-like intervals and customizable messages." FontFamily="InterRegular" FontSize="11" TextColor="{DynamicResource TextSecondary}"/>
                             </VerticalStackLayout>
                         </Grid>
                     </VerticalStackLayout>
@@ -115,7 +114,7 @@
                         <Label Text="TikTok AutoStreak is designed to automate and protect your TikTok streaks. It runs natively in the background on a schedule you configure, messaging your streak partners so you never miss a day." 
                                FontFamily="InterRegular"
                                FontSize="13"
-                               TextColor="{StaticResource TextSecondary}"
+                               TextColor="{DynamicResource TextSecondary}"
                                LineBreakMode="WordWrap"/>
                     </VerticalStackLayout>
                 </Border>
@@ -125,9 +124,9 @@
                     <VerticalStackLayout Spacing="6">
                         <Label Text="Verified Release" Style="{StaticResource SectionLabel}"/>
                         <Label Text="Engineered by Mrblack"
-                               FontFamily="InterBold" FontSize="13" TextColor="{StaticResource TextPrimary}"/>
+                               FontFamily="InterBold" FontSize="13" TextColor="{DynamicResource TextPrimary}"/>
                         <Label Text="Obsidian Edition • Standalone Background Automation"
-                               TextColor="{StaticResource TealCyan}"
+                               TextColor="{DynamicResource TealCyan}"
                                FontFamily="InterMedium"
                                FontSize="11" />
                     </VerticalStackLayout>
@@ -137,11 +136,11 @@
                 <VerticalStackLayout Spacing="6" Margin="0, 0, 0, 8">
                     <Label Text="Privacy &amp; System Permissions" 
                            FontFamily="InterSemiBold"
-                           TextColor="{StaticResource TextSecondary}" 
+                           TextColor="{DynamicResource TextSecondary}" 
                            FontSize="12"/>
                     <Label Text="All operations execute locally on your device. Zero credentials or messaging session keys are extracted or broadcasted remotely. Background automations require battery exemptions and exact-alarm scheduling to function reliably." 
                            FontFamily="InterRegular"
-                           TextColor="{StaticResource BrandSubtitle}"
+                           TextColor="{DynamicResource BrandSubtitle}"
                            LineBreakMode="WordWrap" 
                            FontSize="11"/>
                 </VerticalStackLayout>
@@ -155,7 +154,7 @@
             <Label x:Name="ProgressLabel"
                    IsVisible="False"
                    HorizontalTextAlignment="Center"
-                   TextColor="{StaticResource TextSecondary}"
+                   TextColor="{DynamicResource TextSecondary}"
                    FontSize="13"/>
 
             <Grid x:Name="UpdateButtonGrid"
@@ -164,16 +163,16 @@
                 <Button x:Name="LaterButton"
                         Grid.Column="0"
                         Text="Later"
-                        BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
-                        TextColor="{StaticResource TextSecondary}"
+                        BackgroundColor="{DynamicResource ObsidianSurfaceElevated}"
+                        TextColor="{DynamicResource TextSecondary}"
                         CornerRadius="14"
                         HeightRequest="48"
                         Clicked="OnLaterClicked"/>
                 <Button x:Name="InstallButton"
                         Grid.Column="2"
                         Text="Install"
-                        BackgroundColor="{StaticResource CoralRed}"
-                        TextColor="{StaticResource White}"
+                        BackgroundColor="{DynamicResource Primary}"
+                        TextColor="{DynamicResource OnPrimary}"
                         FontFamily="InterSemiBold"
                         CornerRadius="14"
                         HeightRequest="48"
@@ -182,8 +181,8 @@
 
             <Button x:Name="CloseButton"
                     Text="Continue"
-                    BackgroundColor="{StaticResource CoralRed}"
-                    TextColor="{StaticResource White}"
+                    BackgroundColor="{DynamicResource Primary}"
+                    TextColor="{DynamicResource OnPrimary}"
                     FontFamily="InterBold"
                     FontSize="15"
                     CornerRadius="16"

@@ -233,7 +233,7 @@ import WebKit
         let lookupName = friend.isGroup
             ? (friend.displayName.isEmpty ? friend.username : friend.displayName)
             : friend.username
-        let message = pickMessage()
+        let message = pickMessage(for: friend)
 
         RunLogStore.append("friend_start \(friend.username) index=\(friendIndex + 1)/\(friends.count)")
         scheduleFriendTimeout(for: friend)
@@ -268,13 +268,13 @@ import WebKit
         }
     }
 
-    private func pickMessage() -> String {
+    private func pickMessage(for friend: FriendConfig) -> String {
         if settings.getRandomizeMessages(), !shuffledMessages.isEmpty {
             let msg = shuffledMessages[messageIndex % shuffledMessages.count]
             messageIndex += 1
             return msg
         }
-        return settings.getMessageText()
+        return settings.resolveMessage(for: friend)
     }
 
     public func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {

@@ -6,7 +6,7 @@
              Shell.NavBarIsVisible="False"
              Shell.TabBarIsVisible="False"
              NavigationPage.HasNavigationBar="False"
-             BackgroundColor="{StaticResource ObsidianBlack}">
+             BackgroundColor="{DynamicResource ObsidianBlack}">
 
     <Grid RowDefinitions="*, Auto">
 
@@ -17,12 +17,12 @@
                 <VerticalStackLayout Spacing="8" HorizontalOptions="Center" Margin="0,8,0,4">
                     <Border WidthRequest="68" HeightRequest="68"
                             StrokeThickness="1.5"
-                            Stroke="{StaticResource TealCyan}"
+                            Stroke="{DynamicResource SecondaryBrush}"
                             StrokeShape="RoundRectangle 22"
-                            BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                            BackgroundColor="{DynamicResource ObsidianSurfaceElevated}"
                             HorizontalOptions="Center">
                         <Border.Shadow>
-                            <Shadow Brush="#8006B6D4" Offset="0,0" Radius="18" Opacity="0.5"/>
+                            <Shadow Brush="{DynamicResource SecondaryBrush}" Offset="0,0" Radius="18" Opacity="0.5"/>
                         </Border.Shadow>
                         <Label Text="🛡️"
                                FontSize="32"
@@ -40,25 +40,25 @@
                            FontFamily="InterBold"
                            FontSize="12"
                            CharacterSpacing="2"
-                           TextColor="{StaticResource TealCyan}"
+                           TextColor="{DynamicResource TealCyan}"
                            HorizontalOptions="Center"
                            HorizontalTextAlignment="Center"/>
 
                     <!-- Trust Capsule -->
                     <Border StrokeThickness="1"
-                            Stroke="{StaticResource ObsidianBorder}"
+                            Stroke="{DynamicResource ObsidianBorderBrush}"
                             StrokeShape="RoundRectangle 14"
-                            BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                            BackgroundColor="{DynamicResource ObsidianSurfaceElevated}"
                             Padding="12,5"
                             HorizontalOptions="Center"
                             Margin="0,2,0,0">
                         <Grid ColumnDefinitions="Auto, *" ColumnSpacing="6" VerticalOptions="Center">
-                            <Label Text="●" TextColor="{StaticResource MintGreen}" FontSize="11" VerticalOptions="Center"/>
+                            <Label Text="●" TextColor="{DynamicResource MintGreen}" FontSize="11" VerticalOptions="Center"/>
                             <Label Grid.Column="1"
                                    Text="100% Client-Side • Zero Telemetry • Open Source"
                                    FontFamily="InterSemiBold"
                                    FontSize="11"
-                                   TextColor="{StaticResource TextSecondary}"
+                                   TextColor="{DynamicResource TextSecondary}"
                                    VerticalOptions="Center"/>
                         </Grid>
                     </Border>
@@ -67,7 +67,7 @@
                            Text="Effective date: November 11, 2026 • v2.0.9"
                            FontFamily="InterRegular"
                            FontSize="11"
-                           TextColor="{StaticResource BrandSubtitle}"
+                           TextColor="{DynamicResource BrandSubtitle}"
                            HorizontalOptions="Center"
                            Margin="0,2,0,0"/>
                 </VerticalStackLayout>
@@ -83,22 +83,22 @@
 
                         <!-- GitHub Repository -->
                         <Border StrokeThickness="1"
-                                Stroke="{StaticResource ObsidianBorder}"
+                                Stroke="{DynamicResource ObsidianBorderBrush}"
                                 StrokeShape="RoundRectangle 14"
-                                BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                                BackgroundColor="{DynamicResource ObsidianSurfaceElevated}"
                                 Padding="12,10">
                             <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="12" VerticalOptions="Center">
                                 <Label Text="🌐" FontSize="20" VerticalOptions="Center"/>
                                 <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
-                                    <Label Text="GitHub Repository" FontFamily="InterSemiBold" FontSize="13" TextColor="{StaticResource TextPrimary}"/>
-                                    <Label Text="Inspect the full open source code" FontFamily="InterRegular" FontSize="11" TextColor="{StaticResource TextSecondary}"/>
+                                    <Label Text="GitHub Repository" FontFamily="InterSemiBold" FontSize="13" TextColor="{DynamicResource TextPrimary}"/>
+                                    <Label Text="Inspect the full open source code" FontFamily="InterRegular" FontSize="11" TextColor="{DynamicResource TextSecondary}"/>
                                 </VerticalStackLayout>
                                 <Button Grid.Column="2"
                                         Text="Visit ↗"
                                         FontFamily="InterSemiBold"
                                         FontSize="11"
-                                        BackgroundColor="#2606B6D4"
-                                        TextColor="{StaticResource TealCyan}"
+                                        BackgroundColor="{DynamicResource SecondaryTint}"
+                                        TextColor="{DynamicResource TealCyan}"
                                         CornerRadius="10"
                                         HeightRequest="34"
                                         Padding="12,0"
@@ -108,22 +108,22 @@
 
                         <!-- Issues & Bug Reports -->
                         <Border StrokeThickness="1"
-                                Stroke="{StaticResource ObsidianBorder}"
+                                Stroke="{DynamicResource ObsidianBorderBrush}"
                                 StrokeShape="RoundRectangle 14"
-                                BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                                BackgroundColor="{DynamicResource ObsidianSurfaceElevated}"
                                 Padding="12,10">
                             <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="12" VerticalOptions="Center">
                                 <Label Text="🐛" FontSize="20" VerticalOptions="Center"/>
                                 <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
-                                    <Label Text="Issues &amp; Bug Reports" FontFamily="InterSemiBold" FontSize="13" TextColor="{StaticResource TextPrimary}"/>
-                                    <Label Text="Submit bugs or feature requests to Mrblack" FontFamily="InterRegular" FontSize="11" TextColor="{StaticResource TextSecondary}"/>
+                                    <Label Text="Issues &amp; Bug Reports" FontFamily="InterSemiBold" FontSize="13" TextColor="{DynamicResource TextPrimary}"/>
+                                    <Label Text="Submit bugs or feature requests to Mrblack" FontFamily="InterRegular" FontSize="11" TextColor="{DynamicResource TextSecondary}"/>
                                 </VerticalStackLayout>
                                 <Button Grid.Column="2"
                                         Text="Issues ↗"
                                         FontFamily="InterSemiBold"
                                         FontSize="11"
-                                        BackgroundColor="{StaticResource ObsidianSurface}"
-                                        TextColor="{StaticResource TextPrimary}"
+                                        BackgroundColor="{DynamicResource ObsidianSurface}"
+                                        TextColor="{DynamicResource TextPrimary}"
                                         CornerRadius="10"
                                         HeightRequest="34"
                                         Padding="12,0"
@@ -133,22 +133,22 @@
 
                         <!-- Releases & Signed APKs -->
                         <Border StrokeThickness="1"
-                                Stroke="{StaticResource ObsidianBorder}"
+                                Stroke="{DynamicResource ObsidianBorderBrush}"
                                 StrokeShape="RoundRectangle 14"
-                                BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                                BackgroundColor="{DynamicResource ObsidianSurfaceElevated}"
                                 Padding="12,10">
                             <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="12" VerticalOptions="Center">
                                 <Label Text="📦" FontSize="20" VerticalOptions="Center"/>
                                 <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
-                                    <Label Text="Releases &amp; Downloads" FontFamily="InterSemiBold" FontSize="13" TextColor="{StaticResource TextPrimary}"/>
-                                    <Label Text="Download signed APKs and read changelogs" FontFamily="InterRegular" FontSize="11" TextColor="{StaticResource TextSecondary}"/>
+                                    <Label Text="Releases &amp; Downloads" FontFamily="InterSemiBold" FontSize="13" TextColor="{DynamicResource TextPrimary}"/>
+                                    <Label Text="Download signed APKs and read changelogs" FontFamily="InterRegular" FontSize="11" TextColor="{DynamicResource TextSecondary}"/>
                                 </VerticalStackLayout>
                                 <Button Grid.Column="2"
                                         Text="Releases ↗"
                                         FontFamily="InterSemiBold"
                                         FontSize="11"
-                                        BackgroundColor="{StaticResource ObsidianSurface}"
-                                        TextColor="{StaticResource TextPrimary}"
+                                        BackgroundColor="{DynamicResource ObsidianSurface}"
+                                        TextColor="{DynamicResource TextPrimary}"
                                         CornerRadius="10"
                                         HeightRequest="34"
                                         Padding="12,0"
@@ -158,22 +158,22 @@
 
                         <!-- Raw PRIVACY.md -->
                         <Border StrokeThickness="1"
-                                Stroke="{StaticResource ObsidianBorder}"
+                                Stroke="{DynamicResource ObsidianBorderBrush}"
                                 StrokeShape="RoundRectangle 14"
-                                BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                                BackgroundColor="{DynamicResource ObsidianSurfaceElevated}"
                                 Padding="12,10">
                             <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="12" VerticalOptions="Center">
                                 <Label Text="📄" FontSize="20" VerticalOptions="Center"/>
                                 <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
-                                    <Label Text="Raw Privacy Document" FontFamily="InterSemiBold" FontSize="13" TextColor="{StaticResource TextPrimary}"/>
-                                    <Label Text="View PRIVACY.md on GitHub" FontFamily="InterRegular" FontSize="11" TextColor="{StaticResource TextSecondary}"/>
+                                    <Label Text="Raw Privacy Document" FontFamily="InterSemiBold" FontSize="13" TextColor="{DynamicResource TextPrimary}"/>
+                                    <Label Text="View PRIVACY.md on GitHub" FontFamily="InterRegular" FontSize="11" TextColor="{DynamicResource TextSecondary}"/>
                                 </VerticalStackLayout>
                                 <Button Grid.Column="2"
                                         Text="Policy ↗"
                                         FontFamily="InterSemiBold"
                                         FontSize="11"
-                                        BackgroundColor="{StaticResource ObsidianSurface}"
-                                        TextColor="{StaticResource TextPrimary}"
+                                        BackgroundColor="{DynamicResource ObsidianSurface}"
+                                        TextColor="{DynamicResource TextPrimary}"
                                         CornerRadius="10"
                                         HeightRequest="34"
                                         Padding="12,0"
@@ -183,22 +183,22 @@
 
                         <!-- MIT License -->
                         <Border StrokeThickness="1"
-                                Stroke="{StaticResource ObsidianBorder}"
+                                Stroke="{DynamicResource ObsidianBorderBrush}"
                                 StrokeShape="RoundRectangle 14"
-                                BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                                BackgroundColor="{DynamicResource ObsidianSurfaceElevated}"
                                 Padding="12,10">
                             <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="12" VerticalOptions="Center">
                                 <Label Text="⚖️" FontSize="20" VerticalOptions="Center"/>
                                 <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
-                                    <Label Text="Open Source License" FontFamily="InterSemiBold" FontSize="13" TextColor="{StaticResource TextPrimary}"/>
-                                    <Label Text="Licensed under the MIT License" FontFamily="InterRegular" FontSize="11" TextColor="{StaticResource TextSecondary}"/>
+                                    <Label Text="Open Source License" FontFamily="InterSemiBold" FontSize="13" TextColor="{DynamicResource TextPrimary}"/>
+                                    <Label Text="Licensed under the MIT License" FontFamily="InterRegular" FontSize="11" TextColor="{DynamicResource TextSecondary}"/>
                                 </VerticalStackLayout>
                                 <Button Grid.Column="2"
                                         Text="License ↗"
                                         FontFamily="InterSemiBold"
                                         FontSize="11"
-                                        BackgroundColor="{StaticResource ObsidianSurface}"
-                                        TextColor="{StaticResource TextPrimary}"
+                                        BackgroundColor="{DynamicResource ObsidianSurface}"
+                                        TextColor="{DynamicResource TextPrimary}"
                                         CornerRadius="10"
                                         HeightRequest="34"
                                         Padding="12,0"
@@ -218,7 +218,7 @@
                         <Label Text="All operations execute 100% locally on your device's private sandbox storage."
                                FontFamily="InterSemiBold"
                                FontSize="13"
-                               TextColor="{StaticResource MintGreen}"
+                               TextColor="{DynamicResource MintGreen}"
                                LineBreakMode="WordWrap"/>
                     </VerticalStackLayout>
                 </Border>
@@ -242,8 +242,8 @@
 
                         <!-- Purge Button -->
                         <Button Text="Purge Session &amp; Local Data"
-                                BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
-                                TextColor="{StaticResource CoralRed}"
+                                BackgroundColor="{DynamicResource ObsidianSurfaceElevated}"
+                                TextColor="{DynamicResource CoralRed}"
                                 FontFamily="InterSemiBold"
                                 FontSize="12"
                                 CornerRadius="12"
@@ -335,8 +335,8 @@
                         Clicked="OnBackClicked"/>
                 <Button Grid.Column="1"
                         Text="GitHub Repository ↗"
-                        BackgroundColor="{StaticResource CoralRed}"
-                        TextColor="{StaticResource White}"
+                        BackgroundColor="{DynamicResource Primary}"
+                        TextColor="{DynamicResource OnPrimary}"
                         FontFamily="InterSemiBold"
                         CornerRadius="14"
                         HeightRequest="46"

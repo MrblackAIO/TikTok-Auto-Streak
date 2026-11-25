@@ -64,7 +64,7 @@ public class FriendConfig
 [Microsoft.Maui.Controls.Internals.Preserve(AllMembers = true)]
 public class StreakRunResult
 {
-    public DateTime RunTime { get; set; } = DateTime.Now;
+    public DateTime RunTime { get; set; } = Services.AppTime.Now;
     public TimeSpan? Duration { get; set; }
     public bool Success { get; set; }
     public bool IsTargetedRetry { get; set; }
@@ -86,5 +86,5 @@ public class FriendMessageResult
     public bool Failed => !Success && !string.IsNullOrEmpty(ErrorMessage);
     public string? ErrorMessage { get; set; }
     public int? StreakCount { get; set; }
-    public DateTime Timestamp { get; set; } = DateTime.Now;
+    public DateTime Timestamp { get; set; } = Services.AppTime.Now;
 }

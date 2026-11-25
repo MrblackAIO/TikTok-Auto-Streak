@@ -99,7 +99,7 @@ public static class IosStreakRunner
 
         settings.AddRunResult(new StreakRunResult
         {
-            RunTime = DateTime.Now,
+            RunTime = AppTime.Now,
             Success = false,
             ErrorMessage = errorMessage
         });

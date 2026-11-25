@@ -14,6 +14,7 @@ public class SettingsService
 
     private const string FriendsListKey = "friends_list";
     private const string MessageTextKey = "message_text";
+    private const string CustomFriendMessagesKey = "custom_friend_messages";
     private const string LastRunKey = "last_run";
     private const string IsScheduledKey = "is_scheduled";
     private const string RunHistoryKey = "run_history";
@@ -217,6 +218,7 @@ public class SettingsService
         var friends = GetFriendsList();
         friends.RemoveAll(f => f.Id == friendId);
         SaveFriendsList(friends);
+        ResetCustomMessageForRecipient(friendId);
     }
 
     public void UpdateFriend(FriendConfig friend)
@@ -271,8 +273,137 @@ public class SettingsService
     private static string MessageTextFilePath =>
         Path.Combine(SharedStorageDirectory, AppConstants.MessageTextFileName);
 
+    private static string CustomFriendMessagesFilePath =>
+        Path.Combine(SharedStorageDirectory, AppConstants.CustomFriendMessagesFileName);
+
     private static string RandomizeMessagesFlagFilePath =>
         Path.Combine(SharedStorageDirectory, AppConstants.RandomizeMessagesFlagFileName);
+
+    // ── Per-Recipient Custom Message Overrides ──
+
+    private string ReadCustomFriendMessagesJson()
+    {
+        var fromFile = TryReadTextFile(CustomFriendMessagesFilePath);
+        if (!string.IsNullOrWhiteSpace(fromFile))
+            return fromFile;
+
+        return _storage.GetString(CustomFriendMessagesKey, string.Empty);
+    }
+
+    private static string? TryReadTextFile(string path)
+    {
+        try
+        {
+            if (!File.Exists(path))
+                return null;
+
+            return File.ReadAllText(path);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public Dictionary<string, string> GetCustomFriendMessages()
+    {
+        var json = ReadCustomFriendMessagesJson();
+        if (string.IsNullOrWhiteSpace(json))
+            return new Dictionary<string, string>(StringComparer.Ordinal);
+
+        try
+        {
+            var parsed = JsonSerializer.Deserialize(json, AppJsonContext.Default.DictionaryStringString);
+            if (parsed != null)
+                return new Dictionary<string, string>(parsed, StringComparer.Ordinal);
+        }
+        catch
+        {
+            try
+            {
+                var fallback = JsonSerializer.Deserialize<Dictionary<string, string>>(json, JsonOptions);
+                if (fallback != null)
+                    return new Dictionary<string, string>(fallback, StringComparer.Ordinal);
+            }
+            catch
+            {
+                // Corrupted customization JSON must not crash automation or settings.
+            }
+        }
+
+        return new Dictionary<string, string>(StringComparer.Ordinal);
+    }
+
+    private void SaveCustomFriendMessages(Dictionary<string, string> map)
+    {
+        var sanitized = map
+            .Where(kv => !string.IsNullOrWhiteSpace(kv.Key) && !string.IsNullOrWhiteSpace(kv.Value))
+            .ToDictionary(kv => kv.Key, kv => kv.Value, StringComparer.Ordinal);
+
+        var json = JsonSerializer.Serialize(sanitized, AppJsonContext.Default.DictionaryStringString);
+        _storage.SetString(CustomFriendMessagesKey, json);
+        TryWriteTextFile(CustomFriendMessagesFilePath, json);
+    }
+
+    public string? GetCustomMessageForRecipient(string? friendId)
+    {
+        if (string.IsNullOrWhiteSpace(friendId))
+            return null;
+
+        var map = GetCustomFriendMessages();
+        return map.TryGetValue(friendId, out var message) && !string.IsNullOrWhiteSpace(message)
+            ? message
+            : null;
+    }
+
+    public void SetCustomMessageForRecipient(string friendId, string? message)
+    {
+        if (string.IsNullOrWhiteSpace(friendId))
+            return;
+
+        var map = GetCustomFriendMessages();
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            if (!map.Remove(friendId))
+                return;
+        }
+        else
+        {
+            map[friendId] = message;
+        }
+
+        SaveCustomFriendMessages(map);
+    }
+
+    public void ResetCustomMessageForRecipient(string friendId) =>
+        SetCustomMessageForRecipient(friendId, null);
+
+    public int GetCustomizedRecipientCount(IEnumerable<FriendConfig> recipients)
+    {
+        var map = GetCustomFriendMessages();
+        if (map.Count == 0)
+            return 0;
+
+        return recipients
+            .Where(r => !string.IsNullOrWhiteSpace(r.Id))
+            .Select(r => r.Id)
+            .Distinct(StringComparer.Ordinal)
+            .Count(id => map.TryGetValue(id, out var msg) && !string.IsNullOrWhiteSpace(msg));
+    }
+
+    /// <summary>
+    /// Resolves the message to send for a recipient when randomizer is OFF:
+    /// 1. Valid custom message for recipient.Id if configured.
+    /// 2. Existing default Automation Text otherwise.
+    /// </summary>
+    public string ResolveMessageForRecipient(FriendConfig? friend)
+    {
+        var custom = GetCustomMessageForRecipient(friend?.Id);
+        if (!string.IsNullOrWhiteSpace(custom))
+            return custom;
+
+        return GetMessageText();
+    }
 
     private static string? TryReadMessageTextFile()
     {
@@ -441,7 +572,14 @@ public class SettingsService
     public DateTime? GetLastRunTime()
     {
         var ticks = _storage.GetLong(LastRunKey, 0L);
-        return ticks > 0 ? new DateTime(ticks) : null;
+        if (ticks <= 0)
+            return null;
+
+#if IOS
+        return AppTime.ToAppTime(new DateTime(ticks, DateTimeKind.Utc));
+#else
+        return new DateTime(ticks);
+#endif
     }
 
     public void SetLastRunTime(DateTime time)
@@ -511,7 +649,7 @@ public class SettingsService
     {
         if (GetUseFixedTime())
         {
-            var now = DateTime.Now;
+            var now = AppTime.Now;
             var today = now.Date.AddHours(GetFixedTimeHour()).AddMinutes(GetFixedTimeMinute());
             return today > now ? today : today.AddDays(1);
         }
@@ -522,7 +660,7 @@ public class SettingsService
         if (lastRun.HasValue)
             return lastRun.Value.AddHours(intervalHours);
 
-        return DateTime.Now;
+        return AppTime.Now;
     }
 
     /// <summary>
@@ -539,7 +677,7 @@ public class SettingsService
     public int GetFixedTimeHour()
     {
         var stored = _storage.GetLong(FixedTimeHourKey, -1);
-        return stored >= 0 ? (int)stored : DateTime.Now.Hour;
+        return stored >= 0 ? (int)stored : AppTime.Now.Hour;
     }
 
     public void SetFixedTimeHour(int hour) => _storage.SetLong(FixedTimeHourKey, Math.Clamp(hour, 0, 23));
@@ -550,7 +688,7 @@ public class SettingsService
     public int GetFixedTimeMinute()
     {
         var stored = _storage.GetLong(FixedTimeMinuteKey, -1);
-        return stored >= 0 ? (int)stored : DateTime.Now.Minute;
+        return stored >= 0 ? (int)stored : AppTime.Now.Minute;
     }
 
     public void SetFixedTimeMinute(int minute) => _storage.SetLong(FixedTimeMinuteKey, Math.Clamp(minute, 0, 59));
@@ -566,7 +704,7 @@ public class SettingsService
     public int GetTodayRetryCount()
     {
         var storedDateTicks = _storage.GetLong(RetryCountDateKey, 0L);
-        var today = DateTime.Now.Date.Ticks;
+        var today = AppTime.Today.Ticks;
         if (storedDateTicks != today)
             return 0;
         return (int)_storage.GetLong(RetryCountTodayKey, 0);
@@ -578,7 +716,7 @@ public class SettingsService
     /// </summary>
     public int IncrementTodayRetryCount()
     {
-        var today = DateTime.Now.Date.Ticks;
+        var today = AppTime.Today.Ticks;
         var storedDateTicks = _storage.GetLong(RetryCountDateKey, 0L);
         var current = storedDateTicks == today ? (int)_storage.GetLong(RetryCountTodayKey, 0) : 0;
         var next = current + 1;
@@ -590,7 +728,7 @@ public class SettingsService
     /// <summary>Reset today's retry counter (typically on a fully successful run).</summary>
     public void ResetTodayRetryCount()
     {
-        _storage.SetLong(RetryCountDateKey, DateTime.Now.Date.Ticks);
+        _storage.SetLong(RetryCountDateKey, AppTime.Today.Ticks);
         _storage.SetLong(RetryCountTodayKey, 0);
     }
 
@@ -624,13 +762,13 @@ public class SettingsService
     public bool WasBatteryAnticipationUsedToday()
     {
         var storedTicks = _storage.GetLong(BatteryAnticipationDateKey, 0L);
-        return storedTicks == DateTime.Now.Date.Ticks;
+        return storedTicks == AppTime.Today.Ticks;
     }
 
     /// <summary>Mark today as already used for battery-low anticipation.</summary>
     public void MarkBatteryAnticipationUsedToday()
     {
-        _storage.SetLong(BatteryAnticipationDateKey, DateTime.Now.Date.Ticks);
+        _storage.SetLong(BatteryAnticipationDateKey, AppTime.Today.Ticks);
     }
 
     /// <summary>
@@ -707,6 +845,12 @@ public class SettingsService
     public void ClearAll()
     {
         _storage.Clear();
+        try
+        {
+            if (File.Exists(CustomFriendMessagesFilePath))
+                File.Delete(CustomFriendMessagesFilePath);
+        }
+        catch { }
     }
 
     #endregion

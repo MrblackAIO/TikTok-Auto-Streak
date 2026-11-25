@@ -35,6 +35,8 @@ public static class AppConstants
 
     public const string MessageTextFileName = "message_text.txt";
 
+    public const string CustomFriendMessagesFileName = "custom_friend_messages.json";
+
     public const string RandomizeMessagesFlagFileName = "randomize_normal_messages.bool";
 
     public const string IosOnboardingCompleteKey = "ios_onboarding_complete";

@@ -90,7 +90,7 @@ public static class IosSessionFileStorage
 
         var ticks = (long)defaults.DoubleForKey("session_last_check");
         if (ticks <= 0)
-            ticks = DateTime.Now.Ticks;
+            ticks = TiktokStreakSaver.Services.AppTime.Now.Ticks;
 
         WriteValid(true, ticks);
     }

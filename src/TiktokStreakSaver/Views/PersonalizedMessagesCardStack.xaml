@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="TiktokStreakSaver.Views.PersonalizedMessagesCardStack">
+
+    <VerticalStackLayout Spacing="10">
+
+        <!-- ═══ Card-Stack Header (Collapsed Deck Appearance) ═══ -->
+        <Grid Padding="0,0,0,8">
+            <!-- Bottom Peek Layer 2 -->
+            <Border x:Name="StackPeekLayer2"
+                    HeightRequest="24"
+                    VerticalOptions="End"
+                    Margin="20,0,20,-8"
+                    Opacity="0.45"
+                    Stroke="{DynamicResource ObsidianBorderBrush}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 14"
+                    BackgroundColor="{DynamicResource ObsidianSurface}"/>
+
+            <!-- Middle Peek Layer 1 -->
+            <Border x:Name="StackPeekLayer1"
+                    HeightRequest="24"
+                    VerticalOptions="End"
+                    Margin="10,0,10,-4"
+                    Opacity="0.72"
+                    Stroke="{DynamicResource ObsidianBorderBrush}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 15"
+                    BackgroundColor="{DynamicResource ObsidianSurfaceElevated}"/>
+
+            <!-- Main Interactive Stack Header Card -->
+            <Border x:Name="StackHeaderCard"
+                    Stroke="{DynamicResource ObsidianBorderBrush}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 16"
+                    BackgroundColor="{DynamicResource ObsidianSurfaceElevated}"
+                    Padding="14,12">
+                <Border.Shadow>
+                    <Shadow Brush="{DynamicResource ThemeShadowColorBrush}"
+                            Offset="0,4"
+                            Radius="12"
+                            Opacity="0.65"/>
+                </Border.Shadow>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnHeaderTapped"/>
+                </Border.GestureRecognizers>
+
+                <Grid ColumnDefinitions="Auto, *, Auto, Auto" ColumnSpacing="10" VerticalOptions="Center">
+                    <!-- Card-Stack Deck Vector Icon -->
+                    <Border WidthRequest="36" HeightRequest="36"
+                            StrokeThickness="1"
+                            Stroke="{DynamicResource ObsidianBorderBrush}"
+                            StrokeShape="RoundRectangle 11"
+                            BackgroundColor="{DynamicResource AccentTint}"
+                            VerticalOptions="Center">
+                        <Path Data="M4,6H2V20A2,2 0 0,0 4,22H18V20H4V6M20,2H8A2,2 0 0,0 6,4V16A2,2 0 0,0 8,18H20A2,2 0 0,0 22,16V4A2,2 0 0,0 20,2M20,16H8V4H20V16Z"
+                              Fill="{DynamicResource TertiaryBrush}"
+                              Aspect="Uniform"
+                              WidthRequest="18"
+                              HeightRequest="18"
+                              HorizontalOptions="Center"
+                              VerticalOptions="Center"/>
+                    </Border>
+
+                    <!-- Title & Description -->
+                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                        <Label Text="Personalized Messages"
+                               FontFamily="InterSemiBold"
+                               FontSize="14"
+                               TextColor="{DynamicResource TextPrimary}"/>
+                        <Label x:Name="HeaderSubtitleLabel"
+                               Text="Assign unique messages per friend or group"
+                               FontFamily="InterRegular"
+                               FontSize="11"
+                               TextColor="{DynamicResource TextSecondary}"
+                               LineBreakMode="TailTruncation"/>
+                    </VerticalStackLayout>
+
+                    <!-- Customized Count Badge -->
+                    <Border x:Name="CustomizedCountBadge"
+                            Grid.Column="2"
+                            StrokeThickness="1"
+                            Stroke="{DynamicResource ObsidianBorderBrush}"
+                            StrokeShape="RoundRectangle 10"
+                            BackgroundColor="{DynamicResource PrimarySubtle}"
+                            Padding="8,4"
+                            VerticalOptions="Center">
+                        <Label x:Name="CustomizedCountLabel"
+                               Text="0 custom"
+                               FontFamily="InterSemiBold"
+                               FontSize="10"
+                               TextColor="{DynamicResource Primary}"/>
+                    </Border>
+
+                    <!-- Expand / Collapse Chevron -->
+                    <Path x:Name="ChevronIcon"
+                          Grid.Column="3"
+                          Data="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"
+                          Fill="{DynamicResource TextSecondaryBrush}"
+                          Aspect="Uniform"
+                          WidthRequest="16"
+                          HeightRequest="16"
+                          VerticalOptions="Center"
+                          HorizontalOptions="Center"/>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ═══ Expanded Disintegrated Card List ═══ -->
+        <VerticalStackLayout x:Name="ExpandedPanel"
+                             IsVisible="False"
+                             Spacing="10">
+
+            <!-- Search Bar (visible when list has > 3 recipients) -->
+            <Border x:Name="SearchBoxBorder"
+                    IsVisible="False"
+                    Stroke="{DynamicResource ObsidianBorderBrush}"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 12"
+                    BackgroundColor="{DynamicResource ObsidianSurfaceElevated}">
+                <Entry x:Name="SearchEntry"
+                       Placeholder="Search friends or groups..."
+                       Margin="10,0"
+                       HeightRequest="40"
+                       FontSize="13"
+                       ClearButtonVisibility="WhileEditing"
+                       BackgroundColor="Transparent"
+                       TextColor="{DynamicResource TextPrimary}"
+                       PlaceholderColor="{DynamicResource TextSecondary}"
+                       TextChanged="OnSearchTextChanged"/>
+            </Border>
+
+            <!-- Filter Chips (All / Friends / Groups / Custom) -->
+            <ScrollView x:Name="FilterChipsScroll"
+                        IsVisible="False"
+                        Orientation="Horizontal"
+                        HorizontalScrollBarVisibility="Never">
+                <HorizontalStackLayout x:Name="FilterChipsRow" Spacing="6"/>
+            </ScrollView>
+
+            <!-- Recipient Cards Stack -->
+            <VerticalStackLayout x:Name="CardsStackContainer" Spacing="10"/>
+
+            <Label x:Name="EmptyStateLabel"
+                   IsVisible="False"
+                   Text="Add friends or groups in the Friends tab to assign personalized messages."
+                   Style="{StaticResource DataLabel}"
+                   HorizontalTextAlignment="Center"
+                   Margin="8,6"/>
+        </VerticalStackLayout>
+
+    </VerticalStackLayout>
+</ContentView>

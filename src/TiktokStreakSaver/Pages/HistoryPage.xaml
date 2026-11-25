@@ -7,7 +7,7 @@
              Shell.NavBarIsVisible="False"
              Shell.TabBarIsVisible="False"
              NavigationPage.HasNavigationBar="False"
-             BackgroundColor="{StaticResource ObsidianBlack}">
+             BackgroundColor="{DynamicResource ObsidianBlack}">
 
     <Grid>
 
@@ -23,7 +23,7 @@
                         <Label Text="Performance metrics &amp; streak history"
                                FontFamily="InterRegular"
                                FontSize="13"
-                               TextColor="{StaticResource TextSecondary}"
+                               TextColor="{DynamicResource TextSecondary}"
                                HorizontalOptions="Start"/>
                     </VerticalStackLayout>
 
@@ -38,19 +38,19 @@
                                        Text="No data yet"
                                        FontFamily="InterBold"
                                        FontSize="15"
-                                       TextColor="{StaticResource TextPrimary}"
+                                       TextColor="{DynamicResource TextPrimary}"
                                        HorizontalTextAlignment="Center"/>
                                 <Label x:Name="TotalRunsLabel"
                                        Text=""
                                        FontFamily="InterRegular"
                                        FontSize="12"
-                                       TextColor="{StaticResource TextSecondary}"
+                                       TextColor="{DynamicResource TextSecondary}"
                                        HorizontalTextAlignment="Center"/>
                                 <Label x:Name="AvgDurationLabel"
                                        Text=""
                                        FontFamily="InterRegular"
                                        FontSize="12"
-                                       TextColor="{StaticResource MintGreen}"
+                                       TextColor="{DynamicResource MintGreen}"
                                        HorizontalTextAlignment="Center"/>
                             </VerticalStackLayout>
                         </VerticalStackLayout>
@@ -65,25 +65,25 @@
                                        VerticalOptions="Center"/>
                                 <Border Grid.Column="1"
                                         StrokeThickness="1"
-                                        Stroke="{StaticResource ObsidianBorder}"
+                                        Stroke="{DynamicResource ObsidianBorderBrush}"
                                         StrokeShape="RoundRectangle 12"
-                                        BackgroundColor="{StaticResource ObsidianSurfaceElevated}"
+                                        BackgroundColor="{DynamicResource ObsidianSurfaceElevated}"
                                         Padding="10,4">
                                     <Label Text="Filters"
                                            FontFamily="InterMedium" FontSize="11"
-                                           TextColor="{StaticResource TextSecondary}"/>
+                                           TextColor="{DynamicResource TextSecondary}"/>
                                 </Border>
                                 <Button Grid.Column="2"
                                         Text="Export"
                                         Style="{StaticResource TextButton}"
                                         FontSize="12"
-                                        TextColor="{StaticResource TextSecondary}"
+                                        TextColor="{DynamicResource TextSecondary}"
                                         Clicked="OnExportLogsClicked"/>
                                 <Button Grid.Column="3"
                                         Text="Clear"
                                         Style="{StaticResource TextButton}"
                                         FontSize="12"
-                                        TextColor="{StaticResource CoralRed}"
+                                        TextColor="{DynamicResource CoralRed}"
                                         Clicked="OnClearHistoryClicked"/>
                             </Grid>
 

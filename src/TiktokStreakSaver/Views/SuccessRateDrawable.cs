@@ -13,14 +13,15 @@ public class SuccessRateDrawable : IDrawable
     public string SubText { get; set; } = "Success Rate";
     public bool IsDarkTheme { get; set; } = true;
 
-    private static readonly Color TrackColor = Color.FromArgb("#161B24");
-    private static readonly Color ArcColor = Color.FromArgb("#10B981"); // Mint Green
-    private static readonly Color GlowColor = Color.FromArgb("#4010B981");
-    private static readonly Color TextWhite = Color.FromArgb("#FFFFFF");
-    private static readonly Color TextMuted = Color.FromArgb("#8E95A5");
-
     public void Draw(ICanvas canvas, RectF dirtyRect)
     {
+        var palette = Services.ThemeService.Current.CurrentPalette;
+        var trackColor = palette.SecondaryBackground;
+        var arcColor = palette.Success;
+        var glowColor = palette.Success.WithAlpha(0.28f);
+        var textPrimary = palette.PrimaryText;
+        var textMuted = palette.SecondaryText;
+
         var cx = dirtyRect.Width / 2f;
         var cy = dirtyRect.Height / 2f;
         var radius = Math.Min(cx, cy) - 10f;
@@ -29,7 +30,7 @@ public class SuccessRateDrawable : IDrawable
         var stroke = 8f;
 
         // Draw track circle
-        canvas.StrokeColor = TrackColor;
+        canvas.StrokeColor = trackColor;
         canvas.StrokeSize = stroke;
         canvas.StrokeLineCap = LineCap.Round;
         canvas.DrawCircle(cx, cy, radius);
@@ -37,8 +38,8 @@ public class SuccessRateDrawable : IDrawable
         // Draw active arc with neon glow
         if (SuccessRate > 0.005f)
         {
-            canvas.SetShadow(new SizeF(0, 0), 8, GlowColor);
-            canvas.StrokeColor = ArcColor;
+            canvas.SetShadow(new SizeF(0, 0), 8, glowColor);
+            canvas.StrokeColor = arcColor;
             canvas.StrokeSize = stroke;
             canvas.StrokeLineCap = LineCap.Round;
 
@@ -60,7 +61,7 @@ public class SuccessRateDrawable : IDrawable
         }
 
         // Draw Center Text
-        canvas.FontColor = TextWhite;
+        canvas.FontColor = textPrimary;
         canvas.FontSize = 24f;
         canvas.Font = Microsoft.Maui.Graphics.Font.Default;
 
@@ -71,7 +72,7 @@ public class SuccessRateDrawable : IDrawable
         if (!string.IsNullOrEmpty(SubText))
         {
             canvas.FontSize = 10f;
-            canvas.FontColor = TextMuted;
+            canvas.FontColor = textMuted;
             canvas.DrawString(SubText, 0, textY + 12f, dirtyRect.Width, 18f,
                 HorizontalAlignment.Center, VerticalAlignment.Center);
         }

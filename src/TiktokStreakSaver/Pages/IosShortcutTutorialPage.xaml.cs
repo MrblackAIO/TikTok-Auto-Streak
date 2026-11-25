@@ -79,21 +79,17 @@ public partial class IosShortcutTutorialPage : ContentPage
     private void StyleTab(int index, bool selected)
     {
         var tab = _tabButtons[index];
-        var isDark = Application.Current?.RequestedTheme == AppTheme.Dark;
+        var palette = ThemeService.Current.CurrentPalette;
         if (selected)
         {
-            tab.BackgroundColor = GetThemeColor("Primary", "#FE2C55");
-            tab.TextColor = Colors.White;
+            tab.BackgroundColor = palette.Primary;
+            tab.TextColor = palette.OnPrimary;
             tab.FontFamily = "InterSemiBold";
         }
         else
         {
-            tab.BackgroundColor = isDark
-                ? GetThemeColor("Gray800", "#282828")
-                : GetThemeColor("Gray200", "#E8E8E8");
-            tab.TextColor = isDark
-                ? GetThemeColor("Gray200", "#E8E8E8")
-                : GetThemeColor("Gray900", "#1A1A1A");
+            tab.BackgroundColor = palette.SecondaryBackground;
+            tab.TextColor = palette.SecondaryText;
             tab.FontFamily = "InterRegular";
         }
     }

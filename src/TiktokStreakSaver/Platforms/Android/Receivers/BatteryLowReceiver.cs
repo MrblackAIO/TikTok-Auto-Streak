@@ -44,7 +44,7 @@ public class BatteryLowReceiver : BroadcastReceiver
             // 5) Today's streak hasn't actually been sent yet. Use a two-pronged check:
             //    - any enabled friend has not received a message today, OR
             //    - the last successful run wasn't today.
-            var today = DateTime.Now.Date;
+            var today = AppTime.Today;
             var enabled = settings.GetEnabledFriends();
             if (enabled.Count == 0)
             {

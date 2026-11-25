@@ -1,4 +1,5 @@
 using Microsoft.Maui.Controls.Shapes;
+using TiktokStreakSaver.Models;
 using TiktokStreakSaver.Services;
 using TiktokStreakSaver.Views;
 
@@ -44,6 +45,16 @@ public partial class ProfilePage : ContentPage
         return Color.FromArgb(fallbackHex);
     }
 
+    private void OnThemeChanged(object? sender, EventArgs e)
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            UpdateAppearanceCard();
+            UpdateAmPmPills(_radialTimerDrawable.PeriodText == "AM");
+            RadialTimerGraphicsView.Invalidate();
+        });
+    }
+
     protected override async void OnAppearing()
     {
         base.OnAppearing();
@@ -51,7 +62,10 @@ public partial class ProfilePage : ContentPage
         {
             SessionState.Changed -= OnSessionStateChanged;
             SessionState.Changed += OnSessionStateChanged;
+            ThemeService.Current.ThemeChanged -= OnThemeChanged;
+            ThemeService.Current.ThemeChanged += OnThemeChanged;
 
+            UpdateAppearanceCard();
             LoadProfilePhoto();
 
             DisplayNameEntry.Text = _sessionService.GetDisplayName();
@@ -139,6 +153,105 @@ public partial class ProfilePage : ContentPage
     {
         base.OnDisappearing();
         SessionState.Changed -= OnSessionStateChanged;
+        ThemeService.Current.ThemeChanged -= OnThemeChanged;
+    }
+
+    private void UpdateAppearanceCard()
+    {
+        var svc = ThemeService.Current;
+        var palette = svc.CurrentPalette;
+        var preset = ThemeCatalog.GetPreset(svc.CurrentPresetId);
+        var modeText = svc.CurrentMode switch
+        {
+            AppThemeMode.Dark => "Dark Mode",
+            AppThemeMode.Light => "Light Mode",
+            _ => "Follow System"
+        };
+
+        ActiveThemeSummaryLabel.Text = $"{preset.Name} • {modeText}";
+        ActiveThemeBadgeLabel.Text = svc.CustomColors.HasAnyOverride
+            ? "Custom"
+            : (svc.CurrentPresetId == ThemeCatalog.DefaultPresetId && svc.CurrentMode == AppThemeMode.Dark ? "Default" : preset.Name);
+
+        QuickDarkPill.BackgroundColor = svc.CurrentMode == AppThemeMode.Dark ? palette.Primary : Colors.Transparent;
+        QuickDarkLabel.TextColor = svc.CurrentMode == AppThemeMode.Dark ? palette.OnPrimary : palette.SecondaryText;
+
+        QuickLightPill.BackgroundColor = svc.CurrentMode == AppThemeMode.Light ? palette.Primary : Colors.Transparent;
+        QuickLightLabel.TextColor = svc.CurrentMode == AppThemeMode.Light ? palette.OnPrimary : palette.SecondaryText;
+
+        QuickSystemPill.BackgroundColor = svc.CurrentMode == AppThemeMode.System ? palette.Primary : Colors.Transparent;
+        QuickSystemLabel.TextColor = svc.CurrentMode == AppThemeMode.System ? palette.OnPrimary : palette.SecondaryText;
+
+        QuickPresetsRow.Children.Clear();
+        foreach (var item in ThemeCatalog.Presets)
+        {
+            var isSelected = item.Id.Equals(svc.CurrentPresetId, StringComparison.OrdinalIgnoreCase);
+            var preview = palette.IsLight ? item.LightPalette : item.DarkPalette;
+
+            var chip = new Border
+            {
+                StrokeThickness = isSelected ? 1.5 : 1,
+                Stroke = new SolidColorBrush(isSelected ? palette.Primary : palette.Border),
+                StrokeShape = new RoundRectangle { CornerRadius = 12 },
+                BackgroundColor = isSelected ? palette.PrimarySubtle : palette.SecondaryBackground,
+                Padding = new Thickness(10, 7)
+            };
+
+            var row = new HorizontalStackLayout { Spacing = 6, VerticalOptions = LayoutOptions.Center };
+            row.Children.Add(new Border
+            {
+                WidthRequest = 10,
+                HeightRequest = 10,
+                StrokeThickness = 0,
+                StrokeShape = new RoundRectangle { CornerRadius = 5 },
+                BackgroundColor = preview.Primary,
+                VerticalOptions = LayoutOptions.Center
+            });
+            row.Children.Add(new Border
+            {
+                WidthRequest = 10,
+                HeightRequest = 10,
+                StrokeThickness = 0,
+                StrokeShape = new RoundRectangle { CornerRadius = 5 },
+                BackgroundColor = preview.Secondary,
+                VerticalOptions = LayoutOptions.Center
+            });
+            row.Children.Add(new Label
+            {
+                Text = item.Name,
+                FontFamily = isSelected ? "InterSemiBold" : "InterMedium",
+                FontSize = 11,
+                TextColor = isSelected ? palette.PrimaryText : palette.SecondaryText,
+                VerticalOptions = LayoutOptions.Center
+            });
+            chip.Content = row;
+
+            var capturedId = item.Id;
+            var tap = new TapGestureRecognizer();
+            tap.Tapped += (_, _) => ThemeService.Current.SetPreset(capturedId);
+            chip.GestureRecognizers.Add(tap);
+            QuickPresetsRow.Children.Add(chip);
+        }
+    }
+
+    private void OnQuickDarkTapped(object? sender, TappedEventArgs e) => ThemeService.Current.SetMode(AppThemeMode.Dark);
+    private void OnQuickLightTapped(object? sender, TappedEventArgs e) => ThemeService.Current.SetMode(AppThemeMode.Light);
+    private void OnQuickSystemTapped(object? sender, TappedEventArgs e) => ThemeService.Current.SetMode(AppThemeMode.System);
+
+    private async void OnOpenThemeSettingsClicked(object? sender, EventArgs e)
+    {
+        await Navigation.PushAsync(new ThemeSettingsPage());
+    }
+
+    private async void OnQuickResetThemeClicked(object? sender, EventArgs e)
+    {
+        bool confirm = await DisplayAlert(
+            "Reset Theme",
+            "Restore the default Obsidian Dark theme and clear custom colors?",
+            "Reset",
+            "Cancel");
+        if (confirm)
+            ThemeService.Current.ResetToDefault();
     }
 
     private void LoadProfilePhoto()
@@ -499,19 +612,20 @@ public partial class ProfilePage : ContentPage
         if (AmPill == null || PmPill == null || AmPillLabel == null || PmPillLabel == null)
             return;
 
-        var purple = GetThemeColor("VioletPurple", "#8B5CF6");
-        var borderColor = GetThemeColor("ObsidianBorder", "#1F2430");
-        var elevated = GetThemeColor("ObsidianSurfaceElevated", "#161B24");
-        var muted = GetThemeColor("TextSecondary", "#8E95A5");
+        var palette = ThemeService.Current.CurrentPalette;
+        var accent = palette.Accent;
+        var borderColor = palette.Border;
+        var elevated = palette.SecondaryBackground;
+        var muted = palette.SecondaryText;
 
-        var purpleBrush = new SolidColorBrush(purple);
+        var accentBrush = new SolidColorBrush(accent);
         var borderBrush = new SolidColorBrush(borderColor);
 
         if (isAm)
         {
-            AmPill.BackgroundColor = Color.FromArgb("#268B5CF6");
-            AmPill.Stroke = purpleBrush;
-            AmPillLabel.TextColor = purple;
+            AmPill.BackgroundColor = palette.AccentTint;
+            AmPill.Stroke = accentBrush;
+            AmPillLabel.TextColor = accent;
 
             PmPill.BackgroundColor = elevated;
             PmPill.Stroke = borderBrush;
@@ -519,9 +633,9 @@ public partial class ProfilePage : ContentPage
         }
         else
         {
-            PmPill.BackgroundColor = Color.FromArgb("#268B5CF6");
-            PmPill.Stroke = purpleBrush;
-            PmPillLabel.TextColor = purple;
+            PmPill.BackgroundColor = palette.AccentTint;
+            PmPill.Stroke = accentBrush;
+            PmPillLabel.TextColor = accent;
 
             AmPill.BackgroundColor = elevated;
             AmPill.Stroke = borderBrush;

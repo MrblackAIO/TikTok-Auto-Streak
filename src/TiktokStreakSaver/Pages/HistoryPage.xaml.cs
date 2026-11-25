@@ -27,11 +27,28 @@ public partial class HistoryPage : ContentPage
         return Color.FromArgb(fallbackHex);
     }
 
+    private void OnThemeChanged(object? sender, EventArgs e)
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            LoadStats();
+            LoadHistory();
+        });
+    }
+
     protected override void OnAppearing()
     {
         base.OnAppearing();
+        ThemeService.Current.ThemeChanged -= OnThemeChanged;
+        ThemeService.Current.ThemeChanged += OnThemeChanged;
         LoadStats();
         LoadHistory();
+    }
+
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+        ThemeService.Current.ThemeChanged -= OnThemeChanged;
     }
 
     private void OnRefreshing(object? sender, EventArgs e)
@@ -49,7 +66,7 @@ public partial class HistoryPage : ContentPage
         int successMessages = history.Sum(r => r.FriendResults?.Count(f => f.Success) ?? 0);
         float rate = totalMessages > 0 ? (float)successMessages / totalMessages : 0;
 
-        bool isDark = Application.Current?.RequestedTheme == AppTheme.Dark;
+        bool isDark = !ThemeService.Current.CurrentPalette.IsLight;
         _chartDrawable.IsDarkTheme = isDark;
         _chartDrawable.SuccessRate = rate;
         _chartDrawable.RateText = totalMessages > 0 ? $"{(int)(rate * 100)}%" : "—";
@@ -61,9 +78,10 @@ public partial class HistoryPage : ContentPage
         if (lastRunTime.HasValue)
         {
             var t = lastRunTime.Value;
-            string timeStr = t.Date == DateTime.Today
+            var today = AppTime.Today;
+            string timeStr = t.Date == today
                 ? $"Today at {t:h:mm tt}"
-                : t.Date == DateTime.Today.AddDays(-1)
+                : t.Date == today.AddDays(-1)
                     ? $"Yesterday at {t:h:mm tt}"
                     : $"{t:MMM dd} at {t:h:mm tt}";
             lastRunText = $"Last run: {timeStr}";
@@ -111,13 +129,14 @@ public partial class HistoryPage : ContentPage
 
     private View CreateHistoryView(StreakRunResult run)
     {
-        var statusColor = run.Success ? Color.FromArgb("#10B981") : Color.FromArgb("#FF3B5C");
+        var palette = ThemeService.Current.CurrentPalette;
+        var statusColor = run.Success ? palette.Success : palette.Error;
         var border = new Border
         {
             StrokeThickness = 1,
-            Stroke = new SolidColorBrush(Color.FromArgb("#1F2430")),
+            Stroke = new SolidColorBrush(palette.Border),
             StrokeShape = new RoundRectangle { CornerRadius = 16 },
-            BackgroundColor = Color.FromArgb("#13171F"),
+            BackgroundColor = palette.CardBackground,
             Padding = new Thickness(14, 12),
             Margin = new Thickness(0, 4)
         };
@@ -153,7 +172,7 @@ public partial class HistoryPage : ContentPage
             Text = run.RunTime.ToString("MMM dd, hh:mm tt"),
             FontSize = 14,
             FontFamily = "InterSemiBold",
-            TextColor = Color.FromArgb("#FFFFFF")
+            TextColor = palette.PrimaryText
         });
 
         var successCount = run.FriendResults.Count(r => r.Success);
@@ -165,7 +184,7 @@ public partial class HistoryPage : ContentPage
                 Text = $"{successCount} of {totalCount} completed",
                 FontSize = 12,
                 FontFamily = "InterRegular",
-                TextColor = Color.FromArgb("#8E95A5")
+                TextColor = palette.SecondaryText
             });
         }
         else if (!string.IsNullOrEmpty(run.ErrorMessage))
@@ -282,7 +301,7 @@ public partial class HistoryPage : ContentPage
                 return;
             }
             var textContent = string.Join(Environment.NewLine, logs);
-            var fileName = $"streak_logs_{DateTime.Now:yyyyMMdd_HHmm}.txt";
+            var fileName = $"streak_logs_{AppTime.Now:yyyyMMdd_HHmm}.txt";
             var filePath = System.IO.Path.Combine(FileSystem.CacheDirectory, fileName);
             await System.IO.File.WriteAllTextAsync(filePath, textContent);
             await Share.Default.RequestAsync(new ShareFileRequest { Title = "Export System Logs", File = new ShareFile(filePath, "text/plain") });

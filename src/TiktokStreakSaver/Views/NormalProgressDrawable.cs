@@ -14,15 +14,15 @@ public class NormalProgressDrawable : IDrawable
     public string RatioText { get; set; } = "0/0";
     public string Subtitle { get; set; } = "Streaks Active";
 
-    private static readonly Color TrackColor = Color.FromArgb("#161B24");
-    private static readonly Color ArcStartColor = Color.FromArgb("#8B5CF6"); // Violet
-    private static readonly Color ArcEndColor = Color.FromArgb("#FF3B5C");   // Coral-Red
-    private static readonly Color GlowColor = Color.FromArgb("#40FF3B5C");
-    private static readonly Color TextWhite = Color.FromArgb("#FFFFFF");
-    private static readonly Color TextMuted = Color.FromArgb("#8E95A5");
-
     public void Draw(ICanvas canvas, RectF dirtyRect)
     {
+        var palette = Services.ThemeService.Current.CurrentPalette;
+        var trackColor = palette.SecondaryBackground;
+        var arcColor = palette.Primary;
+        var glowColor = palette.Primary.WithAlpha(0.28f);
+        var textPrimary = palette.PrimaryText;
+        var textMuted = palette.SecondaryText;
+
         var cx = dirtyRect.Width / 2f;
         var cy = dirtyRect.Height / 2f - 4f;
         var radius = Math.Min(cx, cy) - 14f;
@@ -33,7 +33,7 @@ public class NormalProgressDrawable : IDrawable
         var sweepRange = 260f; // 260 degree arc gauge
 
         // 1. Draw Background Track Arc
-        canvas.StrokeColor = TrackColor;
+        canvas.StrokeColor = trackColor;
         canvas.StrokeSize = stroke;
         canvas.StrokeLineCap = LineCap.Round;
         canvas.DrawArc(
@@ -48,8 +48,8 @@ public class NormalProgressDrawable : IDrawable
         if (safeProgress > 0.01f)
         {
             var activeSweep = sweepRange * safeProgress;
-            canvas.SetShadow(new SizeF(0, 0), 10, GlowColor);
-            canvas.StrokeColor = ArcEndColor;
+            canvas.SetShadow(new SizeF(0, 0), 10, glowColor);
+            canvas.StrokeColor = arcColor;
             canvas.StrokeSize = stroke;
             canvas.StrokeLineCap = LineCap.Round;
 
@@ -64,7 +64,7 @@ public class NormalProgressDrawable : IDrawable
         }
 
         // 3. Draw Center Metrics (Ratio & Subtitle)
-        canvas.FontColor = TextWhite;
+        canvas.FontColor = textPrimary;
         canvas.FontSize = 26f;
         canvas.Font = Microsoft.Maui.Graphics.Font.Default;
         canvas.DrawString(
@@ -73,7 +73,7 @@ public class NormalProgressDrawable : IDrawable
             dirtyRect.Width, 32f,
             HorizontalAlignment.Center, VerticalAlignment.Center);
 
-        canvas.FontColor = TextMuted;
+        canvas.FontColor = textMuted;
         canvas.FontSize = 10.5f;
         canvas.DrawString(
             Subtitle,

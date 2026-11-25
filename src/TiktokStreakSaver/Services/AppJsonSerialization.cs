@@ -35,11 +35,30 @@ public sealed class FlexibleNullableDateTimeConverter : JsonConverter<DateTime?>
         if (reader.TokenType == JsonTokenType.String)
         {
             var s = reader.GetString();
-            return string.IsNullOrEmpty(s) ? null : DateTime.Parse(s, null, System.Globalization.DateTimeStyles.RoundtripKind);
+            if (string.IsNullOrWhiteSpace(s))
+                return null;
+
+            // ISO-8601 strings written by C# or Swift include 'Z' or an explicit offset;
+            // parse as DateTimeOffset so UTC instants convert cleanly to the app's local/PHT clock.
+            if (DateTimeOffset.TryParse(s, System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.RoundtripKind, out var dto))
+            {
+                var hasExplicitZone = s.EndsWith("Z", StringComparison.OrdinalIgnoreCase)
+                    || s.Contains('+')
+                    || (s.Length > 10 && s.LastIndexOf('-') > 9);
+
+                return hasExplicitZone
+                    ? AppTime.ToAppTime(dto.UtcDateTime)
+                    : DateTime.SpecifyKind(dto.DateTime, DateTimeKind.Unspecified);
+            }
+
+            var parsed = DateTime.Parse(s, System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.RoundtripKind);
+            return AppTime.ToAppTime(parsed);
         }
 
         if (reader.TokenType == JsonTokenType.Number && reader.TryGetDouble(out var num))
-            return AppleReferenceUtc.AddSeconds(num);
+            return AppTime.ToAppTime(AppleReferenceUtc.AddSeconds(num));
 
         throw new JsonException($"Unexpected token for DateTime?: {reader.TokenType}");
     }
@@ -49,7 +68,7 @@ public sealed class FlexibleNullableDateTimeConverter : JsonConverter<DateTime?>
         if (value is null)
             writer.WriteNullValue();
         else
-            writer.WriteStringValue(value.Value.ToUniversalTime().ToString("O"));
+            writer.WriteStringValue(AppTime.ToUtc(value.Value).ToString("O"));
     }
 }
 

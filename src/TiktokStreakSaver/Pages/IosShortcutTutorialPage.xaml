@@ -6,7 +6,7 @@
              x:Class="TiktokStreakSaver.Pages.IosShortcutTutorialPage"
              Title="Shortcuts setup"
              Shell.NavBarIsVisible="True"
-             BackgroundColor="{AppThemeBinding Light={StaticResource PageBackgroundLight}, Dark={StaticResource OffBlack}}">
+             BackgroundColor="{DynamicResource ObsidianBlack}">
 
     <Grid RowDefinitions="Auto, Auto, *, Auto, Auto" Padding="0,8,0,16" RowSpacing="0">
 
@@ -15,7 +15,7 @@
                Margin="20,0,20,12"
                FontSize="13"
                LineBreakMode="WordWrap"
-               TextColor="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray400}}" />
+               TextColor="{DynamicResource TextSecondary}" />
 
         <!-- Step tabs -->
         <ScrollView Grid.Row="1"
@@ -43,11 +43,11 @@
                                 <Label Text="{Binding Title}"
                                        FontFamily="InterSemiBold"
                                        FontSize="18"
-                                       TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}" />
+                                       TextColor="{DynamicResource TextPrimary}" />
                                 <Label Text="{Binding Description}"
                                        FontSize="15"
                                        LineBreakMode="WordWrap"
-                                       TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray300}}" />
+                                       TextColor="{DynamicResource TextSecondary}" />
                             </VerticalStackLayout>
                         </VerticalStackLayout>
                     </ScrollView>
@@ -57,8 +57,8 @@
 
         <IndicatorView Grid.Row="3"
                        x:Name="StepIndicator"
-                       IndicatorColor="{AppThemeBinding Light={StaticResource Gray300}, Dark={StaticResource Gray600}}"
-                       SelectedIndicatorColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                       IndicatorColor="{DynamicResource ObsidianBorder}"
+                       SelectedIndicatorColor="{DynamicResource Primary}"
                        HorizontalOptions="Center"
                        Margin="0,0,0,12" />
 
@@ -67,16 +67,16 @@
                 <Button x:Name="PreviousButton"
                         Grid.Column="0"
                         Text="Previous"
-                        BackgroundColor="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray800}}"
-                        TextColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource White}}"
+                        BackgroundColor="{DynamicResource ObsidianSurfaceElevated}"
+                        TextColor="{DynamicResource TextPrimary}"
                         CornerRadius="14"
                         HeightRequest="48"
                         Clicked="OnPreviousClicked" />
                 <Button x:Name="NextButton"
                         Grid.Column="2"
                         Text="Next"
-                        BackgroundColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
-                        TextColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource PrimaryDarkText}}"
+                        BackgroundColor="{DynamicResource Primary}"
+                        TextColor="{DynamicResource OnPrimary}"
                         FontFamily="InterSemiBold"
                         CornerRadius="14"
                         HeightRequest="48"
@@ -85,13 +85,13 @@
             <Button x:Name="OpenShortcutsButton"
                     Text="Open Shortcuts app"
                     BackgroundColor="Transparent"
-                    TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                    TextColor="{DynamicResource Primary}"
                     Clicked="OnOpenShortcutsClicked" />
             <Button x:Name="DoneButton"
                     Text="Done"
                     IsVisible="False"
-                    BackgroundColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
-                    TextColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource PrimaryDarkText}}"
+                    BackgroundColor="{DynamicResource Primary}"
+                    TextColor="{DynamicResource OnPrimary}"
                     FontFamily="InterSemiBold"
                     CornerRadius="14"
                     HeightRequest="48"

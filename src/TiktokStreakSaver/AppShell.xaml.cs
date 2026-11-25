@@ -1,4 +1,4 @@
-﻿namespace TiktokStreakSaver;
+namespace TiktokStreakSaver;
 
 [Microsoft.Maui.Controls.Internals.Preserve(AllMembers = true)]
 public partial class AppShell : Shell
@@ -8,5 +8,6 @@ public partial class AppShell : Shell
         InitializeComponent();
 
         Routing.RegisterRoute(nameof(LoginPage), typeof(LoginPage));
+        Routing.RegisterRoute(nameof(Pages.ThemeSettingsPage), typeof(Pages.ThemeSettingsPage));
     }
 }
