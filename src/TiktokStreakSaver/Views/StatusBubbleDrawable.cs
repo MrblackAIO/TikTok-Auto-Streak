@@ -18,19 +18,19 @@ public class StatusBubbleDrawable : IDrawable
             return;
 
         var palette = ThemeService.Current.CurrentPalette;
-        const float padX = 5f;
-        const float bottomPad = 6f;
-        const float topY = 12f;
+        const float padX = 4f;
+        const float bottomPad = 5f;
+        const float topY = 11f;
         const float tailTipY = 2f;
 
         float left = padX;
         float right = dirtyRect.Width - padX;
         float bottom = dirtyRect.Height - bottomPad;
-        float cornerRadius = Math.Min(16f, Math.Min((right - left) / 4f, (bottom - topY) / 4f));
+        float cornerRadius = Math.Min(15f, Math.Min((right - left) / 4f, (bottom - topY) / 3.2f));
 
         // 44dp avatar inside matching 20dp right margin puts avatar center at width - 22dp.
-        float tailTipX = Math.Clamp(dirtyRect.Width - 22f, left + cornerRadius + 14f, right - cornerRadius - 12f);
-        const float tailHalfWidth = 7.5f;
+        float tailTipX = Math.Clamp(dirtyRect.Width - 22f, left + cornerRadius + 12f, right - cornerRadius - 10f);
+        const float tailHalfWidth = 6.5f;
         float tailLeftX = tailTipX - tailHalfWidth;
         float tailRightX = Math.Min(right - cornerRadius - 2f, tailTipX + tailHalfWidth);
 
@@ -53,9 +53,9 @@ public class StatusBubbleDrawable : IDrawable
         var glowColor = ColorContrastHelper.Blend(palette.Primary, palette.Secondary, 0.35f)
             .WithAlpha(palette.IsLight ? 0.24f : 0.42f);
         var fillStart = ColorContrastHelper.Blend(palette.CardBackground, palette.SecondaryBackground, 0.55f)
-            .WithAlpha(palette.IsLight ? 0.96f : 0.92f);
+            .WithAlpha(palette.IsLight ? 0.97f : 0.94f);
         var fillEnd = ColorContrastHelper.Blend(palette.CardBackground, palette.Primary, palette.IsLight ? 0.06f : 0.14f)
-            .WithAlpha(palette.IsLight ? 0.96f : 0.92f);
+            .WithAlpha(palette.IsLight ? 0.97f : 0.94f);
 
         canvas.SetShadow(new SizeF(0, 3), 12f, glowColor);
         canvas.SetFillPaint(new LinearGradientPaint

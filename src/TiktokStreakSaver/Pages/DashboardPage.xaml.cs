@@ -208,7 +208,11 @@ public partial class DashboardPage : ContentPage
 
         double topOffset = Math.Max(14, 70 - DashboardScrollView.ScrollY);
         StatusBubbleOverlay.Margin = new Thickness(20, topOffset, 20, 0);
-        StatusBubbleGraphicsView.Invalidate();
+
+        var measured = StatusBubbleContent.Measure(240, 180);
+        double targetW = measured.Width > 1 ? Math.Clamp(Math.Ceiling(measured.Width), 130, 240) : 176;
+        double targetH = measured.Height > 1 ? Math.Clamp(Math.Ceiling(measured.Height), 56, 180) : 58;
+        SyncStatusBubbleGraphicsSize(targetW, targetH);
 
         bool reducedMotion = IsReducedMotionEnabled();
         _isBubbleVisible = true;
@@ -231,6 +235,13 @@ public partial class DashboardPage : ContentPage
                 await Task.Yield();
                 if (ct.IsCancellationRequested) return;
 
+                if (StatusBubbleContent.Width > 1 && StatusBubbleContent.Height > 1)
+                {
+                    SyncStatusBubbleGraphicsSize(
+                        Math.Clamp(Math.Ceiling(StatusBubbleContent.Width), 130, 240),
+                        Math.Clamp(Math.Ceiling(StatusBubbleContent.Height), 56, 180));
+                }
+
                 await Task.WhenAll(
                     StatusBubbleOverlay.ScaleTo(1.0, 240, Easing.CubicOut),
                     StatusBubbleOverlay.FadeTo(1.0, 200, Easing.CubicOut),
@@ -252,6 +263,34 @@ public partial class DashboardPage : ContentPage
                 StatusBubbleOverlay.TranslationY = 0;
             }
         }
+    }
+
+    private void OnStatusBubbleContentSizeChanged(object? sender, EventArgs e)
+    {
+        if (StatusBubbleContent.Width <= 1 || StatusBubbleContent.Height <= 1)
+            return;
+
+        SyncStatusBubbleGraphicsSize(
+            Math.Clamp(Math.Ceiling(StatusBubbleContent.Width), 130, 240),
+            Math.Clamp(Math.Ceiling(StatusBubbleContent.Height), 56, 180));
+    }
+
+    private void SyncStatusBubbleGraphicsSize(double width, double height)
+    {
+        bool changed = false;
+        if (Math.Abs(StatusBubbleGraphicsView.WidthRequest - width) > 0.5)
+        {
+            StatusBubbleGraphicsView.WidthRequest = width;
+            changed = true;
+        }
+        if (Math.Abs(StatusBubbleGraphicsView.HeightRequest - height) > 0.5)
+        {
+            StatusBubbleGraphicsView.HeightRequest = height;
+            changed = true;
+        }
+
+        if (changed)
+            StatusBubbleGraphicsView.Invalidate();
     }
 
     private async Task HideStatusBubbleAsync()
