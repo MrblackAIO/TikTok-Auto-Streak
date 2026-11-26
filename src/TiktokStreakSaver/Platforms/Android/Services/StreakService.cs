@@ -790,14 +790,14 @@ public class StreakService : Service
             if (attempt > 0)
             {
                 title = "TikTok AutoStreak — offline";
-                body = $"No Wi‑Fi or mobile data. Streak run skipped; retrying in 1 hour (attempt {attempt}/{max}).";
+                body = $"No Wi‑Fi or mobile data. Streak run skipped; retrying in 1 hour or when internet returns (attempt {attempt}/{max}).";
                 UpdateNotification($"No Wi‑Fi or mobile data — retry in 1 hour ({attempt}/{max})");
             }
             else
             {
-                title = "TikTok AutoStreak — gave up for today";
-                body = $"No Wi‑Fi or mobile data after {max} retries. Will try again on the next scheduled run.";
-                UpdateNotification($"No Wi‑Fi or mobile data — {max} retries exhausted");
+                title = "TikTok AutoStreak — waiting for internet";
+                body = $"No Wi‑Fi or mobile data after {max} hourly retries. Will automatically retry today once internet returns, or on the next scheduled run.";
+                UpdateNotification("Waiting for internet — will retry automatically today");
             }
 
             var finalNotification = StreakSoundNotificationHelper.CreateAlertBuilder(this, title, body)
@@ -888,6 +888,11 @@ public class StreakService : Service
                 {
                     _settingsService.ResetTodayRetryCount();
                     _settingsService.SetLastRunFailed(false, null);
+                    if (_targetFriendIds == null || !_settingsService.HasPendingOfflineRecoveryToday())
+                    {
+                        _settingsService.ClearOfflineRecoveryPending();
+                        OfflineRecoveryJobService.Cancel(this);
+                    }
                     StreakScheduler.ScheduleNextRun(this);
                 }
                 else

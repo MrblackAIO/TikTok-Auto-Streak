@@ -1,11 +1,90 @@
-using TiktokStreakSaver.Services;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls.Shapes;
+using TiktokStreakSaver.Models;
+using TiktokStreakSaver.Services;
 
 namespace TiktokStreakSaver;
 
 [Microsoft.Maui.Controls.Internals.Preserve(AllMembers = true)]
 public partial class AboutPopupPage : ContentPage
 {
+    private sealed record ManualSettingEntry(
+        string Emoji,
+        string Title,
+        string Category,
+        string OnLabel,
+        string OnDescription,
+        string OffLabel,
+        string OffDescription);
+
+    private static readonly ManualSettingEntry[] ManualEntries =
+    [
+        new(
+            "🔄",
+            "Auto-Retry (Fail-safe skip)",
+            "Automation Config",
+            "ON",
+            "Skips a failing chat so other friends still receive messages, and auto-disables repeatedly unreachable targets after 3 failed runs.",
+            "OFF",
+            "Immediately halts the entire automation run on the first target failure so no further messages are attempted."),
+        new(
+            "🎲",
+            "Custom Messages (Randomizer)",
+            "Automation Config",
+            "ON",
+            "Selects varied lines randomly from 50 built-in streak messages and locks custom message editors on Home.",
+            "OFF",
+            "Sends your main Automation Text and applies any per-chat Personalized Messages you set on Home."),
+        new(
+            "🔀",
+            "Chat Queue Priority",
+            "Automation Config",
+            "Mixed / Friends / Groups",
+            "Controls queue order: Mixed follows your Friends list, while Friends First or Groups First processes one group before the other.",
+            "Friends Tab",
+            "Choose exactly which direct buddies or group chats are active or paused from the Friends tab."),
+        new(
+            "⏰",
+            "Background Run & Schedule",
+            "Schedule",
+            "ON",
+            "Arms exact daily alarms at your 12-hour AM/PM time, retries hourly (up to 3x), and auto-resumes today as soon as internet returns.",
+            "OFF",
+            "Cancels all background alarms and offline recovery jobs; automation only runs when started manually."),
+        new(
+            "🔋",
+            "Low Battery Saver",
+            "Schedule",
+            "ON",
+            "Anticipates low battery (<=15%) and sends today's pending streaks early before the device powers down (once per day).",
+            "OFF",
+            "Ignores low-battery warnings and waits for your regular scheduled run time."),
+        new(
+            "💬",
+            "Personalized Messages",
+            "Home Screen",
+            "Custom Set",
+            "Sends the recipient's individual custom message during streak runs while keeping all changes locally on-device.",
+            "Default",
+            "Leaves the recipient using your shared Automation Text automatically."),
+        new(
+            "🎨",
+            "Appearance & Theme",
+            "Profile Theme",
+            "Custom / Preset",
+            "Updates colors, progress rings, Status Bubble, and system bars live across Dark, Light, or System mode with 5 presets and 12 tokens.",
+            "Reset",
+            "One-tap Reset restores the default Obsidian Dark theme."),
+        new(
+            "💡",
+            "Status Note Bubble",
+            "Profile & Home",
+            "Tap Avatar",
+            "Shows your Status Note in an expanding theme-adaptive speech bubble on Home for 5 seconds and stays saved across updates.",
+            "Empty",
+            "Tap Status Note in Profile anytime to set or update your message.")
+    ];
+
     private readonly string _assignedVersion;
     private readonly bool _isUpdate;
     private readonly string? _apkDownloadUrl;
@@ -56,6 +135,233 @@ public partial class AboutPopupPage : ContentPage
 
             CloseButton.IsVisible = true;
             UpdateButtonGrid.IsVisible = false;
+        }
+
+        PopulateManualEntries();
+        PopulateEngineStatusRows(cleanVersion);
+    }
+
+    private void PopulateManualEntries()
+    {
+        var p = ThemeService.Current.CurrentPalette;
+        ManualEntriesContainer.Children.Clear();
+
+        foreach (var item in ManualEntries)
+        {
+            var card = new Border
+            {
+                StrokeThickness = 1,
+                Stroke = new SolidColorBrush(p.Border),
+                StrokeShape = new RoundRectangle { CornerRadius = 14 },
+                BackgroundColor = p.SecondaryBackground,
+                Padding = new Thickness(12, 10)
+            };
+
+            var root = new VerticalStackLayout { Spacing = 8 };
+
+            var headerGrid = new Grid
+            {
+                ColumnDefinitions =
+                {
+                    new ColumnDefinition { Width = GridLength.Auto },
+                    new ColumnDefinition { Width = GridLength.Star },
+                    new ColumnDefinition { Width = GridLength.Auto }
+                },
+                ColumnSpacing = 8
+            };
+
+            var emojiLabel = new Label
+            {
+                Text = item.Emoji,
+                FontSize = 16,
+                VerticalOptions = LayoutOptions.Center
+            };
+            Grid.SetColumn(emojiLabel, 0);
+            headerGrid.Children.Add(emojiLabel);
+
+            var titleLabel = new Label
+            {
+                Text = item.Title,
+                FontFamily = "InterSemiBold",
+                FontSize = 13,
+                TextColor = p.PrimaryText,
+                VerticalOptions = LayoutOptions.Center
+            };
+            Grid.SetColumn(titleLabel, 1);
+            headerGrid.Children.Add(titleLabel);
+
+            var categoryChip = new Border
+            {
+                StrokeThickness = 1,
+                Stroke = new SolidColorBrush(p.Border),
+                StrokeShape = new RoundRectangle { CornerRadius = 8 },
+                BackgroundColor = p.CardBackground,
+                Padding = new Thickness(7, 3),
+                VerticalOptions = LayoutOptions.Center,
+                Content = new Label
+                {
+                    Text = item.Category,
+                    FontFamily = "InterMedium",
+                    FontSize = 9.5,
+                    TextColor = p.SecondaryText
+                }
+            };
+            Grid.SetColumn(categoryChip, 2);
+            headerGrid.Children.Add(categoryChip);
+            root.Children.Add(headerGrid);
+
+            root.Children.Add(BuildStateRow(
+                badgeText: item.OnLabel,
+                description: item.OnDescription,
+                badgeColor: p.Success,
+                badgeTint: p.SuccessTint,
+                p: p));
+
+            root.Children.Add(BuildStateRow(
+                badgeText: item.OffLabel,
+                description: item.OffDescription,
+                badgeColor: item.OffLabel == "OFF" ? p.Primary : p.Secondary,
+                badgeTint: item.OffLabel == "OFF" ? p.PrimaryTint : p.SecondaryTint,
+                p: p));
+
+            card.Content = root;
+            ManualEntriesContainer.Children.Add(card);
+        }
+    }
+
+    private static Grid BuildStateRow(
+        string badgeText,
+        string description,
+        Color badgeColor,
+        Color badgeTint,
+        ThemePalette p)
+    {
+        var row = new Grid
+        {
+            ColumnDefinitions =
+            {
+                new ColumnDefinition { Width = GridLength.Auto },
+                new ColumnDefinition { Width = GridLength.Star }
+            },
+            ColumnSpacing = 8
+        };
+
+        var pill = new Border
+        {
+            StrokeThickness = 1,
+            Stroke = new SolidColorBrush(badgeColor.WithAlpha(0.45f)),
+            StrokeShape = new RoundRectangle { CornerRadius = 7 },
+            BackgroundColor = badgeTint,
+            Padding = new Thickness(7, 2),
+            MinimumWidthRequest = 42,
+            VerticalOptions = LayoutOptions.Start,
+            Content = new Label
+            {
+                Text = badgeText,
+                FontFamily = "InterBold",
+                FontSize = 10,
+                TextColor = badgeColor,
+                HorizontalTextAlignment = TextAlignment.Center
+            }
+        };
+        Grid.SetColumn(pill, 0);
+        row.Children.Add(pill);
+
+        var descLabel = new Label
+        {
+            Text = description,
+            FontFamily = "InterRegular",
+            FontSize = 11.5,
+            TextColor = p.SecondaryText,
+            LineBreakMode = LineBreakMode.WordWrap,
+            VerticalOptions = LayoutOptions.Center
+        };
+        Grid.SetColumn(descLabel, 1);
+        row.Children.Add(descLabel);
+
+        return row;
+    }
+
+    private void PopulateEngineStatusRows(string cleanVersion)
+    {
+        var themeSvc = ThemeService.Current;
+        var p = themeSvc.CurrentPalette;
+        var preset = ThemeCatalog.GetPreset(themeSvc.CurrentPresetId);
+        var modeText = themeSvc.CurrentMode switch
+        {
+            AppThemeMode.Dark => "Dark",
+            AppThemeMode.Light => "Light",
+            _ => "System"
+        };
+
+        var settings = new SettingsService();
+        bool scheduled = settings.IsScheduled();
+        bool offlinePending = settings.HasPendingOfflineRecoveryToday();
+        string scheduleState = scheduled
+            ? (offlinePending ? "Active • Offline recovery armed for today" : "Active • Background & network recovery ready")
+            : "Paused • Manual runs only";
+
+        EngineBuildBadgeLabel.Text = $"✓ v{cleanVersion}";
+        EngineStatusRowsContainer.Children.Clear();
+
+        (string Icon, string Title, string Detail, Color Accent)[] rows =
+        [
+            ("⚙️", "On-Device WebView Engine", "Runs automation locally with zero credential telemetry.", p.Secondary),
+            ("📡", "Scheduler & Recovery", scheduleState, scheduled ? p.Success : p.Warning),
+            ("🎨", $"Theme • {preset.Name}", $"{modeText} mode{(themeSvc.CustomColors.HasAnyOverride ? " • Custom tokens active" : string.Empty)}", p.Accent)
+        ];
+
+        foreach (var item in rows)
+        {
+            var box = new Border
+            {
+                StrokeThickness = 1,
+                Stroke = new SolidColorBrush(p.Border),
+                StrokeShape = new RoundRectangle { CornerRadius = 12 },
+                BackgroundColor = p.SecondaryBackground,
+                Padding = new Thickness(11, 9)
+            };
+
+            var rowGrid = new Grid
+            {
+                ColumnDefinitions =
+                {
+                    new ColumnDefinition { Width = GridLength.Auto },
+                    new ColumnDefinition { Width = GridLength.Star }
+                },
+                ColumnSpacing = 10
+            };
+
+            var iconLabel = new Label
+            {
+                Text = item.Icon,
+                FontSize = 15,
+                VerticalOptions = LayoutOptions.Center
+            };
+            Grid.SetColumn(iconLabel, 0);
+            rowGrid.Children.Add(iconLabel);
+
+            var textStack = new VerticalStackLayout { Spacing = 1, VerticalOptions = LayoutOptions.Center };
+            textStack.Children.Add(new Label
+            {
+                Text = item.Title,
+                FontFamily = "InterSemiBold",
+                FontSize = 12.5,
+                TextColor = p.PrimaryText
+            });
+            textStack.Children.Add(new Label
+            {
+                Text = item.Detail,
+                FontFamily = "InterRegular",
+                FontSize = 11,
+                TextColor = item.Accent,
+                LineBreakMode = LineBreakMode.WordWrap
+            });
+            Grid.SetColumn(textStack, 1);
+            rowGrid.Children.Add(textStack);
+
+            box.Content = rowGrid;
+            EngineStatusRowsContainer.Children.Add(box);
         }
     }
 

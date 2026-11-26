@@ -21,6 +21,9 @@ public partial class DashboardPage : ContentPage
     private string _messageDraft = string.Empty;
     private IDispatcherTimer? _statusTimer;
     private readonly NormalProgressDrawable _normalProgressDrawable;
+    private readonly StatusBubbleDrawable _statusBubbleDrawable;
+    private CancellationTokenSource? _bubbleCts;
+    private bool _isBubbleVisible;
     private string _lastLiveLogText = string.Empty;
 
     public DashboardPage()
@@ -34,6 +37,9 @@ public partial class DashboardPage : ContentPage
 
         _normalProgressDrawable = new NormalProgressDrawable();
         OverviewProgressGraphicsView.Drawable = _normalProgressDrawable;
+
+        _statusBubbleDrawable = new StatusBubbleDrawable();
+        StatusBubbleGraphicsView.Drawable = _statusBubbleDrawable;
     }
 
     private void OnControlDockSizeChanged(object? sender, EventArgs e)
@@ -80,6 +86,7 @@ public partial class DashboardPage : ContentPage
         {
             _normalProgressDrawable.IsDarkTheme = !ThemeService.Current.CurrentPalette.IsLight;
             OverviewProgressGraphicsView.Invalidate();
+            StatusBubbleGraphicsView.Invalidate();
         });
     }
 
@@ -130,6 +137,7 @@ public partial class DashboardPage : ContentPage
 
         PersistMessageText();
         PersonalizedMessagesStack.PersistPendingEdits();
+        DismissStatusBubbleImmediate();
         base.OnDisappearing();
         _isAppInForeground = false;
         SessionState.Changed -= OnSessionStateChanged;
@@ -153,9 +161,9 @@ public partial class DashboardPage : ContentPage
             ProfileAvatarEmoji.IsVisible = false;
             ProfileAvatarImage.Clip = new EllipseGeometry
             {
-                Center = new Point(22, 22),
-                RadiusX = 22,
-                RadiusY = 22
+                Center = new Point(20, 20),
+                RadiusX = 20,
+                RadiusY = 20
             };
         }
         else
@@ -164,6 +172,158 @@ public partial class DashboardPage : ContentPage
             ProfileAvatarEmoji.Text = "🔥";
             ProfileAvatarEmoji.IsVisible = true;
         }
+    }
+
+    private async void OnProfileAvatarTapped(object? sender, TappedEventArgs e)
+    {
+        if (_isBubbleVisible)
+        {
+            await HideStatusBubbleAsync();
+            return;
+        }
+
+        await ShowStatusBubbleAsync();
+    }
+
+    private async void OnStatusBubbleTapped(object? sender, TappedEventArgs e)
+    {
+        await HideStatusBubbleAsync();
+    }
+
+    private async Task ShowStatusBubbleAsync()
+    {
+        _bubbleCts?.Cancel();
+        var cts = new CancellationTokenSource();
+        _bubbleCts = cts;
+        var ct = cts.Token;
+
+        var note = _sessionService.GetTikTokBio();
+        bool hasNote = !string.IsNullOrWhiteSpace(note);
+        StatusBubbleTextLabel.Text = hasNote
+            ? note.Trim()
+            : "No status note set • Add one in Profile ✨";
+        StatusBubbleTextLabel.TextColor = hasNote
+            ? ThemeService.Current.CurrentPalette.PrimaryText
+            : ThemeService.Current.CurrentPalette.SecondaryText;
+
+        double topOffset = Math.Max(14, 70 - DashboardScrollView.ScrollY);
+        StatusBubbleOverlay.Margin = new Thickness(20, topOffset, 20, 0);
+        StatusBubbleGraphicsView.Invalidate();
+
+        bool reducedMotion = IsReducedMotionEnabled();
+        _isBubbleVisible = true;
+        StatusBubbleOverlay.IsVisible = true;
+
+        try
+        {
+            if (reducedMotion)
+            {
+                StatusBubbleOverlay.Scale = 1.0;
+                StatusBubbleOverlay.Opacity = 1.0;
+                StatusBubbleOverlay.TranslationY = 0;
+            }
+            else
+            {
+                StatusBubbleOverlay.Scale = 0.22;
+                StatusBubbleOverlay.Opacity = 0.0;
+                StatusBubbleOverlay.TranslationY = -12;
+
+                await Task.Yield();
+                if (ct.IsCancellationRequested) return;
+
+                await Task.WhenAll(
+                    StatusBubbleOverlay.ScaleTo(1.0, 240, Easing.CubicOut),
+                    StatusBubbleOverlay.FadeTo(1.0, 200, Easing.CubicOut),
+                    StatusBubbleOverlay.TranslateTo(0, 0, 240, Easing.CubicOut));
+            }
+
+            await Task.Delay(5000, ct);
+            await CollapseStatusBubbleCoreAsync(ct, reducedMotion);
+        }
+        catch (OperationCanceledException) { }
+        finally
+        {
+            if (ReferenceEquals(_bubbleCts, cts))
+            {
+                _isBubbleVisible = false;
+                StatusBubbleOverlay.IsVisible = false;
+                StatusBubbleOverlay.Scale = 1.0;
+                StatusBubbleOverlay.Opacity = 0.0;
+                StatusBubbleOverlay.TranslationY = 0;
+            }
+        }
+    }
+
+    private async Task HideStatusBubbleAsync()
+    {
+        var previousCts = _bubbleCts;
+        previousCts?.Cancel();
+
+        var cts = new CancellationTokenSource();
+        _bubbleCts = cts;
+        var ct = cts.Token;
+
+        try
+        {
+            await CollapseStatusBubbleCoreAsync(ct, IsReducedMotionEnabled());
+        }
+        catch (OperationCanceledException) { }
+        finally
+        {
+            if (ReferenceEquals(_bubbleCts, cts))
+            {
+                _isBubbleVisible = false;
+                StatusBubbleOverlay.IsVisible = false;
+                StatusBubbleOverlay.Scale = 1.0;
+                StatusBubbleOverlay.Opacity = 0.0;
+                StatusBubbleOverlay.TranslationY = 0;
+            }
+        }
+    }
+
+    private async Task CollapseStatusBubbleCoreAsync(CancellationToken ct, bool reducedMotion)
+    {
+        if (ct.IsCancellationRequested || !StatusBubbleOverlay.IsVisible)
+            return;
+
+        if (!reducedMotion)
+        {
+            await Task.WhenAll(
+                StatusBubbleOverlay.ScaleTo(0.22, 200, Easing.CubicIn),
+                StatusBubbleOverlay.FadeTo(0.0, 180, Easing.CubicIn),
+                StatusBubbleOverlay.TranslateTo(0, -12, 200, Easing.CubicIn));
+        }
+    }
+
+    private void DismissStatusBubbleImmediate()
+    {
+        _bubbleCts?.Cancel();
+        _bubbleCts = null;
+        _isBubbleVisible = false;
+        StatusBubbleOverlay.IsVisible = false;
+        StatusBubbleOverlay.Scale = 1.0;
+        StatusBubbleOverlay.Opacity = 0.0;
+        StatusBubbleOverlay.TranslationY = 0;
+    }
+
+    private static bool IsReducedMotionEnabled()
+    {
+#if ANDROID
+        try
+        {
+            var resolver = Android.App.Application.Context.ContentResolver;
+            if (resolver != null)
+            {
+                var scale = Android.Provider.Settings.Global.GetFloat(
+                    resolver,
+                    Android.Provider.Settings.Global.AnimatorDurationScale,
+                    1.0f);
+                return scale <= 0.01f;
+            }
+        }
+        catch { }
+#endif
+        return false;
     }
 
     private void UpdateSessionIndicator(bool runReady)

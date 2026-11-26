@@ -19,6 +19,7 @@ public class SessionService
     private const string TikTokUsernameKey = "session_tiktok_username";
     private const string TikTokNicknameKey = "session_tiktok_nickname";
     private const string TikTokBioKey = "session_tiktok_bio";
+    private const string StatusNoteCustomizedKey = "session_status_note_customized";
     private const string TikTokFollowersKey = "session_tiktok_followers";
     private const string TikTokFollowingKey = "session_tiktok_following";
 
@@ -146,10 +147,18 @@ public class SessionService
     public void SetTikTokNickname(string nickname) => _storage.SetString(TikTokNicknameKey, nickname ?? string.Empty);
 
     /// <summary>
-    /// TikTok Profile Bio / Signature
+    /// User Status Note (formerly TikTok Profile Bio / Signature). Stored under the existing
+    /// key so notes saved prior to updates migrate seamlessly.
     /// </summary>
     public string GetTikTokBio() => _storage.GetString(TikTokBioKey, string.Empty);
     public void SetTikTokBio(string bio) => _storage.SetString(TikTokBioKey, bio ?? string.Empty);
+
+    /// <summary>
+    /// True once the user has explicitly saved a custom Status Note inside the app,
+    /// preventing passive TikTok profile syncs from overwriting it.
+    /// </summary>
+    public bool IsStatusNoteCustomized() => _storage.GetBool(StatusNoteCustomizedKey, false);
+    public void SetStatusNoteCustomized(bool customized) => _storage.SetBool(StatusNoteCustomizedKey, customized);
 
     /// <summary>
     /// TikTok Followers count
@@ -174,6 +183,7 @@ public class SessionService
         _storage.Remove(TikTokUsernameKey);
         _storage.Remove(TikTokNicknameKey);
         _storage.Remove(TikTokBioKey);
+        _storage.Remove(StatusNoteCustomizedKey);
         _storage.Remove(TikTokFollowersKey);
         _storage.Remove(TikTokFollowingKey);
         _storage.Remove(ProfileImagePathKey);

@@ -7,6 +7,17 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [2.0.17] - 2026-11-26
+
+### Fixed
+- **Status Note (formerly Bio) Persistence Across Updates & Syncs**: Fixed the bug where passive TikTok profile syncs (`TikTokProfileSyncHelper.ParseAndSaveJsonAsync`) on `/messages` overwrote user-saved notes with empty strings after updates or automation runs; added `session_status_note_customized` in `SessionService` while preserving `session_tiktok_bio` for seamless migration.
+- **Same-Day Android Internet Restoration Recovery**: Added persistent `OfflineRecoveryJobService` (`JobScheduler`, `NetworkType.Any`, `SetPersisted(true)`) alongside `NetworkChangeMonitor` with an `AppTime.Today`-anchored recovery state (`pending_offline_recovery_date`) and persisted 20-minute throttle (`last_network_recovery_utc_ticks`) so internet restoration triggers streak recovery the same day even after the 3 hourly `AlarmManager` retries are exhausted or the app process is killed.
+- **Home Profile Avatar Accent Border**: Matched `ProfilePage`'s `2dp` themed `CoralRedBrush` border ring and inset circular clip (`40x40`) on `DashboardPage`.
+
+### Added
+- **Home Status Note Bubble Popup**: Renamed `"Bio"` to `"Status Note"` and added a theme-adaptive expanding/collapsing speech bubble (`StatusBubbleDrawable`) on the Home screen when tapping the profile avatar, auto-dismissing after 5 seconds with the reverse animation.
+- **Automation Manual & Engine Status**: Renamed `"Automation Guide & Tips"` to `"Automation Manual & Tips"`, added the emoji-styled **Automation Manual** section explaining ON/OFF behavior across Automation Configs and settings, and replaced the legacy **Verified Release** block with a live **Engine & Build Status** card.
+
 ## [2.0.16] - 2026-11-26
 
 ### Fixed
