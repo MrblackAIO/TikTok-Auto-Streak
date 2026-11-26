@@ -7,6 +7,11 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [2.0.18] - 2026-11-26
+
+### Fixed
+- **Home Status Note Bubble Sizing**: Replaced unconstrained `Fill` sizing on `StatusBubbleGraphicsView` with explicit content-measured bounds (`130–240dp` wide × `56–180dp` tall via `StatusBubbleContent.Measure` and `OnStatusBubbleContentSizeChanged`) and tightened compact `StatusBubbleDrawable` proportions so the popup cleanly frames short and multi-line notes beneath the profile avatar.
+
 ## [2.0.17] - 2026-11-26
 
 ### Fixed

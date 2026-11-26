@@ -333,9 +333,11 @@
               HorizontalOptions="End"
               VerticalOptions="Start"
               Margin="20,70,20,0"
-              MinimumWidthRequest="110"
+              MinimumWidthRequest="130"
+              MaximumWidthRequest="240"
+              MaximumHeightRequest="180"
               IsVisible="False"
-              AnchorX="0.90"
+              AnchorX="0.88"
               AnchorY="0.0"
               InputTransparent="False">
             <Grid.GestureRecognizers>
@@ -343,18 +345,25 @@
             </Grid.GestureRecognizers>
 
             <GraphicsView x:Name="StatusBubbleGraphicsView"
-                          HorizontalOptions="Fill"
-                          VerticalOptions="Fill"
+                          WidthRequest="130"
+                          HeightRequest="56"
+                          HorizontalOptions="Center"
+                          VerticalOptions="Center"
                           InputTransparent="True"/>
 
-            <VerticalStackLayout Padding="18,22,18,14"
-                                 MaximumWidthRequest="250"
+            <VerticalStackLayout x:Name="StatusBubbleContent"
+                                 Padding="16,21,16,12"
+                                 MinimumWidthRequest="130"
+                                 MaximumWidthRequest="240"
+                                 MaximumHeightRequest="180"
                                  HorizontalOptions="Center"
-                                 VerticalOptions="Center">
+                                 VerticalOptions="Center"
+                                 SizeChanged="OnStatusBubbleContentSizeChanged">
                 <Label x:Name="StatusBubbleTextLabel"
-                       Text="Add a status note in Profile ✨"
+                       Text="No status note set • Add one in Profile ✨"
                        FontFamily="InterMedium"
-                       FontSize="13.5"
+                       FontSize="13"
+                       MaxLines="6"
                        TextColor="{DynamicResource TextPrimary}"
                        HorizontalTextAlignment="Center"
                        LineBreakMode="WordWrap"/>
