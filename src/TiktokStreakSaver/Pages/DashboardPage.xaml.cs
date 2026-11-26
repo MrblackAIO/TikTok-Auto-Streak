@@ -23,6 +23,8 @@ public partial class DashboardPage : ContentPage
     private readonly NormalProgressDrawable _normalProgressDrawable;
     private readonly StatusBubbleDrawable _statusBubbleDrawable;
     private CancellationTokenSource? _bubbleCts;
+    private CancellationTokenSource? _autoBubbleCts;
+    private static bool _hasAutoPoppedStatusNoteThisLaunch;
     private bool _isBubbleVisible;
     private string _lastLiveLogText = string.Empty;
 
@@ -128,6 +130,8 @@ public partial class DashboardPage : ContentPage
         OnStatusTimerTick(null, EventArgs.Empty);
 
         _ = CheckStartupPopupAsync();
+        if (!_hasAutoPoppedStatusNoteThisLaunch)
+            _ = TryAutoShowStatusBubbleAsync();
     }
 
     protected override void OnDisappearing()
@@ -176,6 +180,9 @@ public partial class DashboardPage : ContentPage
 
     private async void OnProfileAvatarTapped(object? sender, TappedEventArgs e)
     {
+        _autoBubbleCts?.Cancel();
+        _hasAutoPoppedStatusNoteThisLaunch = true;
+
         if (_isBubbleVisible)
         {
             await HideStatusBubbleAsync();
@@ -183,6 +190,44 @@ public partial class DashboardPage : ContentPage
         }
 
         await ShowStatusBubbleAsync();
+    }
+
+    private async Task TryAutoShowStatusBubbleAsync()
+    {
+        if (_hasAutoPoppedStatusNoteThisLaunch)
+            return;
+
+        if (string.IsNullOrWhiteSpace(_sessionService.GetTikTokBio()))
+            return;
+
+        _autoBubbleCts?.Cancel();
+        var cts = new CancellationTokenSource();
+        _autoBubbleCts = cts;
+        var ct = cts.Token;
+
+        try
+        {
+            await Task.Delay(1500, ct);
+
+            if (ct.IsCancellationRequested || !_isAppInForeground)
+                return;
+
+            if (Navigation.ModalStack.Count > 0)
+                return;
+
+            if (_isBubbleVisible)
+            {
+                _hasAutoPoppedStatusNoteThisLaunch = true;
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(_sessionService.GetTikTokBio()))
+                return;
+
+            _hasAutoPoppedStatusNoteThisLaunch = true;
+            await ShowStatusBubbleAsync();
+        }
+        catch (OperationCanceledException) { }
     }
 
     private async void OnStatusBubbleTapped(object? sender, TappedEventArgs e)
@@ -336,6 +381,8 @@ public partial class DashboardPage : ContentPage
 
     private void DismissStatusBubbleImmediate()
     {
+        _autoBubbleCts?.Cancel();
+        _autoBubbleCts = null;
         _bubbleCts?.Cancel();
         _bubbleCts = null;
         _isBubbleVisible = false;
