@@ -59,6 +59,7 @@ public static class StreakScheduler
 
         ScheduleAt(context, nextRunTime);
         settingsService.SetScheduled(true);
+        OfflineRecoveryJobService.SyncWithPendingState(context, settingsService);
     }
 
     /// <summary>
@@ -84,6 +85,13 @@ public static class StreakScheduler
     public static int TryScheduleRetryOrGiveUp(Context context, string reason)
     {
         var settings = new SettingsService();
+        var isNoNetwork = string.Equals(reason, SettingsService.FailureReasonNoNetwork, StringComparison.Ordinal);
+        if (isNoNetwork)
+        {
+            settings.MarkOfflineRecoveryPendingToday();
+            OfflineRecoveryJobService.Schedule(context);
+        }
+
         var attempt = settings.IncrementTodayRetryCount();
 
         if (attempt <= SettingsService.MaxRetriesPerDay)
@@ -95,8 +103,8 @@ public static class StreakScheduler
             return attempt;
         }
 
-        // Daily retry budget exhausted — clear the recovery flag so listeners
-        // don't keep restarting the service, and re-arm the normal cadence.
+        // Daily hourly retry budget exhausted — stop hourly alarm retries and re-arm the normal cadence.
+        // Same-day no_network recovery stays active via pending_offline_recovery_date + OfflineRecoveryJobService.
         settings.SetLastRunFailed(false, null);
         ScheduleNextRun(context);
         System.Diagnostics.Debug.WriteLine(
@@ -177,24 +185,28 @@ public static class StreakScheduler
     public static void CancelSchedule(Context context)
     {
         var alarmManager = (AlarmManager?)context.GetSystemService(Context.AlarmService);
-        if (alarmManager == null) return;
-
-        var intent = new Intent(context, typeof(AlarmReceiver));
-        intent.SetAction(AlarmReceiver.ActionStreakAlarm);
-
-        var pendingIntent = PendingIntent.GetBroadcast(
-            context,
-            AlarmRequestCode,
-            intent,
-            PendingIntentFlags.UpdateCurrent | PendingIntentFlags.Immutable
-        );
-
-        if (pendingIntent != null)
+        if (alarmManager != null)
         {
-            alarmManager.Cancel(pendingIntent);
+            var intent = new Intent(context, typeof(AlarmReceiver));
+            intent.SetAction(AlarmReceiver.ActionStreakAlarm);
+
+            var pendingIntent = PendingIntent.GetBroadcast(
+                context,
+                AlarmRequestCode,
+                intent,
+                PendingIntentFlags.UpdateCurrent | PendingIntentFlags.Immutable
+            );
+
+            if (pendingIntent != null)
+            {
+                alarmManager.Cancel(pendingIntent);
+            }
         }
 
+        OfflineRecoveryJobService.Cancel(context);
+
         var settingsService = new SettingsService();
+        settingsService.ClearOfflineRecoveryPending();
         settingsService.SetScheduled(false);
 
         System.Diagnostics.Debug.WriteLine("StreakScheduler: Schedule cancelled");
@@ -370,6 +382,7 @@ public static class StreakScheduler
         {
             ScheduleNextRun(context);
         }
+        OfflineRecoveryJobService.SyncWithPendingState(context, settingsService);
     }
 
     /// <summary>

@@ -253,8 +253,17 @@ public static class TikTokProfileSyncHelper
 
             if (root.TryGetProperty("bio", out var bProp))
             {
-                var bio = bProp.GetString() ?? string.Empty;
-                sessionService.SetTikTokBio(bio);
+                var syncedBio = bProp.GetString()?.Trim() ?? string.Empty;
+                var existingBio = sessionService.GetTikTokBio();
+
+                // Never clobber a user-customized Status Note, and never replace an already saved note
+                // with an empty string returned by pages that omit user.signature (e.g. /messages).
+                if (!sessionService.IsStatusNoteCustomized()
+                    && (!string.IsNullOrWhiteSpace(syncedBio) || string.IsNullOrWhiteSpace(existingBio)))
+                {
+                    if (!string.IsNullOrWhiteSpace(syncedBio))
+                        sessionService.SetTikTokBio(syncedBio);
+                }
             }
 
             if (root.TryGetProperty("followers", out var fProp) && fProp.TryGetInt32(out var followers))

@@ -33,20 +33,27 @@
                         <Grid Grid.Column="1" WidthRequest="44" HeightRequest="44" VerticalOptions="Center">
                             <Border x:Name="ProfileAvatarBorder"
                                     WidthRequest="44" HeightRequest="44"
-                                    StrokeThickness="1"
-                                    Stroke="{DynamicResource ObsidianBorderBrush}"
+                                    StrokeThickness="2"
+                                    Stroke="{DynamicResource CoralRedBrush}"
                                     StrokeShape="RoundRectangle 22"
                                     BackgroundColor="{DynamicResource ObsidianSurfaceElevated}"
+                                    Padding="0"
                                     HorizontalOptions="Center" VerticalOptions="Center">
-                                <Image x:Name="ProfileAvatarImage"
-                                       IsVisible="False"
-                                       Aspect="AspectFill"
-                                       WidthRequest="44" HeightRequest="44"/>
+                                <Grid>
+                                    <Image x:Name="ProfileAvatarImage"
+                                           IsVisible="False"
+                                           Aspect="AspectFill"
+                                           WidthRequest="40" HeightRequest="40"
+                                           HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    <Label x:Name="ProfileAvatarEmoji"
+                                           Text="🔥" FontSize="20"
+                                           HorizontalOptions="Center" VerticalOptions="Center"
+                                           IsVisible="False"/>
+                                </Grid>
                             </Border>
-                            <Label x:Name="ProfileAvatarEmoji"
-                                   Text="🔥" FontSize="20"
-                                   HorizontalOptions="Center" VerticalOptions="Center"
-                                   IsVisible="False"/>
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnProfileAvatarTapped"/>
+                            </Grid.GestureRecognizers>
                         </Grid>
                     </Grid>
 
@@ -320,6 +327,39 @@
                         Clicked="OnStopServiceClicked"/>
             </VerticalStackLayout>
         </Border>
+
+        <!-- ═══ Profile Status Note Bubble Overlay ═══ -->
+        <Grid x:Name="StatusBubbleOverlay"
+              HorizontalOptions="End"
+              VerticalOptions="Start"
+              Margin="20,70,20,0"
+              MinimumWidthRequest="110"
+              IsVisible="False"
+              AnchorX="0.90"
+              AnchorY="0.0"
+              InputTransparent="False">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnStatusBubbleTapped"/>
+            </Grid.GestureRecognizers>
+
+            <GraphicsView x:Name="StatusBubbleGraphicsView"
+                          HorizontalOptions="Fill"
+                          VerticalOptions="Fill"
+                          InputTransparent="True"/>
+
+            <VerticalStackLayout Padding="18,22,18,14"
+                                 MaximumWidthRequest="250"
+                                 HorizontalOptions="Center"
+                                 VerticalOptions="Center">
+                <Label x:Name="StatusBubbleTextLabel"
+                       Text="Add a status note in Profile ✨"
+                       FontFamily="InterMedium"
+                       FontSize="13.5"
+                       TextColor="{DynamicResource TextPrimary}"
+                       HorizontalTextAlignment="Center"
+                       LineBreakMode="WordWrap"/>
+            </VerticalStackLayout>
+        </Grid>
 
         <!-- ═══ Floating Nav Bar ═══ -->
         <views:FloatingNavBar CurrentTab="Dashboard" VerticalOptions="End"/>

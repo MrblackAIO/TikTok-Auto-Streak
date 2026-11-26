@@ -1,26 +1,35 @@
+using Android.App;
 using Android.Content;
 using Android.Net;
+using Android.OS;
 using TiktokStreakSaver.Services;
 
 namespace TiktokStreakSaver.Platforms.Android.Services;
 
 /// <summary>
 /// Listens for connectivity changes via <see cref="ConnectivityManager"/> and, when the
-/// device regains Wi‑Fi or cellular internet AND the last streak run failed because of
-/// no-network, triggers a recovery run through <see cref="StreakScheduler.RunNow"/>.
+/// device regains Wi‑Fi or cellular internet AND same-day offline recovery (or an active
+/// in-day retry) is pending, triggers a recovery run through <see cref="StreakScheduler.RunNow"/>.
 ///
-/// Registered once from <see cref="MainApplication.OnCreate"/>. The callback only lives
-/// while the app process is alive — the AlarmManager / BootReceiver chain still owns the
-/// worst-case path when the process has been killed.
+/// Registered once from <see cref="MainApplication.OnCreate"/> for instant in-process detection;
+/// <see cref="OfflineRecoveryJobService"/> handles waking the app across process death.
 /// </summary>
 [Microsoft.Maui.Controls.Internals.Preserve(AllMembers = true)]
 internal static class NetworkChangeMonitor
 {
+    internal enum RecoveryTriggerOutcome
+    {
+        Triggered,
+        AlreadyRunning,
+        ThrottledOrOffline,
+        NotNeeded
+    }
+
     /// <summary>
-    /// Minimum time between two network-triggered recovery attempts. Prevents flapping
-    /// networks (e.g. weak Wi‑Fi rapidly toggling) from spamming service starts.
+    /// Minimum time between two network-triggered recovery attempts. Persisted across
+    /// process restarts so captive portals or flapping networks cannot cause retry loops.
     /// </summary>
-    private static readonly TimeSpan RecoveryThrottle = TimeSpan.FromMinutes(30);
+    private static readonly TimeSpan RecoveryThrottle = TimeSpan.FromMinutes(20);
 
     private static readonly object _lock = new();
     private static DateTime _lastRecoveryAttemptUtc = DateTime.MinValue;
@@ -59,42 +68,82 @@ internal static class NetworkChangeMonitor
     }
 
     /// <summary>
-    /// Called from the network callback when the system reports a usable Wi‑Fi or
-    /// cellular network. Applies all the guard conditions and, if everything aligns,
-    /// kicks off a recovery run.
+    /// Shared recovery entry point used by both <see cref="RecoveryNetworkCallback"/> and
+    /// <see cref="OfflineRecoveryJobService"/>. Enforces schedule, same-day anchor,
+    /// connectivity, and persisted throttle guards before launching <see cref="StreakService"/>.
     /// </summary>
-    private static void OnNetworkAvailable(Context context)
+    internal static RecoveryTriggerOutcome TryTriggerOfflineRecovery(Context context, string source)
     {
         try
         {
             var settings = new SettingsService();
 
-            if (!settings.IsScheduled()) return;
-            if (StreakService.IsRunning) return;
-            if (!settings.GetLastRunFailed()) return;
-            if (settings.GetTodayRetryCount() >= SettingsService.MaxRetriesPerDay) return;
-            if (!NetworkConnectivity.HasWifiOrCellularInternet(context)) return;
+            if (!settings.IsScheduled())
+            {
+                settings.ClearOfflineRecoveryPending();
+                OfflineRecoveryJobService.Cancel(context);
+                return RecoveryTriggerOutcome.NotNeeded;
+            }
+
+            bool offlineRecoveryPending = settings.HasPendingOfflineRecoveryToday();
+            bool standardRetryPending = settings.GetLastRunFailed() &&
+                                        settings.GetTodayRetryCount() < SettingsService.MaxRetriesPerDay;
+
+            if (!offlineRecoveryPending)
+            {
+                // Clear stale or previous-day markers and ensure no dangling JobScheduler job stays armed.
+                settings.ClearOfflineRecoveryPending();
+                OfflineRecoveryJobService.Cancel(context);
+
+                if (!standardRetryPending)
+                    return RecoveryTriggerOutcome.NotNeeded;
+            }
+
+            if (StreakService.IsRunning)
+                return RecoveryTriggerOutcome.AlreadyRunning;
+
+            if (!NetworkConnectivity.HasWifiOrCellularInternet(context))
+                return RecoveryTriggerOutcome.ThrottledOrOffline;
 
             lock (_lock)
             {
                 var nowUtc = DateTime.UtcNow;
-                if (nowUtc - _lastRecoveryAttemptUtc < RecoveryThrottle)
+                var persistedLastUtc = settings.GetLastNetworkRecoveryUtc();
+                var lastAttemptUtc = persistedLastUtc > _lastRecoveryAttemptUtc
+                    ? persistedLastUtc
+                    : _lastRecoveryAttemptUtc;
+
+                if (nowUtc - lastAttemptUtc < RecoveryThrottle)
                 {
-                    System.Diagnostics.Debug.WriteLine("NetworkChangeMonitor: throttled — last attempt too recent");
-                    return;
+                    System.Diagnostics.Debug.WriteLine(
+                        $"NetworkChangeMonitor ({source}): throttled — last attempt too recent ({(nowUtc - lastAttemptUtc).TotalMinutes:F1}m ago)");
+                    return RecoveryTriggerOutcome.ThrottledOrOffline;
                 }
+
                 _lastRecoveryAttemptUtc = nowUtc;
+                settings.SetLastNetworkRecoveryUtc(nowUtc);
             }
 
-            var reason = settings.GetLastRunFailureReason() ?? "unknown";
+            var reason = offlineRecoveryPending
+                ? SettingsService.FailureReasonNoNetwork
+                : (settings.GetLastRunFailureReason() ?? "unknown");
             System.Diagnostics.Debug.WriteLine(
-                $"NetworkChangeMonitor: network restored, starting recovery run (last reason: {reason})");
+                $"NetworkChangeMonitor ({source}): network restored, starting recovery run (reason: {reason})");
 
-            StreakScheduler.RunNow(context);
+            return StreakScheduler.RunNow(context)
+                ? RecoveryTriggerOutcome.Triggered
+                : RecoveryTriggerOutcome.AlreadyRunning;
+        }
+        catch (ForegroundServiceStartNotAllowedException ex) when (Build.VERSION.SdkInt >= BuildVersionCodes.S)
+        {
+            System.Diagnostics.Debug.WriteLine(
+                $"NetworkChangeMonitor ({source}): foreground service blocked from background — {ex.Message}");
+            return RecoveryTriggerOutcome.ThrottledOrOffline;
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"NetworkChangeMonitor.OnNetworkAvailable: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"NetworkChangeMonitor ({source}): {ex.Message}");
+            return RecoveryTriggerOutcome.ThrottledOrOffline;
         }
     }
 
@@ -110,7 +159,7 @@ internal static class NetworkChangeMonitor
         public override void OnAvailable(Network network)
         {
             base.OnAvailable(network);
-            OnNetworkAvailable(_context);
+            TryTriggerOfflineRecovery(_context, "NetworkCallback.OnAvailable");
         }
 
         public override void OnCapabilitiesChanged(Network network, NetworkCapabilities networkCapabilities)
@@ -124,7 +173,7 @@ internal static class NetworkChangeMonitor
             var onCellular = networkCapabilities.HasTransport(TransportType.Cellular);
             if (!onWifi && !onCellular) return;
 
-            OnNetworkAvailable(_context);
+            TryTriggerOfflineRecovery(_context, "NetworkCallback.OnCapabilitiesChanged");
         }
     }
 }

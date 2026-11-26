@@ -426,7 +426,7 @@ public partial class ProfilePage : ContentPage
                 ProfileNicknameLabel.Text = string.IsNullOrWhiteSpace(nick) ? "User" : nick;
 
                 var bio = _sessionService.GetTikTokBio();
-                BioLabel.Text = string.IsNullOrWhiteSpace(bio) ? "Add your bio" : bio;
+                BioLabel.Text = string.IsNullOrWhiteSpace(bio) ? "Add a status note..." : bio;
 
                 var lastCheck = _sessionService.GetLastCheckTime();
                 SessionLastCheckLabel.Text = lastCheck.HasValue ? $"Verified {lastCheck.Value:MMM dd, h:mm tt}" : "Verified and ready";
@@ -498,16 +498,18 @@ public partial class ProfilePage : ContentPage
             currentBio = "";
 
         var newBio = await DisplayPromptAsync(
-            "Edit Bio",
-            "Enter your bio:",
+            "Edit Status Note",
+            "Shows in a popup bubble when tapping your profile icon on Home:",
             initialValue: currentBio,
+            placeholder: "e.g. Protecting streaks daily 🔥",
             maxLength: 200);
 
         if (newBio != null)
         {
             var trimmed = newBio.Trim();
             _sessionService.SetTikTokBio(trimmed);
-            BioLabel.Text = string.IsNullOrWhiteSpace(trimmed) ? "Add your bio" : trimmed;
+            _sessionService.SetStatusNoteCustomized(!string.IsNullOrWhiteSpace(trimmed));
+            BioLabel.Text = string.IsNullOrWhiteSpace(trimmed) ? "Add a status note..." : trimmed;
             SessionState.NotifyChanged();
         }
     }

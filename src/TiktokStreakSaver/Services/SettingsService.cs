@@ -30,6 +30,8 @@ public class SettingsService
     private const string RetryCountDateKey = "retry_count_date";
     private const string LastRunFailedKey = "last_run_failed";
     private const string LastRunFailureReasonKey = "last_run_failure_reason";
+    private const string PendingOfflineRecoveryDateKey = "pending_offline_recovery_date";
+    private const string LastNetworkRecoveryUtcTicksKey = "last_network_recovery_utc_ticks";
     private const string BatteryAnticipationDateKey = "battery_anticipation_date";
     private const string SendOnBatteryLowKey = "send_on_battery_low";
     private const string AutoStartConfiguredKey = "auto_start_configured";
@@ -753,6 +755,53 @@ public class SettingsService
     {
         var v = _storage.GetString(LastRunFailureReasonKey, string.Empty);
         return string.IsNullOrEmpty(v) ? null : v;
+    }
+
+    /// <summary>
+    /// Marks today's calendar day (in <see cref="AppTime.Today"/>) as needing automatic
+    /// same-day recovery if internet connectivity returns later today. Kept separate from
+    /// <see cref="RetryCountTodayKey"/> so recovery outlives exhausted hourly retries.
+    /// </summary>
+    public void MarkOfflineRecoveryPendingToday()
+    {
+        _storage.SetLong(PendingOfflineRecoveryDateKey, AppTime.Today.Ticks);
+    }
+
+    /// <summary>Clears any pending same-day offline recovery marker.</summary>
+    public void ClearOfflineRecoveryPending()
+    {
+        _storage.Remove(PendingOfflineRecoveryDateKey);
+    }
+
+    /// <summary>
+    /// True only if offline recovery was armed today (<see cref="AppTime.Today"/>) AND at
+    /// least one enabled friend or group has not yet received a message today. Prevents
+    /// yesterday's offline state from leaking past midnight.
+    /// </summary>
+    public bool HasPendingOfflineRecoveryToday()
+    {
+        var today = AppTime.Today;
+        var storedTicks = _storage.GetLong(PendingOfflineRecoveryDateKey, 0L);
+        if (storedTicks != today.Ticks)
+            return false;
+
+        return GetEnabledFriends().Any(f => f.LastMessageSent?.Date != today);
+    }
+
+    /// <summary>
+    /// Persisted UTC timestamp of the last network-recovery trigger attempt, used to
+    /// throttle captive portals or flapping networks across process restarts.
+    /// </summary>
+    public DateTime GetLastNetworkRecoveryUtc()
+    {
+        var ticks = _storage.GetLong(LastNetworkRecoveryUtcTicksKey, 0L);
+        return ticks > 0L ? new DateTime(ticks, DateTimeKind.Utc) : DateTime.MinValue;
+    }
+
+    /// <summary>Persists the UTC timestamp of the latest network-recovery attempt.</summary>
+    public void SetLastNetworkRecoveryUtc(DateTime utcNow)
+    {
+        _storage.SetLong(LastNetworkRecoveryUtcTicksKey, utcNow.ToUniversalTime().Ticks);
     }
 
     /// <summary>

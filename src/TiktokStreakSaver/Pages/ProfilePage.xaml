@@ -182,7 +182,7 @@
                                 </VerticalStackLayout>
                             </VerticalStackLayout>
 
-                            <!-- Bio Block (Editable) -->
+                            <!-- Status Note Block (Editable, shown as bubble on Home avatar tap) -->
                             <Border x:Name="BioContainer"
                                     StrokeThickness="1"
                                     Stroke="{DynamicResource ObsidianBorderBrush}"
@@ -191,7 +191,7 @@
                                     Padding="14,10">
                                 <VerticalStackLayout Spacing="6">
                                     <Grid ColumnDefinitions="*, Auto">
-                                        <Label Text="Bio"
+                                        <Label Text="Status Note"
                                                FontFamily="InterSemiBold"
                                                FontSize="11"
                                                TextColor="{DynamicResource BrandSubtitle}"
@@ -208,7 +208,7 @@
                                         </Label>
                                     </Grid>
                                     <Label x:Name="BioLabel"
-                                           Text="Add your bio"
+                                           Text="Add a status note..."
                                            FontFamily="InterRegular"
                                            FontSize="13"
                                            TextColor="{DynamicResource TextSecondary}"
@@ -676,7 +676,7 @@
                                     Clicked="OnPrivacyPolicyClicked"/>
                         </Grid>
 
-                        <Button Text="Automation Guide &amp; Tips"
+                        <Button Text="Automation Manual &amp; Tips"
                                 BackgroundColor="{DynamicResource ObsidianSurfaceElevated}"
                                 TextColor="{DynamicResource VioletPurple}"
                                 FontFamily="InterSemiBold"

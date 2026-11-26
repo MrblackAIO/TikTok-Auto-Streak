@@ -95,6 +95,35 @@
                         </Grid>
                     </VerticalStackLayout>
                 </Border>
+
+                <!-- ═══ Automation Manual (Settings ON/OFF Reference) ═══ -->
+                <Border Style="{StaticResource SectionCard}">
+                    <VerticalStackLayout Spacing="12">
+                        <Grid ColumnDefinitions="*, Auto" ColumnSpacing="8">
+                            <VerticalStackLayout Spacing="2">
+                                <Label Text="Automation Manual" Style="{StaticResource SectionLabel}"/>
+                                <Label Text="How every switch and config behaves when ON or OFF"
+                                       FontFamily="InterRegular"
+                                       FontSize="11"
+                                       TextColor="{DynamicResource TextSecondary}"/>
+                            </VerticalStackLayout>
+                            <Border Grid.Column="1"
+                                    StrokeThickness="1"
+                                    Stroke="{DynamicResource VioletPurpleBrush}"
+                                    StrokeShape="RoundRectangle 10"
+                                    BackgroundColor="{DynamicResource AccentTint}"
+                                    Padding="9,4"
+                                    VerticalOptions="Start">
+                                <Label Text="📖 GUIDE"
+                                       FontFamily="InterSemiBold"
+                                       FontSize="10"
+                                       TextColor="{DynamicResource VioletPurple}"/>
+                            </Border>
+                        </Grid>
+
+                        <VerticalStackLayout x:Name="ManualEntriesContainer" Spacing="10"/>
+                    </VerticalStackLayout>
+                </Border>
                 
                 <!-- Changelog WebView (preserved) -->
                 <Border Style="{StaticResource SectionCard}" 
@@ -119,16 +148,33 @@
                     </VerticalStackLayout>
                 </Border>
 
-                <!-- Verified Release -->
+                <!-- ═══ Engine & Build Status (replaces legacy Verified Release) ═══ -->
                 <Border Style="{StaticResource SectionCard}">
-                    <VerticalStackLayout Spacing="6">
-                        <Label Text="Verified Release" Style="{StaticResource SectionLabel}"/>
-                        <Label Text="Engineered by Mrblack"
-                               FontFamily="InterBold" FontSize="13" TextColor="{DynamicResource TextPrimary}"/>
-                        <Label Text="Obsidian Edition • Standalone Background Automation"
-                               TextColor="{DynamicResource TealCyan}"
-                               FontFamily="InterMedium"
-                               FontSize="11" />
+                    <VerticalStackLayout Spacing="12">
+                        <Grid ColumnDefinitions="*, Auto" ColumnSpacing="8">
+                            <VerticalStackLayout Spacing="2">
+                                <Label Text="Engine &amp; Build Status" Style="{StaticResource SectionLabel}"/>
+                                <Label Text="Crafted by Mrblack • On-Device Streak Suite"
+                                       FontFamily="InterMedium"
+                                       FontSize="11.5"
+                                       TextColor="{DynamicResource TextSecondary}"/>
+                            </VerticalStackLayout>
+                            <Border Grid.Column="1"
+                                    StrokeThickness="1"
+                                    Stroke="{DynamicResource MintGreenBrush}"
+                                    StrokeShape="RoundRectangle 10"
+                                    BackgroundColor="{DynamicResource SecondaryTint}"
+                                    Padding="9,4"
+                                    VerticalOptions="Start">
+                                <Label x:Name="EngineBuildBadgeLabel"
+                                       Text="✓ SIGNED"
+                                       FontFamily="InterBold"
+                                       FontSize="10"
+                                       TextColor="{DynamicResource MintGreen}"/>
+                            </Border>
+                        </Grid>
+
+                        <VerticalStackLayout x:Name="EngineStatusRowsContainer" Spacing="8"/>
                     </VerticalStackLayout>
                 </Border>
 
