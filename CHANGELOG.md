@@ -7,6 +7,11 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [2.0.19] - 2026-11-26
+
+### Added
+- **Once-Per-Launch Home Status Note Auto-Pop**: Automatically displays a user's non-empty Status Note bubble roughly `1.5 seconds` after reaching the Home screen (`DashboardPage`), firing once per app launch while skipping tab switches, early exits, and active modal dialogs.
+
 ## [2.0.18] - 2026-11-26
 
 ### Fixed
