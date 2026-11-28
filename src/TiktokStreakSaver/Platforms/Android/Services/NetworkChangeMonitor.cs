@@ -2,6 +2,7 @@ using Android.App;
 using Android.Content;
 using Android.Net;
 using Android.OS;
+using AndroidX.Core.App;
 using TiktokStreakSaver.Services;
 
 namespace TiktokStreakSaver.Platforms.Android.Services;
@@ -86,7 +87,7 @@ internal static class NetworkChangeMonitor
             }
 
             bool offlineRecoveryPending = settings.HasPendingOfflineRecoveryToday();
-            bool standardRetryPending = settings.GetLastRunFailed() &&
+            bool standardRetryPending = settings.GetLastRunFailedToday() &&
                                         settings.GetTodayRetryCount() < SettingsService.MaxRetriesPerDay;
 
             if (!offlineRecoveryPending)
@@ -102,7 +103,8 @@ internal static class NetworkChangeMonitor
             if (StreakService.IsRunning)
                 return RecoveryTriggerOutcome.AlreadyRunning;
 
-            if (!NetworkConnectivity.HasWifiOrCellularInternet(context))
+            // Require OS-validated internet so captive portals / dead routers don't burn the throttle.
+            if (!NetworkConnectivity.HasWifiOrCellularValidatedInternet(context))
                 return RecoveryTriggerOutcome.ThrottledOrOffline;
 
             lock (_lock)
@@ -138,12 +140,45 @@ internal static class NetworkChangeMonitor
         {
             System.Diagnostics.Debug.WriteLine(
                 $"NetworkChangeMonitor ({source}): foreground service blocked from background — {ex.Message}");
+            PostBlockedRecoveryNotificationOnceToday(context);
             return RecoveryTriggerOutcome.ThrottledOrOffline;
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"NetworkChangeMonitor ({source}): {ex.Message}");
             return RecoveryTriggerOutcome.ThrottledOrOffline;
+        }
+    }
+
+    private static void PostBlockedRecoveryNotificationOnceToday(Context context)
+    {
+        try
+        {
+            var settings = new SettingsService();
+            if (settings.WasBlockedRecoveryAlertShownToday())
+                return;
+
+            var intent = new Intent(context, typeof(MainActivity));
+            intent.SetFlags(ActivityFlags.NewTask | ActivityFlags.ClearTop);
+            var pendingIntent = PendingIntent.GetActivity(
+                context,
+                1003,
+                intent,
+                PendingIntentFlags.UpdateCurrent | PendingIntentFlags.Immutable);
+
+            var notification = StreakSoundNotificationHelper.CreateAlertBuilder(
+                    context,
+                    "TikTok AutoStreak — background start blocked",
+                    "Internet returned, but Android blocked background recovery. Open the app or disable battery restrictions to enable automatic recovery.")
+                .SetContentIntent(pendingIntent)
+                .Build()!;
+
+            NotificationManagerCompat.From(context).Notify(1003, notification);
+            settings.MarkBlockedRecoveryAlertShownToday();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"PostBlockedRecoveryNotificationOnceToday error: {ex.Message}");
         }
     }
 
@@ -159,6 +194,9 @@ internal static class NetworkChangeMonitor
         public override void OnAvailable(Network network)
         {
             base.OnAvailable(network);
+            if (!NetworkConnectivity.HasWifiOrCellularValidatedInternet(_context))
+                return;
+
             TryTriggerOfflineRecovery(_context, "NetworkCallback.OnAvailable");
         }
 
@@ -166,8 +204,9 @@ internal static class NetworkChangeMonitor
         {
             base.OnCapabilitiesChanged(network, networkCapabilities);
 
-            // Some devices fire OnAvailable before Internet capability is set; re-check here.
+            // Require Internet + Validated capabilities so captive portals don't trigger premature runs.
             if (!networkCapabilities.HasCapability(NetCapability.Internet)) return;
+            if (!networkCapabilities.HasCapability(NetCapability.Validated)) return;
 
             var onWifi = networkCapabilities.HasTransport(TransportType.Wifi);
             var onCellular = networkCapabilities.HasTransport(TransportType.Cellular);

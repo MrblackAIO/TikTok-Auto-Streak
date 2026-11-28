@@ -7,6 +7,15 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [2.0.20] - 2026-11-28
+
+### Fixed
+- **Validated Network Recovery & Midnight Rollover Guard**: Updated `NetworkChangeMonitor` and `OfflineRecoveryJobService` (`WaitForValidatedInternetAsync` + `HasWifiOrCellularValidatedInternet`) so captive portals and unvalidated Wi-Fi do not burn the 20-minute recovery throttle or trigger premature runs, anchored `LastRunFailed` to `AppTime.Today` (`GetLastRunFailedToday()`) to block yesterday's failures from leaking past midnight, held `OfflineRecoveryJobService` wakelock briefly (`3s`) for foreground service handoff, and added a once-per-day alert if Android 12+ blocks background foreground-service start.
+- **Post-Run Background Update Check Race**: Updated `StreakService.CompleteService` to release `_isRunning` and clean up `WebView` immediately, then await `UpdateNotificationHelper.CheckAndNotifyUpdateAsync` (4-second timeout) before `StopForeground` / `StopSelf` terminates the service, guarded by `_runGeneration`.
+
+### Added
+- **Standalone 6-Hour Background Update Checker (`UpdateCheckJobService`)**: Added persisted periodic `JobService` (`JobId = 2003`) scheduled in `MainApplication.OnCreate()` and `BootReceiver.OnReceive()` with `last_notified_update_version` deduplication so background update notifications arrive even when the app is closed without suppressing the in-app update dialog.
+
 ## [2.0.19] - 2026-11-26
 
 ### Added

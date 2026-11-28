@@ -50,6 +50,7 @@ public class StreakService : Service
 
     // ── Run-level mutex: prevents concurrent automation sessions ──
     private static volatile bool _isRunning = false;
+    private static int _runGeneration = 0;
     private static readonly object _runLock = new();
 
     /// <summary>
@@ -128,6 +129,7 @@ public class StreakService : Service
                 return StartCommandResult.NotSticky;
             }
             _isRunning = true;
+            _runGeneration++;
         }
 
         var targetIds = intent?.GetStringExtra(StreakScheduler.ExtraTargetFriendIds);
@@ -820,8 +822,14 @@ public class StreakService : Service
         }
     }
 
-    private void CompleteService(bool success, string message)
+    private async void CompleteService(bool success, string message)
     {
+        int runGen;
+        lock (_runLock)
+        {
+            runGen = _runGeneration;
+        }
+
         try
         {
             _isCompleted = true;
@@ -905,22 +913,44 @@ public class StreakService : Service
                 }
             }
 
-            // Check for background updates asynchronously without blocking cleanup
-            _ = UpdateNotificationHelper.CheckAndNotifyUpdateAsync(this);
-
             AppLog("SYSTEM", "-", $"Run complete: {(success ? "Success" : message)}");
         }
         finally
         {
-            // ── Clear the run-level mutex on ALL exit paths ──
+            // ── Clear the run-level mutex and WebView immediately so user/manual runs never wait ──
             lock (_runLock)
             {
                 _isRunning = false;
             }
 
             CleanupWebView();
-            StopForeground(StopForegroundFlags.Remove);
-            StopSelf();
+
+            // Await update check with a bounded 4s timeout before StopSelf() destroys the service.
+            if (!_isCancelRequested && NetworkConnectivity.HasWifiOrCellularValidatedInternet(this))
+            {
+                try
+                {
+                    using var updateCts = new CancellationTokenSource(TimeSpan.FromSeconds(4));
+                    await UpdateNotificationHelper.CheckAndNotifyUpdateAsync(this, updateCts.Token);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[StreakService] Post-run update check error: {ex.Message}");
+                }
+            }
+
+            bool shouldStopSelf;
+            lock (_runLock)
+            {
+                // Avoid killing a brand-new run started during the bounded post-run update check.
+                shouldStopSelf = !_isRunning && _runGeneration == runGen;
+            }
+
+            if (shouldStopSelf)
+            {
+                StopForeground(StopForegroundFlags.Remove);
+                StopSelf();
+            }
         }
     }
 

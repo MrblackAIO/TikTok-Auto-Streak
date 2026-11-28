@@ -1,8 +1,9 @@
 using Android.App;
 using Android.Content;
 using TiktokStreakSaver;
-using TiktokStreakSaver.Services;
 using TiktokStreakSaver.Platforms.Android;
+using TiktokStreakSaver.Platforms.Android.Services;
+using TiktokStreakSaver.Services;
 
 namespace TiktokStreakSaver.Platforms.Android.Receivers;
 
@@ -19,12 +20,18 @@ public class BootReceiver : BroadcastReceiver
             intent.Action == "android.intent.action.QUICKBOOT_POWERON" ||
             intent.Action == Intent.ActionMyPackageReplaced)
         {
+            UpdateCheckJobService.Schedule(context);
+
             var settingsService = new SettingsService();
             
             // Only reschedule if it was previously scheduled
             if (settingsService.IsScheduled())
             {
                 StreakScheduler.ScheduleNextRun(context);
+            }
+            else
+            {
+                OfflineRecoveryJobService.Cancel(context);
             }
         }
     }

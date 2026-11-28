@@ -60,11 +60,11 @@ public class UpdateService
         HttpClient.Timeout = TimeSpan.FromSeconds(10);
     }
 
-    public async Task<UpdateInfo?> CheckForUpdatesAsync()
+    public async Task<UpdateInfo?> CheckForUpdatesAsync(CancellationToken cancellationToken = default)
     {
         try
         {
-            var release = await HttpClient.GetFromJsonAsync<GitHubRelease>(ApiUrl);
+            var release = await HttpClient.GetFromJsonAsync<GitHubRelease>(ApiUrl, cancellationToken);
             if (release == null || string.IsNullOrEmpty(release.TagName))
                 return null;
 

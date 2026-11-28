@@ -13,6 +13,7 @@ public static class UpdateNotificationHelper
     public const string ChannelId = "app_updates_sound_v1";
     public const string ChannelName = "App Updates";
     private const int NotificationId = 9001;
+    private const string LastNotifiedUpdateVersionKey = "last_notified_update_version";
 
     /// <summary>
     /// Registers the dedicated custom sound NotificationChannel for updates (API 26+).
@@ -100,6 +101,8 @@ public static class UpdateNotificationHelper
 
             var manager = NotificationManagerCompat.From(context);
             manager.Notify(NotificationId, builder.Build());
+
+            Preferences.Default.Set(LastNotifiedUpdateVersionKey, cleanVersion);
         }
         catch (Exception ex)
         {
@@ -108,23 +111,45 @@ public static class UpdateNotificationHelper
     }
 
     /// <summary>
-    /// Background check helper to query GitHub and post an update notification if a new version is available.
+    /// Background check helper to query GitHub and post an update notification if a newer version
+    /// is available and has not already been notified or dismissed. Uses a separate key from
+    /// <c>LastRemoteVersionSeen</c> so posting a background notification does not suppress the
+    /// in-app update dialog when the user opens the app.
     /// </summary>
-    public static async Task CheckAndNotifyUpdateAsync(Context context)
+    public static async Task CheckAndNotifyUpdateAsync(Context context, CancellationToken cancellationToken = default)
     {
         try
         {
             var updateService = new UpdateService();
-            var updateInfo = await updateService.CheckForUpdatesAsync();
+            var updateInfo = await updateService.CheckForUpdatesAsync(cancellationToken);
 
-            if (updateInfo?.HasUpdate == true && !string.IsNullOrEmpty(updateInfo.ApkDownloadUrl))
+            if (updateInfo?.HasUpdate != true || string.IsNullOrEmpty(updateInfo.ApkDownloadUrl))
+                return;
+
+            string remoteVersion = NormalizeVersion(updateInfo.LatestVersion);
+            string currentVersion = NormalizeVersion(AppInfo.Current.VersionString);
+            string lastRemoteSeen = NormalizeVersion(Preferences.Default.Get("LastRemoteVersionSeen", string.Empty));
+            string lastNotified = NormalizeVersion(Preferences.Default.Get(LastNotifiedUpdateVersionKey, string.Empty));
+
+            if (string.IsNullOrEmpty(remoteVersion)
+                || remoteVersion == currentVersion
+                || remoteVersion == lastRemoteSeen
+                || remoteVersion == lastNotified)
             {
-                PostUpdateNotification(context, updateInfo.LatestVersion, updateInfo.ApkDownloadUrl);
+                return;
             }
+
+            PostUpdateNotification(context, remoteVersion, updateInfo.ApkDownloadUrl);
         }
+        catch (OperationCanceledException) { }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"[UpdateCheck] Background check error: {ex.Message}");
         }
     }
+
+    private static string NormalizeVersion(string raw)
+        => string.IsNullOrWhiteSpace(raw)
+            ? string.Empty
+            : raw.Trim().TrimStart('v', 'V');
 }

@@ -53,4 +53,35 @@ internal static class NetworkConnectivity
 
         return onWifi || onCellular;
     }
+
+    /// <summary>
+    /// Briefly polls for Android's asynchronous <see cref="NetCapability.Validated"/> check
+    /// after <c>NetworkType.Any</c> wakes a background job, avoiding premature exponential backoff
+    /// while DNS / captive-portal checks complete.
+    /// </summary>
+    public static async Task<bool> WaitForValidatedInternetAsync(
+        Context context,
+        int maxWaitMs = 3000,
+        int pollIntervalMs = 500,
+        CancellationToken cancellationToken = default)
+    {
+        if (HasWifiOrCellularValidatedInternet(context))
+            return true;
+
+        int elapsed = 0;
+        while (elapsed < maxWaitMs && !cancellationToken.IsCancellationRequested)
+        {
+            int delay = Math.Min(pollIntervalMs, maxWaitMs - elapsed);
+            if (delay <= 0)
+                break;
+
+            await Task.Delay(delay, cancellationToken);
+            elapsed += delay;
+
+            if (HasWifiOrCellularValidatedInternet(context))
+                return true;
+        }
+
+        return false;
+    }
 }

@@ -21,6 +21,8 @@ public class OfflineRecoveryJobService : JobService
 {
     public const int JobId = 2002;
     private const long BackoffMillis = 15L * 60L * 1000L;
+    private readonly object _jobLock = new();
+    private CancellationTokenSource? _jobCts;
 
     /// <summary>
     /// Arm the persistent connectivity job if one is not already pending.
@@ -93,37 +95,82 @@ public class OfflineRecoveryJobService : JobService
 
     public override bool OnStartJob(JobParameters? @params)
     {
-        var outcome = NetworkChangeMonitor.TryTriggerOfflineRecovery(this, "JobScheduler");
-        if (outcome == NetworkChangeMonitor.RecoveryTriggerOutcome.ThrottledOrOffline)
+        CancellationTokenSource cts;
+        lock (_jobLock)
         {
-            var settings = new SettingsService();
-            if (settings.IsScheduled() && settings.HasPendingOfflineRecoveryToday())
-            {
-                // Keep the return value contract valid: return true so the OS lets the
-                // posted JobFinished(wantsReschedule: true) apply exponential backoff.
-                new Handler(Looper.MainLooper!).Post(() =>
-                {
-                    try
-                    {
-                        JobFinished(@params, wantsReschedule: true);
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"OfflineRecoveryJobService.JobFinished failed: {ex.Message}");
-                    }
-                });
-                return true;
-            }
-
-            settings.ClearOfflineRecoveryPending();
-            Cancel(this);
+            _jobCts?.Cancel();
+            _jobCts?.Dispose();
+            _jobCts = new CancellationTokenSource();
+            cts = _jobCts;
         }
 
-        return false;
+        var ct = cts.Token;
+        _ = Task.Run(async () =>
+        {
+            bool wantsReschedule = false;
+            try
+            {
+                // NetworkType.Any often fires slightly before Android completes its captive-portal
+                // / DNS validation probe. Poll briefly so real Wi-Fi/data isn't forced into 15m backoff.
+                await NetworkConnectivity.WaitForValidatedInternetAsync(
+                    this, maxWaitMs: 3000, pollIntervalMs: 500, cancellationToken: ct);
+
+                if (ct.IsCancellationRequested)
+                    return;
+
+                var outcome = NetworkChangeMonitor.TryTriggerOfflineRecovery(this, "JobScheduler");
+                if (outcome == NetworkChangeMonitor.RecoveryTriggerOutcome.Triggered)
+                {
+                    // Hold JobScheduler's wakelock briefly so StreakService.OnCreate() acquires
+                    // its own foreground notification and WakeLock cleanly.
+                    await Task.Delay(3000, ct);
+                }
+                else if (outcome == NetworkChangeMonitor.RecoveryTriggerOutcome.ThrottledOrOffline)
+                {
+                    var settings = new SettingsService();
+                    if (settings.IsScheduled() && settings.HasPendingOfflineRecoveryToday())
+                    {
+                        wantsReschedule = true;
+                    }
+                    else
+                    {
+                        settings.ClearOfflineRecoveryPending();
+                        Cancel(this);
+                    }
+                }
+            }
+            catch (System.OperationCanceledException)
+            {
+                return;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"OfflineRecoveryJobService.OnStartJob error: {ex.Message}");
+            }
+
+            if (!ct.IsCancellationRequested)
+            {
+                try
+                {
+                    JobFinished(@params, wantsReschedule);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"OfflineRecoveryJobService.JobFinished failed: {ex.Message}");
+                }
+            }
+        });
+
+        return true;
     }
 
     public override bool OnStopJob(JobParameters? @params)
     {
+        lock (_jobLock)
+        {
+            _jobCts?.Cancel();
+        }
+
         var settings = new SettingsService();
         return settings.IsScheduled() && settings.HasPendingOfflineRecoveryToday();
     }

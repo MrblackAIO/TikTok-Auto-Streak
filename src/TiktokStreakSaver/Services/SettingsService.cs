@@ -29,9 +29,11 @@ public class SettingsService
     private const string RetryCountTodayKey = "retry_count_today";
     private const string RetryCountDateKey = "retry_count_date";
     private const string LastRunFailedKey = "last_run_failed";
+    private const string LastRunFailedDateKey = "last_run_failed_date";
     private const string LastRunFailureReasonKey = "last_run_failure_reason";
     private const string PendingOfflineRecoveryDateKey = "pending_offline_recovery_date";
     private const string LastNetworkRecoveryUtcTicksKey = "last_network_recovery_utc_ticks";
+    private const string BlockedRecoveryAlertDateKey = "blocked_recovery_alert_date";
     private const string BatteryAnticipationDateKey = "battery_anticipation_date";
     private const string SendOnBatteryLowKey = "send_on_battery_low";
     private const string AutoStartConfiguredKey = "auto_start_configured";
@@ -740,14 +742,36 @@ public class SettingsService
     /// </summary>
     public bool GetLastRunFailed() => _storage.GetBool(LastRunFailedKey, false);
 
-    /// <summary>Set / clear the last-run-failed flag, optionally tagging the reason.</summary>
+    /// <summary>
+    /// True only if the last-run failure flag was recorded during the current calendar day
+    /// (<see cref="AppTime.Today"/>), preventing yesterday's failures from leaking past midnight.
+    /// </summary>
+    public bool GetLastRunFailedToday()
+    {
+        if (!GetLastRunFailed())
+            return false;
+
+        var storedTicks = _storage.GetLong(LastRunFailedDateKey, 0L);
+        return storedTicks == AppTime.Today.Ticks;
+    }
+
+    /// <summary>Set / clear the last-run-failed flag, anchoring failure to <see cref="AppTime.Today"/>.</summary>
     public void SetLastRunFailed(bool failed, string? reason)
     {
         _storage.SetBool(LastRunFailedKey, failed);
-        if (failed && !string.IsNullOrEmpty(reason))
-            _storage.SetString(LastRunFailureReasonKey, reason);
+        if (failed)
+        {
+            _storage.SetLong(LastRunFailedDateKey, AppTime.Today.Ticks);
+            if (!string.IsNullOrEmpty(reason))
+                _storage.SetString(LastRunFailureReasonKey, reason);
+            else
+                _storage.Remove(LastRunFailureReasonKey);
+        }
         else
+        {
+            _storage.Remove(LastRunFailedDateKey);
             _storage.Remove(LastRunFailureReasonKey);
+        }
     }
 
     /// <summary>Reason tag set the last time the run failed, or null when cleared.</summary>
@@ -802,6 +826,19 @@ public class SettingsService
     public void SetLastNetworkRecoveryUtc(DateTime utcNow)
     {
         _storage.SetLong(LastNetworkRecoveryUtcTicksKey, utcNow.ToUniversalTime().Ticks);
+    }
+
+    /// <summary>True if we already notified the user today that Android blocked background FGS recovery.</summary>
+    public bool WasBlockedRecoveryAlertShownToday()
+    {
+        var storedTicks = _storage.GetLong(BlockedRecoveryAlertDateKey, 0L);
+        return storedTicks == AppTime.Today.Ticks;
+    }
+
+    /// <summary>Records that the blocked-background-recovery alert was shown today.</summary>
+    public void MarkBlockedRecoveryAlertShownToday()
+    {
+        _storage.SetLong(BlockedRecoveryAlertDateKey, AppTime.Today.Ticks);
     }
 
     /// <summary>

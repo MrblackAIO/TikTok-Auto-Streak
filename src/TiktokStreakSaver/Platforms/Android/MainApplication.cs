@@ -1,4 +1,4 @@
-﻿using Android.App;
+using Android.App;
 using Android.Content;
 using Android.OS;
 using Android.Runtime;
@@ -29,6 +29,15 @@ namespace TiktokStreakSaver
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"MainApplication: NetworkChangeMonitor registration failed — {ex.Message}");
+            }
+
+            try
+            {
+                UpdateCheckJobService.Schedule(this);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"MainApplication: UpdateCheckJobService schedule failed — {ex.Message}");
             }
 
             try
