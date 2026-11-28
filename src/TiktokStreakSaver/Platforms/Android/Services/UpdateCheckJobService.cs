@@ -45,7 +45,14 @@ public class UpdateCheckJobService : JobService
                 .SetPeriodic(IntervalMillis)
                 .SetPersisted(true);
 
-            var result = scheduler.Schedule(builder.Build());
+            var job = builder.Build();
+            if (job == null)
+            {
+                System.Diagnostics.Debug.WriteLine("UpdateCheckJobService: JobInfo.Builder.Build() returned null");
+                return;
+            }
+
+            var result = scheduler.Schedule(job);
             System.Diagnostics.Debug.WriteLine($"UpdateCheckJobService: Schedule result = {result}");
         }
         catch (Exception ex)

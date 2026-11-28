@@ -52,7 +52,14 @@ public class OfflineRecoveryJobService : JobService
                 .SetPersisted(true)
                 .SetBackoffCriteria(BackoffMillis, BackoffPolicy.Exponential);
 
-            var result = scheduler.Schedule(builder.Build());
+            var job = builder.Build();
+            if (job == null)
+            {
+                System.Diagnostics.Debug.WriteLine("OfflineRecoveryJobService: JobInfo.Builder.Build() returned null");
+                return;
+            }
+
+            var result = scheduler.Schedule(job);
             System.Diagnostics.Debug.WriteLine($"OfflineRecoveryJobService: Schedule result = {result}");
         }
         catch (Exception ex)
@@ -76,7 +83,7 @@ public class OfflineRecoveryJobService : JobService
     }
 
     /// <summary>
-    /// Ensures the persistent job state matches current scheduled & same-day recovery flags,
+    /// Ensures the persistent job state matches current scheduled and same-day recovery flags,
     /// cleaning up stale jobs from previous calendar days.
     /// </summary>
     internal static void SyncWithPendingState(Context context, SettingsService settings)

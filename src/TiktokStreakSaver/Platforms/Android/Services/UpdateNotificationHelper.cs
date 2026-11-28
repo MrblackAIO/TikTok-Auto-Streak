@@ -141,7 +141,7 @@ public static class UpdateNotificationHelper
 
             PostUpdateNotification(context, remoteVersion, updateInfo.ApkDownloadUrl);
         }
-        catch (OperationCanceledException) { }
+        catch (System.OperationCanceledException) { }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"[UpdateCheck] Background check error: {ex.Message}");
